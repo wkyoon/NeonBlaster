@@ -1,0 +1,240 @@
+extends Control
+## MainMenu - title screen with start button and high score display.
+## Now includes difficulty selection for Word Blaster mode.
+
+@onready var _title: Label = $Title
+@onready var _subtitle: Label = $Subtitle
+@onready var _start_button: Button = $StartButton
+@onready var _high_score_label: Label = $HighScoreLabel
+var _difficulty_buttons: VBoxContainer
+var _selected_difficulty: WordManager.Difficulty = WordManager.Difficulty.EASY
+var _auto_play_btn: Button = null
+
+var _sfx_btn: Button
+var _music_btn: Button
+var _tts_btn: Button
+
+
+func _ready() -> void:
+	_start_button.pressed.connect(_on_start)
+	GameManager.high_score_changed.connect(_update_high_score)
+	_update_high_score(GameManager.high_score)
+	_animate_title()
+	_create_difficulty_selector()
+	_create_audio_toggles()
+	_create_auto_play_toggle()
+	_create_bottom_buttons()
+
+
+## Create difficulty selection buttons (Easy / Normal / Hard)
+func _create_difficulty_selector() -> void:
+	_difficulty_buttons = VBoxContainer.new()
+	_difficulty_buttons.name = "DifficultySelector"
+	_difficulty_buttons.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_difficulty_buttons.position.y = -180
+	_difficulty_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	_difficulty_buttons.add_theme_constant_override("separation", 10)
+	add_child(_difficulty_buttons)
+
+	var label := Label.new()
+	label.text = "DIFFICULTY"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_color_override("font_color", Color(0.6, 0.7, 0.9))
+	_difficulty_buttons.add_child(label)
+
+	var btn_container := HBoxContainer.new()
+	btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_container.add_theme_constant_override("separation", 12)
+	_difficulty_buttons.add_child(btn_container)
+
+	var difficulties := [
+		{ "name": "EASY", "value": WordManager.Difficulty.EASY, "color": Color(0.3, 1.0, 0.5) },
+		{ "name": "NORMAL", "value": WordManager.Difficulty.NORMAL, "color": Color(1.0, 0.8, 0.2) },
+		{ "name": "HARD", "value": WordManager.Difficulty.HARD, "color": Color(1.0, 0.3, 0.3) },
+	]
+
+	for diff in difficulties:
+		var btn := Button.new()
+		btn.text = diff["name"]
+		btn.custom_minimum_size = Vector2(110, 50)
+		btn.add_theme_font_size_override("font_size", 20)
+		btn.add_theme_color_override("font_color", diff["color"])
+		btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		btn.pressed.connect(_on_difficulty_selected.bind(diff["value"], btn, btn_container))
+		btn_container.add_child(btn)
+
+	# Highlight first button (Easy) by default
+	_highlight_selected(btn_container.get_child(0), btn_container)
+
+
+func _on_difficulty_selected(diff: WordManager.Difficulty, btn: Button, container: HBoxContainer) -> void:
+	AudioManager.play_sfx("button")
+	_selected_difficulty = diff
+	_highlight_selected(btn, container)
+
+
+func _highlight_selected(selected: Button, container: HBoxContainer) -> void:
+	for child in container.get_children():
+		child.modulate = Color(0.6, 0.6, 0.6)
+	selected.modulate = Color(1.0, 1.0, 1.0)
+	selected.add_theme_color_override("font_color", Color.WHITE)
+
+
+func _create_bottom_buttons() -> void:
+	# Row container for Dictionary + Story buttons
+	var container := HBoxContainer.new()
+	container.name = "BottomButtons"
+	container.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	container.position.y = -40
+	container.alignment = BoxContainer.ALIGNMENT_CENTER
+	container.add_theme_constant_override("separation", 12)
+	add_child(container)
+
+	var dict_btn := Button.new()
+	dict_btn.name = "DictionaryButton"
+	dict_btn.text = "📖 DICTIONARY"
+	dict_btn.custom_minimum_size = Vector2(220, 50)
+	dict_btn.add_theme_font_size_override("font_size", 18)
+	dict_btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
+	dict_btn.focus_mode = Control.FOCUS_NONE
+	dict_btn.pressed.connect(_on_dictionary)
+	container.add_child(dict_btn)
+
+	var story_btn := Button.new()
+	story_btn.name = "StoryButton"
+	story_btn.text = "✦ STORY"
+	story_btn.custom_minimum_size = Vector2(220, 50)
+	story_btn.add_theme_font_size_override("font_size", 18)
+	story_btn.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+	story_btn.focus_mode = Control.FOCUS_NONE
+	story_btn.pressed.connect(_on_story)
+	container.add_child(story_btn)
+
+
+func _on_dictionary() -> void:
+	AudioManager.play_sfx("button")
+	SceneManager.goto_dictionary()
+
+
+func _on_story() -> void:
+	AudioManager.play_sfx("button")
+	SceneManager.goto_story()
+
+
+func _create_auto_play_toggle() -> void:
+	var btn := Button.new()
+	btn.name = "AutoPlayButton"
+	btn.text = "▶ AUTO PLAY: OFF"
+	btn.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	btn.position.y = -135
+	btn.custom_minimum_size = Vector2(280, 50)
+	btn.add_theme_font_size_override("font_size", 18)
+	btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.pressed.connect(_on_auto_play_toggle)
+	add_child(btn)
+	_auto_play_btn = btn
+	_update_auto_play_btn()
+
+
+func _update_auto_play_btn() -> void:
+	if not _auto_play_btn:
+		return
+	if GameManager.auto_play:
+		_auto_play_btn.text = "▶ AUTO PLAY: ON"
+		_auto_play_btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+	else:
+		_auto_play_btn.text = "▶ AUTO PLAY: OFF"
+		_auto_play_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+
+
+func _on_auto_play_toggle() -> void:
+	AudioManager.play_sfx("button")
+	GameManager.auto_play = not GameManager.auto_play
+	_update_auto_play_btn()
+
+
+func _on_start() -> void:
+	AudioManager.play_sfx("button")
+	WordManager.set_difficulty(_selected_difficulty)
+	GameManager.start_game()
+	SceneManager.goto_game()
+
+
+## Create SFX / BGM / TTS toggle buttons (top-right corner)
+func _create_audio_toggles() -> void:
+	var container := HBoxContainer.new()
+	container.name = "AudioToggles"
+	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	container.position = Vector2(-270, 20)
+	container.add_theme_constant_override("separation", 8)
+	add_child(container)
+
+	_sfx_btn = Button.new()
+	_sfx_btn.focus_mode = Control.FOCUS_NONE
+	_sfx_btn.custom_minimum_size = Vector2(80, 44)
+	_sfx_btn.add_theme_font_size_override("font_size", 16)
+	_sfx_btn.pressed.connect(_on_sfx_toggle)
+	container.add_child(_sfx_btn)
+
+	_music_btn = Button.new()
+	_music_btn.focus_mode = Control.FOCUS_NONE
+	_music_btn.custom_minimum_size = Vector2(80, 44)
+	_music_btn.add_theme_font_size_override("font_size", 16)
+	_music_btn.pressed.connect(_on_music_toggle)
+	container.add_child(_music_btn)
+
+	_tts_btn = Button.new()
+	_tts_btn.focus_mode = Control.FOCUS_NONE
+	_tts_btn.custom_minimum_size = Vector2(80, 44)
+	_tts_btn.add_theme_font_size_override("font_size", 16)
+	_tts_btn.pressed.connect(_on_tts_toggle)
+	container.add_child(_tts_btn)
+
+	_update_audio_buttons()
+
+
+func _update_audio_buttons() -> void:
+	if _sfx_btn:
+		_sfx_btn.text = "SFX ON" if AudioManager.sfx_enabled else "SFX OFF"
+		_sfx_btn.modulate = Color.WHITE if AudioManager.sfx_enabled else Color(0.5, 0.5, 0.5)
+	if _music_btn:
+		_music_btn.text = "BGM ON" if AudioManager.music_enabled else "BGM OFF"
+		_music_btn.modulate = Color.WHITE if AudioManager.music_enabled else Color(0.5, 0.5, 0.5)
+	if _tts_btn:
+		_tts_btn.text = "TTS ON" if AudioManager.tts_enabled else "TTS OFF"
+		_tts_btn.modulate = Color.WHITE if AudioManager.tts_enabled else Color(0.5, 0.5, 0.5)
+
+
+func _on_sfx_toggle() -> void:
+	AudioManager.toggle_sfx()
+	if AudioManager.sfx_enabled:
+		AudioManager.play_sfx("button")
+	_update_audio_buttons()
+
+
+func _on_music_toggle() -> void:
+	AudioManager.toggle_music()
+	if AudioManager.sfx_enabled:
+		AudioManager.play_sfx("button")
+	_update_audio_buttons()
+
+
+func _on_tts_toggle() -> void:
+	AudioManager.toggle_tts()
+	if AudioManager.sfx_enabled:
+		AudioManager.play_sfx("button")
+	if AudioManager.tts_enabled and DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
+		AudioManager.speak_word("Word Blaster")
+	_update_audio_buttons()
+
+
+func _update_high_score(score: int) -> void:
+	_high_score_label.text = "BEST  %06d" % score
+
+
+func _animate_title() -> void:
+	var tween := create_tween().set_loops()
+	tween.tween_property(_title, "modulate", Color(0.3, 0.9, 1.0, 1.0), 1.0)
+	tween.tween_property(_title, "modulate", Color(0.8, 0.3, 1.0, 1.0), 1.0)

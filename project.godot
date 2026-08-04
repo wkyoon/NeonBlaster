@@ -1,0 +1,51 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="NeonBlaster"
+config/description="Neon top-down shooter with AdMob"
+run/main_scene="res://scenes/Menu.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://assets/icons/icon.png"
+
+[autoload]
+
+GameManager="*res://scripts/GameManager.gd"
+SceneManager="*res://scripts/SceneManager.gd"
+AdsManager="*res://scripts/AdsManager.gd"
+AudioManager="*res://scripts/AudioManager.gd"
+EffectsManager="*res://scripts/EffectsManager.gd"
+WordManager="*res://scripts/WordManager.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[layer_names]
+
+2d_physics/layer_1="player"
+2d_physics/layer_2="enemy"
+2d_physics/layer_3="bullet_player"
+2d_physics/layer_4="bullet_enemy"
+2d_physics/layer_5="pickup"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.04, 0.03, 0.09, 1)

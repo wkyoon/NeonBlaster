@@ -1,0 +1,36 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/export/
+
+# Imported translations (automatically generated)
+*.translation
+
+# Mono / C# specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# System / OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# Logs
+*.log
+
+# Benchmark generated outputs (regenerated each run)
+benchmark_log.txt
+benchmark_results.json
