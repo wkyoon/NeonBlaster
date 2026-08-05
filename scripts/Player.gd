@@ -9,9 +9,9 @@ signal bomb_triggered
 
 enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 
-@export var max_speed: float = 320.0
-@export var acceleration: float = 2400.0
-@export var friction: float = 1800.0
+@export var max_speed: float = 700.0
+@export var acceleration: float = 3600.0
+@export var friction: float = 3000.0
 @export var fire_rate: float = 8.0  # shots per second
 @export var bullet_damage: int = 1
 @export var invincible_duration: float = 1.0
@@ -39,6 +39,9 @@ var _move_input: Vector2 = Vector2.ZERO
 var _can_fire: bool = true
 var _is_invincible: bool = false
 var _screen_size: Vector2
+var _is_touching: bool = false
+var _touch_offset: Vector2 = Vector2.ZERO
+var _target_pos: Vector2 = Vector2.ZERO
 var _invincible_timer: float = 0.0
 
 
@@ -100,11 +103,7 @@ func _handle_input() -> void:
 	if Input.is_action_pressed("ui_up"):
 		_move_input.y -= 1
 
-	# Touch joystick: drag anywhere on left half to move
-	var touch_input := _get_touch_joystick_input()
-	if touch_input != Vector2.ZERO:
-		_move_input = touch_input
-
+	# Touch steering is handled directly in _unhandled_input (drag-to-follow).
 	_move_input = _move_input.limit_length(1.0)
 
 
@@ -206,16 +205,54 @@ func _get_touch_joystick_input() -> Vector2:
 	return Vector2.ZERO
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if GameManager.auto_play:
+		return
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+	# Direct drag-to-follow: the ship sticks under the finger. On press we capture
+	# the gap between the finger and the ship so dragging mirrors finger motion 1:1.
+	if event is InputEventScreenTouch:
+		if event.pressed and not _is_touching:
+			_is_touching = true
+			_touch_offset = global_position - event.position
+			_target_pos = global_position
+		elif not event.pressed:
+			_is_touching = false
+	elif event is InputEventScreenDrag and _is_touching:
+		_target_pos = event.position + _touch_offset
+
+
 func _apply_movement(delta: float) -> void:
-	if _move_input != Vector2.ZERO:
-		velocity = velocity.move_toward(_move_input * max_speed, acceleration * delta)
-		# Tilt sprite slightly based on horizontal movement
-		_sprite.rotation = lerp(_sprite.rotation, _move_input.x * 0.3, 10 * delta)
-		_engine_particles.emitting = true
+	if _is_touching:
+		# Drag-to-follow: fly toward the finger at FULL speed regardless of
+		# distance. The previous limit_length() approach caused the ship to crawl
+		# whenever the finger was close — now we always use max_speed, only
+		# clipping the last step so we never overshoot the target.
+		var to_target := _target_pos - global_position
+		var dist := to_target.length()
+		if dist > 1.0:
+			var dir := to_target / dist
+			var step := max_speed * delta
+			if dist > step:
+				velocity = dir * max_speed
+			else:
+				# Within one frame of the finger — cover exactly the remaining gap.
+				velocity = to_target / delta
+		else:
+			velocity = Vector2.ZERO
+		_sprite.rotation = lerp(_sprite.rotation, clampf(velocity.x / max_speed, -1.0, 1.0) * 0.3, 10 * delta)
+		_engine_particles.emitting = velocity.length() > 10.0
 	else:
-		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
-		_sprite.rotation = lerp(_sprite.rotation, 0.0, 10 * delta)
-		_engine_particles.emitting = false
+		if _move_input != Vector2.ZERO:
+			velocity = velocity.move_toward(_move_input * max_speed, acceleration * delta)
+			# Tilt sprite slightly based on horizontal movement
+			_sprite.rotation = lerp(_sprite.rotation, _move_input.x * 0.3, 10 * delta)
+			_engine_particles.emitting = true
+		else:
+			velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+			_sprite.rotation = lerp(_sprite.rotation, 0.0, 10 * delta)
+			_engine_particles.emitting = false
 
 	move_and_slide()
 	# Clamp to screen
@@ -260,7 +297,7 @@ func _fire() -> void:
 			_spawn_bullet(_muzzle.global_position + Vector2(15, 5), Vector2(0.3, -1).normalized())
 			_spawn_bullet(_muzzle.global_position + Vector2(-20, 10), Vector2(-0.5, -1).normalized())
 			_spawn_bullet(_muzzle.global_position + Vector2(20, 10), Vector2(0.5, -1).normalized())
-	AudioManager.play_sfx("shoot")
+	AudioManager.play_shoot(weapon_level)
 	# Muzzle flash
 	EffectsManager.flash(_muzzle.global_position, Color(0.3, 0.8, 1.0), 0.08)
 

@@ -10,13 +10,16 @@ signal joystick_moved(vector: Vector2)
 var _touch_index: int = -1
 var _touch_origin: Vector2 = Vector2.ZERO
 var _vector: Vector2 = Vector2.ZERO
+var _pause_button: Control
 
 @onready var _base: ColorRect = $Base
 @onready var _stick: ColorRect = $Stick
 
 
 func _ready() -> void:
-	set_process_input(true)
+	# Direct drag-to-follow steering is handled by Player._unhandled_input.
+	# Virtual joystick is disabled (node kept in the scene tree for compatibility).
+	set_process_input(false)
 	_hide_joystick()
 
 
@@ -34,9 +37,12 @@ func _input(event: InputEvent) -> void:
 
 
 func _is_in_control_area(pos: Vector2) -> bool:
-	# Use left 70% of screen as control area, avoiding top HUD
-	var screen := get_viewport_rect().size
-	return pos.x < screen.x * 0.7 and pos.y > screen.y * 0.2
+	# Allow steering from anywhere on the screen. Only skip taps that land on
+	# interactive UI (the pause button) so it stays clickable. HUD labels are
+	# non-interactive, so dragging over them is fine.
+	if _pause_button and _pause_button.get_global_rect().grow(28.0).has_point(pos):
+		return false
+	return true
 
 
 func _show_joystick(pos: Vector2) -> void:

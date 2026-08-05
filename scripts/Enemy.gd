@@ -296,6 +296,7 @@ func _behave(delta: float) -> void:
 
 
 func _fire_at_player() -> void:
+	AudioManager.play_sfx("enemy_shoot")
 	var bullet := _bullet_scene.instantiate()
 	bullet.global_position = global_position
 	var dir := (_player.global_position - global_position).normalized()
@@ -307,6 +308,7 @@ func _fire_at_player() -> void:
 
 
 func _fire_spread() -> void:
+	AudioManager.play_sfx("enemy_shoot")
 	for i in 3:
 		var bullet := _bullet_scene.instantiate()
 		bullet.global_position = global_position
@@ -318,6 +320,7 @@ func _fire_spread() -> void:
 
 
 func _fire_circle() -> void:
+	AudioManager.play_sfx("enemy_shoot")
 	# SHIELDER: 8방향 원형 탄막
 	var count := 8
 	for i in count:

@@ -11,6 +11,7 @@ var _bus_music := "Music"
 
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _music_player: AudioStreamPlayer = null
+var _bgm_stream: AudioStreamWAV = null
 var _next_player_index: int = 0
 const MAX_SFX_PLAYERS := 8
 
@@ -38,6 +39,8 @@ func _ready() -> void:
 		AudioServer.get_bus_index(_bus_sfx),
 		AudioServer.get_bus_index(_bus_music)
 	])
+	# Auto-start the procedural background music (loops for the whole session).
+	call_deferred("play_bgm")
 
 
 func _ensure_bus(bus_name: String) -> int:
@@ -85,7 +88,10 @@ func _apply_toggles() -> void:
 
 func _generate_sfx_cache() -> void:
 	# Generate procedural SFX as AudioStreamWAV
-	_sfx_cache["shoot"] = _gen_sfx_shoot()
+	_sfx_cache["shoot_light"] = _gen_sfx_shoot(920.0, 260.0, 0.065, 0.24, 0.0)
+	_sfx_cache["shoot_pulse"] = _gen_sfx_shoot(720.0, 170.0, 0.09, 0.30, 0.45)
+	_sfx_cache["shoot_heavy"] = _gen_sfx_shoot(540.0, 105.0, 0.12, 0.36, 0.8)
+	_sfx_cache["enemy_shoot"] = _gen_sfx_enemy_shoot()
 	_sfx_cache["hit"] = _gen_sfx_hit()
 	_sfx_cache["explosion"] = _gen_sfx_explosion()
 	_sfx_cache["enemy_die"] = _gen_sfx_enemy_die()
@@ -114,17 +120,35 @@ func _create_wav(data: PackedVector2Array, mix_rate: int = 44100) -> AudioStream
 	return wav
 
 
-func _gen_sfx_shoot() -> AudioStreamWAV:
-	var duration := 0.08
+func _gen_sfx_shoot(start_freq: float, end_freq: float, duration: float, amplitude: float, grit: float) -> AudioStreamWAV:
 	var samples := int(duration * SAMPLE_RATE)
 	var data := PackedVector2Array()
 	data.resize(samples)
 	for i in samples:
 		var t := float(i) / SAMPLE_RATE
-		var freq := 800.0 * (1.0 - t / duration) + 200.0
-		var env := exp(-t * 40.0)
-		var s := sin(t * freq * TAU) * env * 0.3
+		var progress := t / duration
+		var freq := lerpf(start_freq, end_freq, progress)
+		var env := exp(-t * 38.0)
+		var tone := sin(t * freq * TAU)
+		var harmonic := sin(t * freq * 2.03 * TAU) * 0.24
+		var noise := (randf() * 2.0 - 1.0) * grit
+		var s := (tone + harmonic + noise) * env * amplitude
 		data[i] = Vector2(s, s)
+	return _create_wav(data)
+
+
+func _gen_sfx_enemy_shoot() -> AudioStreamWAV:
+	var duration := 0.14
+	var samples := int(duration * SAMPLE_RATE)
+	var data := PackedVector2Array()
+	data.resize(samples)
+	for i in samples:
+		var t := float(i) / SAMPLE_RATE
+		var freq := lerpf(180.0, 520.0, t / duration)
+		var env := exp(-t * 24.0)
+		var square := 1.0 if sin(t * freq * TAU) >= 0.0 else -1.0
+		var s := (square * 0.65 + sin(t * freq * 0.5 * TAU) * 0.35) * env * 0.18
+		data[i] = Vector2(s * 0.9, s)
 	return _create_wav(data)
 
 
@@ -228,6 +252,14 @@ func play_sfx(name: String) -> void:
 	player.play()
 
 
+## 무기 단계에 맞는 발사음 중 하나를 골라 연사 반복감을 줄입니다.
+func play_shoot(weapon_level: int) -> void:
+	var variants: Array[String] = ["shoot_light", "shoot_pulse"]
+	if weapon_level >= 3:
+		variants.append("shoot_heavy")
+	play_sfx(variants[randi() % variants.size()])
+
+
 func play_music(stream: AudioStream) -> void:
 	if _music_player:
 		_music_player.stream = stream
@@ -241,6 +273,117 @@ func play_music(stream: AudioStream) -> void:
 func stop_music() -> void:
 	if _music_player:
 		_music_player.stop()
+
+
+## Convenience helper: generate (once, cached) and play the procedural BGM.
+func play_bgm() -> void:
+	if _bgm_stream == null:
+		_bgm_stream = _generate_bgm()
+	play_music(_bgm_stream)
+
+
+## 빠른 드럼과 16비트 베이스가 중심인 전투용 네온 신스 BGM입니다.
+func _generate_bgm() -> AudioStreamWAV:
+	const BGM_DURATION := 12.8
+	var n := int(SAMPLE_RATE * BGM_DURATION)
+	var data := PackedVector2Array()
+	data.resize(n)
+
+	# 4-chord progression over 8s (2s per chord), D natural minor: Dm - Bb - F - C.
+	# Each entry: [bass_freq, pad_root, pad_third, pad_fifth].
+	var chords: Array[PackedFloat64Array] = [
+		PackedFloat64Array([73.42, 146.83, 174.61, 220.0]),   # Dm  (D2 / D3 F3 A3)
+		PackedFloat64Array([58.27, 116.54, 146.83, 174.61]),  # Bb  (Bb1 / Bb2 D3 F3)
+		PackedFloat64Array([87.31, 174.61, 220.0, 261.63]),   # F   (F2 / F3 A3 C4)
+		PackedFloat64Array([65.41, 130.81, 164.81, 196.0]),   # C   (C2 / C3 E3 G3)
+	]
+	# Arpeggio notes (lead, top octave) cycling per chord.
+	var arps: Array[PackedFloat64Array] = [
+		PackedFloat64Array([293.66, 349.23, 440.0, 523.25]),  # D4 F4 A4 C5
+		PackedFloat64Array([233.08, 293.66, 349.23, 440.0]),  # Bb3 D4 F4 A4
+		PackedFloat64Array([349.23, 440.0, 523.25, 698.46]),  # F4 A4 C5 F5
+		PackedFloat64Array([261.63, 329.63, 392.0, 523.25]),  # C4 E4 G4 C5
+	]
+
+	var bpm := 150.0
+	var beat := 60.0 / bpm
+	var chord_dur := beat * 4.0
+	var arp_step := beat / 4.0
+
+	var bass_amp := 0.32
+	var pad_amp := 0.035
+	var arp_amp := 0.11
+
+	for i in n:
+		var t := float(i) / SAMPLE_RATE
+		var chord_idx := int(t / chord_dur) % chords.size()
+		var chord_t := fmod(t, chord_dur)
+		var ch := chords[chord_idx]
+		var arp := arps[chord_idx]
+
+		# 16비트 베이스 펄스. 홀수 스텝을 약하게 해 앞으로 달리는 리듬을 만듭니다.
+		var beat_phase := fmod(t, beat)
+		var bass_step := beat / 4.0
+		var bass_phase := fmod(t, bass_step)
+		var bass_step_idx := int(t / bass_step) % 4
+		var bass_accent := 1.0 if bass_step_idx == 0 or bass_step_idx == 2 else 0.62
+		var bass_env := exp(-bass_phase * 22.0) * bass_accent
+		var bass_fundamental := sin(t * TAU * ch[0])
+		var bass_harmonic := sin(t * TAU * ch[0] * 2.0) * 0.35
+		var bass := (bass_fundamental + bass_harmonic) * bass_amp * bass_env
+
+		# Pad: sustained triad that swells in/out across the chord.
+		var pad_env := sin(chord_t / chord_dur * PI)
+		var pad := (sin(t * TAU * ch[1]) + sin(t * TAU * ch[2]) + sin(t * TAU * ch[3])) * pad_amp * pad_env
+
+		# 빠른 16비트 아르페지오와 옥타브 쉬머.
+		var arp_idx := int(fmod(t, arp_step * float(arp.size())) / arp_step) % arp.size()
+		var arp_phase := fmod(t, arp_step)
+		var arp_env := exp(-arp_phase * 15.0)
+		var arp_note := sin(t * TAU * arp[arp_idx]) * arp_amp * arp_env
+		var arp_oct := sin(t * TAU * arp[arp_idx] * 2.0) * arp_amp * 0.3 * arp_env
+
+		# 강한 4-on-the-floor 킥, 2·4박 스네어, 8비트 하이햇.
+		var beat_number := int(t / beat) % 4
+		var kick_freq := lerpf(145.0, 52.0, minf(beat_phase / 0.12, 1.0))
+		var kick := sin(beat_phase * TAU * kick_freq) * exp(-beat_phase * 28.0) * 0.27
+		var half_beat_phase := fmod(t, beat / 2.0)
+		var hat_env := exp(-half_beat_phase * 75.0)
+		var hat_accent := 1.35 if int(t / (beat / 2.0)) % 2 == 1 else 0.75
+		var hat := (randf() * 2.0 - 1.0) * hat_env * 0.045 * hat_accent
+		var snare := 0.0
+		if beat_number == 1 or beat_number == 3:
+			var snare_tone := sin(beat_phase * TAU * 190.0) * 0.35
+			var snare_noise := (randf() * 2.0 - 1.0) * 0.65
+			snare = (snare_tone + snare_noise) * exp(-beat_phase * 24.0) * 0.18
+
+		# 두 번째 진행에서는 톱니파 계열 리드와 오픈 하이햇으로 고조시킵니다.
+		var lead := 0.0
+		if t >= BGM_DURATION * 0.5:
+			var lead_freq := arp[(arp_idx + 2) % arp.size()] * 2.0
+			var lead_env := exp(-arp_phase * 11.0)
+			var lead_saw := sin(t * TAU * lead_freq)
+			lead_saw += sin(t * TAU * lead_freq * 2.0) * 0.5
+			lead_saw += sin(t * TAU * lead_freq * 3.0) * 0.25
+			lead = lead_saw * lead_env * 0.065
+			if int(t / (beat / 2.0)) % 2 == 1:
+				hat += (randf() * 2.0 - 1.0) * exp(-half_beat_phase * 24.0) * 0.025
+
+		# 킥 순간에 신스 층을 살짝 눌러 타격감을 분명하게 합니다.
+		var sidechain := lerpf(0.5, 1.0, minf(beat_phase / 0.11, 1.0))
+		var synths := (bass + pad + arp_note + arp_oct + lead) * sidechain
+		var mono := synths + kick + hat + snare
+		# Soft clip to keep levels clean and avoid harsh distortion.
+		mono = tanh(mono * 1.2) * 0.8
+		# Slight stereo width for a wider feel.
+		var width := 0.08
+		data[i] = Vector2(mono * (1.0 + width), mono * (1.0 - width))
+
+	var wav := _create_wav(data)
+	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	wav.loop_begin = 0
+	wav.loop_end = n - 1
+	return wav
 
 
 func set_sfx_volume(vol: float) -> void:
@@ -271,6 +414,8 @@ func toggle_music() -> void:
 	_apply_toggles()
 	if not music_enabled:
 		stop_music()
+	else:
+		play_bgm()
 	_save_settings()
 
 

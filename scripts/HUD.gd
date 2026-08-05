@@ -179,9 +179,21 @@ func _create_word_label() -> void:
 	_word_label.add_theme_constant_override("shadow_offset_x", 2)
 	_word_label.add_theme_constant_override("shadow_offset_y", 3)
 	_word_label.add_theme_constant_override("outline_size", 8)
-	_word_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_word_label.position.y = 120
+	# 화면 전체 폭을 가진 라벨 안에서 정렬해야 글자 수와 기기 비율에 관계없이
+	# 텍스트의 실제 중심이 화면 중심과 일치합니다.
+	_word_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_word_label.offset_left = 0.0
+	_word_label.offset_top = 120.0
+	_word_label.offset_right = 0.0
+	_word_label.offset_bottom = 200.0
 	$UI.add_child(_word_label)
+	_word_label.resized.connect(_update_word_label_pivot)
+	_update_word_label_pivot()
+
+
+func _update_word_label_pivot() -> void:
+	if _word_label:
+		_word_label.pivot_offset = _word_label.size * 0.5
 
 
 func _on_word_progress_updated(filled: String, _target: String) -> void:

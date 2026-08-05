@@ -9,6 +9,7 @@ extends Control
 var _difficulty_buttons: VBoxContainer
 var _selected_difficulty: WordManager.Difficulty = WordManager.Difficulty.EASY
 var _auto_play_btn: Button = null
+var _score_panel: Control = null
 
 var _sfx_btn: Button
 var _music_btn: Button
@@ -82,7 +83,7 @@ func _highlight_selected(selected: Button, container: HBoxContainer) -> void:
 
 
 func _create_bottom_buttons() -> void:
-	# Row container for Dictionary + Story buttons
+	# Row container for Scores + Dictionary + Story buttons
 	var container := HBoxContainer.new()
 	container.name = "BottomButtons"
 	container.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -91,10 +92,20 @@ func _create_bottom_buttons() -> void:
 	container.add_theme_constant_override("separation", 12)
 	add_child(container)
 
+	var scores_btn := Button.new()
+	scores_btn.name = "ScoresButton"
+	scores_btn.text = "★ SCORES"
+	scores_btn.custom_minimum_size = Vector2(205, 50)
+	scores_btn.add_theme_font_size_override("font_size", 18)
+	scores_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.25))
+	scores_btn.focus_mode = Control.FOCUS_NONE
+	scores_btn.pressed.connect(_show_score_history)
+	container.add_child(scores_btn)
+
 	var dict_btn := Button.new()
 	dict_btn.name = "DictionaryButton"
 	dict_btn.text = "📖 DICTIONARY"
-	dict_btn.custom_minimum_size = Vector2(220, 50)
+	dict_btn.custom_minimum_size = Vector2(205, 50)
 	dict_btn.add_theme_font_size_override("font_size", 18)
 	dict_btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
 	dict_btn.focus_mode = Control.FOCUS_NONE
@@ -104,12 +115,99 @@ func _create_bottom_buttons() -> void:
 	var story_btn := Button.new()
 	story_btn.name = "StoryButton"
 	story_btn.text = "✦ STORY"
-	story_btn.custom_minimum_size = Vector2(220, 50)
+	story_btn.custom_minimum_size = Vector2(205, 50)
 	story_btn.add_theme_font_size_override("font_size", 18)
 	story_btn.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
 	story_btn.focus_mode = Control.FOCUS_NONE
 	story_btn.pressed.connect(_on_story)
 	container.add_child(story_btn)
+
+	_create_score_panel()
+
+
+func _create_score_panel() -> void:
+	_score_panel = Control.new()
+	_score_panel.name = "ScoreHistoryPanel"
+	_score_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_score_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_score_panel.visible = false
+	add_child(_score_panel)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.92)
+	_score_panel.add_child(dimmer)
+
+	var panel := Panel.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-290, -420)
+	panel.size = Vector2(580, 840)
+	_score_panel.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.position = Vector2(35, 30)
+	content.size = Vector2(510, 780)
+	content.add_theme_constant_override("separation", 14)
+	panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "★ SCORE RECORDS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 38)
+	title.add_theme_color_override("font_color", Color(1.0, 0.75, 0.25))
+	content.add_child(title)
+
+	var header := Label.new()
+	header.text = " NO.      SCORE       MODE       DATE"
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_theme_font_size_override("font_size", 18)
+	header.add_theme_color_override("font_color", Color(0.5, 0.85, 1.0))
+	content.add_child(header)
+
+	var records := Label.new()
+	records.name = "Records"
+	records.custom_minimum_size = Vector2(510, 580)
+	records.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	records.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	records.add_theme_font_size_override("font_size", 22)
+	records.add_theme_color_override("font_color", Color(0.85, 0.9, 1.0))
+	content.add_child(records)
+
+	var close_btn := Button.new()
+	close_btn.text = "CLOSE"
+	close_btn.custom_minimum_size = Vector2(220, 58)
+	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	close_btn.add_theme_font_size_override("font_size", 24)
+	close_btn.pressed.connect(_hide_score_history)
+	content.add_child(close_btn)
+
+
+func _show_score_history() -> void:
+	AudioManager.play_sfx("button")
+	var records: Label = _score_panel.get_node("Panel/VBoxContainer/Records")
+	var history := GameManager.get_score_history()
+	if history.is_empty():
+		records.text = "\n\n아직 기록이 없습니다.\n게임을 플레이해 첫 기록을 만들어 보세요!"
+	else:
+		var lines: Array[String] = []
+		for i in history.size():
+			var item: Dictionary = history[i]
+			var date := Time.get_date_dict_from_unix_time(int(item.get("timestamp", 0)))
+			var date_text := "%02d/%02d" % [int(date.get("month", 0)), int(date.get("day", 0))]
+			lines.append("%2d      %06d      %-6s      %s" % [
+				i + 1,
+				int(item.get("score", 0)),
+				String(item.get("difficulty", "EASY")),
+				date_text,
+			])
+		records.text = "\n".join(lines)
+	_score_panel.visible = true
+	_score_panel.move_to_front()
+
+
+func _hide_score_history() -> void:
+	AudioManager.play_sfx("button")
+	_score_panel.visible = false
 
 
 func _on_dictionary() -> void:

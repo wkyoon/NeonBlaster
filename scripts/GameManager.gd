@@ -12,6 +12,7 @@ enum GameState { MENU, PLAYING, PAUSED, GAME_OVER }
 enum PowerUpType { RAPID, SPREAD, SHIELD, BOMB, LASER, TIME_SLOW, LIGHTNING }
 
 const SAVE_PATH := "user://neonblaster_save.cfg"
+const MAX_SCORE_HISTORY := 10
 const MAX_LIVES := 3
 const COMBO_WINDOW := 2.5  # seconds before combo resets
 const COMBO_STEP := 5  # kills needed per multiplier level
@@ -27,6 +28,9 @@ var high_score: int = 0:
 	set(value):
 		high_score = value
 		high_score_changed.emit(high_score)
+
+var score_history: Array[Dictionary] = []
+var _current_session_id: int = 0
 
 var lives: int = MAX_LIVES:
 	set(value):
@@ -63,6 +67,7 @@ func _process(delta: float) -> void:
 
 
 func start_game() -> void:
+	_current_session_id = int(Time.get_unix_time_from_system() * 1000.0)
 	score = 0
 	lives = MAX_LIVES
 	revives_used = 0
@@ -76,7 +81,31 @@ func game_over() -> void:
 	current_state = GameState.GAME_OVER
 	if score >= high_score:
 		high_score = score
+	_record_current_score()
 	save_game()
+
+
+func _record_current_score() -> void:
+	var difficulty_names: Array[String] = ["EASY", "NORMAL", "HARD"]
+	var difficulty_idx := clampi(int(WordManager.current_difficulty), 0, difficulty_names.size() - 1)
+	var record := {
+		"session_id": _current_session_id,
+		"score": score,
+		"difficulty": difficulty_names[difficulty_idx],
+		"timestamp": Time.get_unix_time_from_system(),
+	}
+	# 부활 후 다시 게임오버가 되어도 같은 플레이 기록을 최종 점수로 갱신합니다.
+	for i in score_history.size():
+		if int(score_history[i].get("session_id", -1)) == _current_session_id:
+			score_history.remove_at(i)
+			break
+	score_history.push_front(record)
+	if score_history.size() > MAX_SCORE_HISTORY:
+		score_history.resize(MAX_SCORE_HISTORY)
+
+
+func get_score_history() -> Array[Dictionary]:
+	return score_history.duplicate(true)
 
 
 func pause_game() -> void:
@@ -145,9 +174,15 @@ func load_save() -> void:
 	var err := config.load(SAVE_PATH)
 	if err == OK:
 		high_score = config.get_value("score", "high_score", 0)
+		var saved_history: Array = config.get_value("score", "history", [])
+		score_history.clear()
+		for item in saved_history:
+			if item is Dictionary:
+				score_history.append(item)
 
 
 func save_game() -> void:
 	var config := ConfigFile.new()
 	config.set_value("score", "high_score", high_score)
+	config.set_value("score", "history", score_history)
 	config.save(SAVE_PATH)
