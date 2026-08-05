@@ -1,7 +1,13 @@
 extends Node
 ## WordManager (Autoload)
-## Manages word data for the spelling shooter game.
-## Provides words by difficulty and tracks the current target word + progress.
+## 게임용 단어 데이터를 관리하고 현재 타겟 단어와 진행 상황을 추적합니다.
+##
+## 단어 선택은 두 가지 학습 원칙을 가중치로 결합합니다:
+##   1. 연관성 (Thematic Clustering): 현재 단어와 같은 카테고리의 단어가
+##      다음에 더 자주 등장합니다. 관련 단어를 함께 학습하면 기억이 강화됩니다.
+##      (예: SUN -> STAR -> MOON -> MARS, 모두 SPACE)
+##   2. 간격 반복 노출 (Spaced Repetition): 방금 배운 단어는 짧은 간격으로
+##      다시 등장해 기억을 굳히고, 충분히 학습된 단어는 점점 덜 등장합니다.
 
 signal word_completed(word: String)
 signal word_progress_updated(filled: String, target: String)
@@ -10,6 +16,14 @@ signal new_word_started(word: String)
 enum Difficulty { EASY, NORMAL, HARD }
 
 const ALPHABET := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# --- 단어 학습 가중치 설정 (튜닝 포인트) ---
+const ASSOCIATION_BONUS := 2.5   # 같은 카테고리 연관성 가산점
+const REPETITION_BONUS := 1.8    # 최근 학습 단어 반복 강화 가산점
+const REPETITION_GAP_MAX := 4    # 이 간격(선택 횟수) 이내에서 반복 강화 적용
+const NOVELTY_BONUS := 1.2       # 새 단어(첫 노출) 우대 가산점
+const MASTERY_THRESHOLD := 4     # 이 횟수 이상 노출 시 숙달로 간주
+const MASTERY_PENALTY := 0.3     # 숙달 단어 가중치 감소 비율(곱)
 
 # Word lists grouped by theme (space/sci-fi themed for the neon shooter vibe)
 const WORDS_EASY := [
@@ -39,7 +53,11 @@ const WORDS_HARD := [
 var current_difficulty: Difficulty = Difficulty.EASY
 var current_word: String = ""
 var _filled_indices: Array[int] = []
-var _used_words: Array[String] = []
+# 단어별 학습 통계: word -> {"exposure": int, "last_seen": int}
+# Autoload이므로 게임 재시작에도 유지되어 여러 판에 걸친 학습이 누적됩니다.
+var _word_stats: Dictionary = {}
+# 단어 선택 카운터 (간격 반복 계산용). 세션 전체에 걸쳐 단조 증가.
+var _selection_counter: int = 0
 
 
 func _ready() -> void:
@@ -62,24 +80,114 @@ func get_word_list() -> Array:
 			return WORDS_EASY.duplicate()
 
 
-## Start a new random word. Returns the word.
+## 가중치 기반으로 새 단어를 선택합니다.
+## 가중치는 (1) 카테고리 연관성, (2) 간격 반복 강화, (3) 새 단어 우대,
+## (4) 숙달 단어 감소, (5) 연속 중복 회피를 결합합니다.
 func start_new_word() -> String:
-	var words := get_word_list()
-	# Filter out recently used words
-	var available: Array = []
-	for w in words:
-		if w not in _used_words:
-			available.append(w)
-	if available.is_empty():
-		_used_words.clear()
-		available = words.duplicate()
+	var words: Array = get_word_list()
+	var current_category: String = _get_category(current_word)
 
-	current_word = available[randi() % available.size()]
-	_used_words.append(current_word)
+	# 각 단어의 가중치를 계산
+	var weights: Array[float] = []
+	weights.resize(words.size())
+	var total_weight := 0.0
+	for i in words.size():
+		var w: String = words[i]
+		var weight := _compute_weight(w, current_category)
+		weights[i] = weight
+		total_weight += weight
+
+	# 가중치 룰렛 선택
+	var chosen: String = words[0]
+	if total_weight > 0.0:
+		var roll := randf() * total_weight
+		var cumulative := 0.0
+		for i in words.size():
+			cumulative += weights[i]
+			if roll <= cumulative:
+				chosen = words[i]
+				break
+
+	# 노출 기록 및 상태 설정
+	_record_exposure(chosen)
+	current_word = chosen
 	_filled_indices.clear()
 	word_progress_updated.emit(get_display_word(), current_word)
 	new_word_started.emit(current_word)
 	return current_word
+
+
+## 단일 단어의 선택 가중치를 계산합니다.
+func _compute_weight(word: String, current_category: String) -> float:
+	# 직전 단어와 같으면 연속 중복 방지
+	if word == current_word and current_word != "":
+		return 0.0
+
+	var stats: Dictionary = _get_or_init_stats(word)
+	var exposure: int = int(stats.get("exposure", 0))
+	var last_seen: int = int(stats.get("last_seen", -999))
+
+	var weight := 1.0
+	var category := _get_category(word)
+
+	# 1) 연관성: 현재 카테고리와 같으면 가산
+	if category != "" and category == current_category:
+		weight += ASSOCIATION_BONUS
+
+	# 2) 간격 반복 강화: 최근 1~(MASTERY-1)회 노출된 단어가
+	#    적절한 간격(REPETITION_GAP_MAX 이내)이면 가산
+	if exposure >= 1 and exposure < MASTERY_THRESHOLD:
+		var gap := _selection_counter - last_seen
+		if gap >= 1 and gap <= REPETITION_GAP_MAX:
+			weight += REPETITION_BONUS
+
+	# 3) 새 단어(첫 노출) 우대
+	if exposure == 0:
+		weight += NOVELTY_BONUS
+
+	# 4) 숙달 단어는 가중치 감소
+	if exposure >= MASTERY_THRESHOLD:
+		weight *= MASTERY_PENALTY
+
+	return weight
+
+
+## 단어의 카테고리를 WordDictionary에서 조회합니다. (없으면 빈 문자열)
+func _get_category(word: String) -> String:
+	if word == "":
+		return ""
+	return String(WordDictionary.get_description(word).get("category", ""))
+
+
+## 단어의 학습 통계를 가져오거나 초기화합니다.
+func _get_or_init_stats(word: String) -> Dictionary:
+	if not _word_stats.has(word):
+		_word_stats[word] = {"exposure": 0, "last_seen": -999}
+	return _word_stats[word]
+
+
+## 단어 노출을 기록합니다. (start_new_word에서 선택 시 호출)
+func _record_exposure(word: String) -> void:
+	_selection_counter += 1
+	var stats: Dictionary = _get_or_init_stats(word)
+	stats["exposure"] = int(stats["exposure"]) + 1
+	stats["last_seen"] = _selection_counter
+
+
+## 단어의 학습 통계(복사본)를 반환합니다. (HUD/디버그용)
+func get_word_stats(word: String) -> Dictionary:
+	return _get_or_init_stats(word).duplicate()
+
+
+## 전체 학습 통계(복사본)를 반환합니다.
+func get_all_stats() -> Dictionary:
+	return _word_stats.duplicate(true)
+
+
+## 학습 통계를 완전히 초기화합니다. (메뉴의 '학습 초기화' 등에서 사용)
+func reset_learning() -> void:
+	_word_stats.clear()
+	_selection_counter = 0
 
 
 ## Returns the word with unfilled letters as underscores.
@@ -159,7 +267,8 @@ func get_word_length() -> int:
 	return current_word.length()
 
 
+## 현재 단어 진행 상태를 초기화합니다.
+## 학습 통계(_word_stats)는 유지되어 여러 게임에 걸쳐 단어 학습이 누적됩니다.
 func reset() -> void:
 	current_word = ""
 	_filled_indices.clear()
-	_used_words.clear()
