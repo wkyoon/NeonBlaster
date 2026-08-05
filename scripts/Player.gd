@@ -165,6 +165,9 @@ func _compute_ai_input() -> Vector2:
 			ai_input.y = 0.0
 
 	# Dodge nearby enemy bullets
+	# NOTE: AI is intentionally imperfect to simulate human reaction time / mistakes.
+	# ai_dodge_error (0.0=perfect, 1.0=never dodges) adds realism for balance tuning.
+	var dodge_error: float = GameManager.ai_dodge_error
 	for bullet in get_tree().get_nodes_in_group("enemy_bullet"):
 		if not is_instance_valid(bullet):
 			continue
@@ -175,6 +178,9 @@ func _compute_ai_input() -> Vector2:
 			var to_us: Vector2 = (global_position - bpos).normalized()
 			var bdir: Vector2 = bullet.direction
 			if bdir.dot(to_us) > 0.5:
+				# AI occasionally fails to dodge (simulates human imperfection)
+				if randf() < dodge_error:
+					continue
 				# Dodge perpendicular
 				var dodge_dir: Vector2 = Vector2(-bdir.y, bdir.x)
 				if dodge_dir.dot(Vector2(global_position - bpos)) < 0:

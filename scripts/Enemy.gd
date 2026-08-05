@@ -12,7 +12,7 @@ enum EnemyType { CHASER, SHOOTER, TANK, DASHER, BOMBER, SPLITTER, SHIELDER }
 @export var move_speed: float = 120.0
 @export var score_value: int = 10
 @export var fire_rate: float = 1.5
-@export var bullet_speed: float = 350.0
+@export var bullet_speed: float = 420.0
 @export var drop_chance: float = 0.15  # chance to drop a powerup
 @export var letter: String = ""  # alphabet letter displayed on this enemy
 
@@ -312,7 +312,7 @@ func _fire_spread() -> void:
 		bullet.global_position = global_position
 		var angle := (_player.global_position - global_position).angle() + (i - 1) * 0.3
 		bullet.direction = Vector2(cos(angle), sin(angle))
-		bullet.speed = bullet_speed * 0.8
+		bullet.speed = bullet_speed * 0.9
 		bullet.is_player_bullet = false
 		get_tree().current_scene.add_child(bullet)
 
@@ -325,7 +325,7 @@ func _fire_circle() -> void:
 		bullet.global_position = global_position
 		var angle := TAU * i / float(count)
 		bullet.direction = Vector2(cos(angle), sin(angle))
-		bullet.speed = bullet_speed * 0.7
+		bullet.speed = bullet_speed * 0.85
 		bullet.is_player_bullet = false
 		get_tree().current_scene.add_child(bullet)
 
@@ -338,7 +338,7 @@ func _explode_bomb() -> void:
 		bullet.global_position = global_position
 		var angle := TAU * i / float(count)
 		bullet.direction = Vector2(cos(angle), sin(angle))
-		bullet.speed = bullet_speed * 0.9
+		bullet.speed = bullet_speed
 		bullet.is_player_bullet = false
 		get_tree().current_scene.add_child(bullet)
 	EffectsManager.shake(8.0, 0.3)

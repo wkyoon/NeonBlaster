@@ -47,6 +47,8 @@ var max_revives: int = 1
 
 # Auto-play mode (AI plays the game for demonstration)
 var auto_play: bool = false
+# AI dodge error rate for benchmark realism (0.0=perfect, 0.15~avg human, 0.3~beginner)
+var ai_dodge_error: float = 0.0
 
 
 func _ready() -> void:

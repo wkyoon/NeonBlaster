@@ -18,12 +18,12 @@ signal enemy_killed(enemy_type: int, points: int)
 func _get_diff_mult() -> Dictionary:
 	match WordManager.current_difficulty:
 		WordManager.Difficulty.EASY:
-			return {"spawn_interval": 1.4, "enemy_hp": 0.85, "enemy_speed": 0.85, "wave_duration": 1.25}
+			return {"spawn_interval": 1.4, "enemy_hp": 0.85, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.8}
 		WordManager.Difficulty.NORMAL:
-			return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0}
+			return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
 		WordManager.Difficulty.HARD:
-			return {"spawn_interval": 0.65, "enemy_hp": 1.3, "enemy_speed": 1.25, "wave_duration": 0.8}
-	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0}
+			return {"spawn_interval": 0.65, "enemy_hp": 1.3, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
+	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.0}
 
 var _enemy_scene: PackedScene = preload("res://scenes/Enemy.tscn")
 var _spawn_timer: float = 0.0
@@ -84,7 +84,7 @@ func _spawn_enemy() -> void:
 		Enemy.EnemyType.SHOOTER:
 			enemy.max_health = 2 + _current_wave / 4
 			enemy.move_speed = randf_range(130.0, 180.0)
-			enemy.fire_rate = randf_range(0.8, 1.5)
+			enemy.fire_rate = randf_range(1.2, 2.2)
 			enemy.score_value = 20
 		Enemy.EnemyType.TANK:
 			enemy.max_health = 5 + _current_wave / 2
@@ -113,10 +113,11 @@ func _spawn_enemy() -> void:
 			enemy.fire_rate = randf_range(0.6, 1.0)
 			enemy.score_value = 40
 
-	# 난이도 배수 적용 (체력/속도)
+	# 난이도 배수 적용 (체력/속도/총알속도)
 	var dm := _get_diff_mult()
 	enemy.max_health = max(1, int(round(enemy.max_health * float(dm["enemy_hp"]))))
 	enemy.move_speed *= float(dm["enemy_speed"])
+	enemy.bullet_speed *= float(dm["bullet_speed"])
 
 	# Assign a letter from WordManager (target letter or random decoy)
 	enemy.letter = WordManager.get_random_letter(0.3)

@@ -44,6 +44,9 @@ func _ready() -> void:
 	_time_scale_target = 3.0 if _fast_mode else 1.0
 	Engine.time_scale = _time_scale_target
 
+	# AI 회피 실수율 (0=완벽, 0.1=숙련자, 0.2=일반, 0.3=초보)
+	GameManager.ai_dodge_error = float(_env_or("BENCH_AI_ERROR", "0.0"))
+
 	var diff_arg := _env_or("BENCH_DIFFICULTY", "all").to_upper()
 	if diff_arg == "ALL":
 		_difficulty_queue = DIFFS.duplicate()
@@ -55,6 +58,7 @@ func _ready() -> void:
 	_log("Difficulties: %s | Games/diff: %d | MaxTime: %.0fs | Seed: %s | Fast: %s (x%.1f)" % [
 		str(_difficulty_queue), _total_runs, _max_time, seed_str, _fast_mode, _time_scale_target
 	])
+	_log("AI dodge error: %.0f%% (0=perfect AI, 20=avg human)" % (GameManager.ai_dodge_error * 100))
 	_log("=".repeat(72))
 
 	_start_msec = Time.get_ticks_msec()
@@ -146,6 +150,11 @@ func _connect_signals() -> void:
 	if _player and _player.has_signal("player_died"):
 		if not _player.player_died.is_connected(_on_player_died):
 			_player.player_died.connect(_on_player_died)
+	# 피격 추적 (목숨이 줄어들 때마다 카운트)
+	if _player and _player.has_signal("player_hit"):
+		if _player.player_hit.is_connected(_on_player_hit):
+			_player.player_hit.disconnect(_on_player_hit)
+		_player.player_hit.connect(_on_player_hit)
 	_spawner = _game_scene.get_node_or_null("EnemySpawner")
 	if _spawner and _spawner.has_signal("wave_started"):
 		if not _spawner.wave_started.is_connected(_on_wave_started):
@@ -171,6 +180,8 @@ func _new_metrics() -> Dictionary:
 		"score": 0,
 		"words_completed": 0,
 		"powerups_collected": 0,
+		"hits_taken": 0,
+		"near_death": 0,
 		"deaths": 0,
 		"timeout": false,
 	}
@@ -181,11 +192,25 @@ func _on_player_died() -> void:
 		return
 	_is_ending = true
 	_metrics["deaths"] += 1
-	_log("  >> [%s] 플레이어 사망 (생존 시간: %.1fs, 웨이브: %d)" % [
-		_current_difficulty, _elapsed, _metrics["max_wave"]
+	_log("  >> [%s] 플레이어 사망 (생존 시간: %.1fs, 웨이브: %d, 피격: %d회)" % [
+		_current_difficulty, _elapsed, _metrics["max_wave"], _metrics["hits_taken"]
 	])
 	_metrics["score"] = GameManager.score
 	call_deferred("_end_run")
+
+
+func _on_player_hit() -> void:
+	_metrics["hits_taken"] += 1
+	# 목숨이 1개 남으면 near_death 카운트
+	if GameManager.lives <= 1:
+		_metrics["near_death"] += 1
+		_log("  !! [%s] 위험! 피격 %d회, 목숨 %d개 남음 (%.1fs)" % [
+			_current_difficulty, _metrics["hits_taken"], GameManager.lives, _elapsed
+		])
+	else:
+		_log("  !  [%s] 피격 (%d회, 목숨 %d) (%.1fs)" % [
+			_current_difficulty, _metrics["hits_taken"], GameManager.lives, _elapsed
+		])
 
 
 func _on_wave_started(wave: int) -> void:
@@ -239,6 +264,7 @@ func _summarize_difficulty(diff: String) -> void:
 	])
 	_log("  평균 점수: %.0f" % avg["score"])
 	_log("  평균 완성 단어: %.1f" % avg["words_completed"])
+	_log("  평균 피격: %.1f회 (위험상황: %.1f회)" % [avg["hits_taken"], avg["near_death"]])
 	var deaths := 0
 	var timeouts := 0
 	for r in results:
@@ -250,10 +276,11 @@ func _summarize_difficulty(diff: String) -> void:
 func _compute_avg(results: Array) -> Dictionary:
 	var sum := _new_metrics()
 	var n := float(results.size())
+	var keys := ["survival_time", "max_wave", "kills", "kills_chaser", "kills_shooter", "kills_tank", "score", "words_completed", "hits_taken", "near_death"]
 	for r in results:
-		for key in ["survival_time", "max_wave", "kills", "kills_chaser", "kills_shooter", "kills_tank", "score", "words_completed"]:
+		for key in keys:
 			sum[key] += r[key]
-	for key in ["survival_time", "max_wave", "kills", "kills_chaser", "kills_shooter", "kills_tank", "score", "words_completed"]:
+	for key in keys:
 		sum[key] /= n
 	return sum
 
@@ -295,16 +322,29 @@ func _finish_all() -> void:
 func _diagnose_balance(avg: Dictionary, deaths: int, timeouts: int, n: int) -> Array:
 	var lines := []
 	var survival_ratio: float = float(avg["survival_time"]) / _max_time
+	var hits: float = float(avg["hits_taken"])
+	var near_death: float = float(avg["near_death"])
 
-	# 난이도 곡선 진단
-	if survival_ratio > 0.9 and deaths == 0:
-		lines.append("⚠ 너무 쉬움: AI가 거의 죽지 않음.")
-		lines.append("  → 적 체력/스피드 증가, 스폰 간격 감소 고려.")
-	elif survival_ratio < 0.3 and deaths == n:
-		lines.append("⚠ 너무 어려움: 모든 게임에서 조기 사망.")
-		lines.append("  → 적 체력/스피드 감소, 스폰 간격 증가 고려.")
+	# 피격 기반 난이도 진단 (사망보다 정밀함)
+	# 목표: EASY ~0-2피격, NORMAL ~2-5, HARD ~5+ (AI 기준, 인간은 더 많이 맞음)
+	if hits < 1.0:
+		lines.append("○ 매우 안전 (피격 %.1f): AI가 거의 안 맞음." % hits)
+		if survival_ratio > 0.9 and deaths == 0:
+			lines.append("  → EASY로서는 적절. NORMAL/HARD면 압박 증가 필요.")
+	elif hits < 3.0:
+		lines.append("✓ 약간의 압박 (피격 %.1f, 위험 %.1f): 양호한 난이도." % [hits, near_death])
+	elif hits < 6.0:
+		lines.append("✓ 높은 압박 (피격 %.1f, 위험 %.1f): 챌린징한 난이도." % [hits, near_death])
+		if deaths == 0:
+			lines.append("  → 사망 없이 생존하지만 긴장감 있음. 양호.")
 	else:
-		lines.append("✓ 난이도 적정: 적절한 사망/생존 비율.")
+		lines.append("⚠ 매우 높은 압박 (피격 %.1f, 위험 %.1f): 사망 위험 높음." % [hits, near_death])
+		if deaths == 0:
+			lines.append("  → 운 좋게 생존. 인간 플레이어는 사망 예상.")
+
+	# 사망률 진단 (보조 지표)
+	if survival_ratio > 0.9 and deaths == 0 and hits < 1.0:
+		lines.append("  ⚠ 사망 0 + 피격 0 = 너무 쉬움.")
 
 	# 웨이브 진행 속도
 	if avg["max_wave"] < 3:
