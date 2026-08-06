@@ -1,12 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://menu_scene"]
+[gd_scene load_steps=5 format=3 uid="uid://menu_scene"]
 
 [ext_resource type="Script" path="res://scripts/MainMenu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/StarField.gd" id="2_starfield"]
+[ext_resource type="Environment" path="res://assets/neon_env.tres" id="3_env"]
 
 [sub_resource type="Theme" id="Theme_1"]
 default_font_size = 28
 
 [node name="Menu" type="Node2D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("3_env")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0

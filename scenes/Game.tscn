@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://game_scene"]
+[gd_scene load_steps=12 format=3 uid="uid://game_scene"]
 
 [ext_resource type="Script" path="res://scripts/Game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/StarField.gd" id="2_starfield"]
@@ -8,12 +8,16 @@
 [ext_resource type="Script" path="res://scripts/GameOverPanel.gd" id="6_gameover"]
 [ext_resource type="Script" path="res://scripts/PausePanel.gd" id="7_pause"]
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="8_player"]
+[ext_resource type="Environment" path="res://assets/neon_env.tres" id="9_env"]
 
 [sub_resource type="Theme" id="Theme_1"]
 default_font_size = 28
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_game")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("9_env")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0

@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://powerup_scene"]
+[gd_scene load_steps=4 format=3 uid="uid://powerup_scene"]
 
 [ext_resource type="Script" path="res://scripts/PowerUp.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://ccv3gca787vv0" path="res://assets/particles/light_01.png" id="2_glow"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 20.0
@@ -13,8 +14,11 @@ color = Color(1, 0.9, 0.2, 1)
 polygon = PackedVector2Array(0, -14, 4, -4, 14, -4, 6, 3, 9, 14, 0, 7, -9, 14, -6, 3, -14, -4, -4, -4)
 
 [node name="Glow" type="PointLight2D" parent="."]
+texture_filter = 2
 color = Color(1, 0.9, 0.2, 1)
 energy = 2.0
+texture = ExtResource("2_glow")
+texture_scale = 0.31
 range_enabled = true
 range_radius = 40.0
 
