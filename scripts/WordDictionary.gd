@@ -81,6 +81,20 @@ const WORD_DATA: Dictionary = {
 	"PHANTOM": {"category": "MAGIC", "emoji": "👻", "ko": "유령. 보이지 않는 신비한 존재예요.", "en": "A mysterious ghostly figure."},
 	"HARDCORE": {"category": "GAME", "emoji": "💀", "ko": "하드코어. 아주 어려운 최고 난이도예요.", "en": "The most difficult level of challenge."},
 	"VICTORY": {"category": "GAME", "emoji": "🏆", "ko": "승리. 게임에서 이기는 것이에요.", "en": "Winning the game!"},
+
+	# ---- 테마 스테이지용 보강 단어 ----
+	# 단어는 글자 수가 아니라 **주제**로 묶인다([ThemeStages](ThemeStages.gd) 참조).
+	# 각 테마가 스테이지 하나를 채울 만큼(최소 WORDS_PER_STAGE개) 단어를 갖도록 채운 것들이다.
+	"YELLOW": {"category": "COLOR", "emoji": "🟡", "ko": "노란색. 병아리와 바나나의 색이에요.", "en": "The color of bananas and baby chicks."},
+	"BLACK": {"category": "COLOR", "emoji": "⚫", "ko": "검정색. 밤처럼 어두운 색이에요.", "en": "The darkest color, like the night sky."},
+	"GREEN": {"category": "COLOR", "emoji": "🟢", "ko": "초록색. 풀과 나뭇잎의 색이에요.", "en": "The color of grass and leaves."},
+	"WHITE": {"category": "COLOR", "emoji": "⚪", "ko": "흰색. 눈과 구름의 색이에요.", "en": "The color of snow and clouds."},
+	"TIGER": {"category": "ANIMAL", "emoji": "🐯", "ko": "호랑이. 줄무늬가 있는 힘센 맹수예요.", "en": "A big striped cat, strong and fierce."},
+	"SNAKE": {"category": "ANIMAL", "emoji": "🐍", "ko": "뱀. 다리가 없이 기어다니는 동물이에요.", "en": "A long animal with no legs that slithers."},
+	"RACCOON": {"category": "ANIMAL", "emoji": "🦝", "ko": "너구리. 눈가에 검은 무늬가 있는 동물이에요.", "en": "A furry animal with a black mask around its eyes."},
+	"HAND": {"category": "BODY", "emoji": "✋", "ko": "손. 물건을 쥐고 만질 수 있어요.", "en": "The body part we use to grab and touch."},
+	"FOOT": {"category": "BODY", "emoji": "🦶", "ko": "발. 땅을 딛고 서게 해줘요.", "en": "The body part we stand on."},
+	"HEAD": {"category": "BODY", "emoji": "🧠", "ko": "머리. 생각하고 기억하는 곳이에요.", "en": "The body part we think with."},
 }
 
 
