@@ -107,9 +107,15 @@ func _check_letter_hit(enemy: Node) -> void:
 		AudioManager.play_sfx("enemy_die")
 		GameManager.add_score(50)
 	else:
-		# Wrong letter hit - 콤보 리셋만으로 충분한 페널티
+		# 오답 글자 — **콤보는 건드리지 않는다.** 붉은 플래시로만 알린다.
+		#
+		# 콤보는 슈터의 "처치 연쇄"이고, 글자 정확도는 단어 진행과 정답 보너스(+50점)로 이미 보상된다.
+		# 오답에 콤보 페널티를 걸면 산수가 성립하지 않는다:
+		#   적의 약 70%가 오답 글자(`WordManager.get_random_letter(0.3)`)이고 처치는 콤보 +1 뿐이라
+		#   페널티가 1보다 크면 콤보가 항상 0으로 끌려간다.
+		#   실측(20초 자동 플레이): 14킬·평균 간격 1.15초·콤보창 4.5초인데도 최종 콤보 0.
+		#   과거의 "오답 시 콤보 리셋"은 콤보를 아예 성립 불가능하게 만들고 있었다.
 		EffectsManager.flash(enemy.global_position, Color(1.0, 0.3, 0.3), 0.15)
-		GameManager.reset_combo()
 
 
 func _dissipate() -> void:

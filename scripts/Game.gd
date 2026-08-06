@@ -137,9 +137,13 @@ func _on_word_completed(word: String) -> void:
 	# Bonus score for completing a word
 	var bonus := word.length() * 100
 	GameManager.add_score(bonus)
-	# Celebration effects
-	EffectsManager.screen_flash(Color(0.2, 1.0, 0.5, 0.4), 0.5)
-	EffectsManager.shake(8.0, 0.3)
+	# 단어 완성은 콤보를 크게 밀어준다 — 학습과 액션을 묶는 핵심 연결이다.
+	# 돌파한 단계 수만큼 연출을 세게 한다(단계 돌파 자체의 연출은 HUD 가 combo_level_up 으로 처리).
+	var _levels_gained := GameManager.register_word_bonus()
+	# 축하 연출은 **단어 자체**에 몰아준다(HUD._on_word_completed).
+	# 화면 전체 플래시와 카메라 셰이크는 정작 단어를 가리고 읽기 어렵게 만들어서
+	# 아주 약하게만 남긴다 — 이 게임의 각인 대상은 단어다.
+	EffectsManager.screen_flash(Color(0.2, 1.0, 0.5, 0.12), 0.25)
 	AudioManager.play_sfx("explosion")
 	# Show the word reveal overlay (icon + pronunciation)
 	if _word_reveal:
