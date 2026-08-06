@@ -21,7 +21,9 @@ echo "======================================"
 echo "Config: games/diff=${BENCH_GAMES:-3} time=${BENCH_TIME:-60}s diff=${BENCH_DIFFICULTY:-all} fast=${BENCH_FAST:-1} ai_error=${BENCH_AI_ERROR:-0}"
 echo ""
 
-"$GODOT" --headless res://scenes/Benchmark.tscn 2>&1 | tee /tmp/neon_bench_live.log
+# --fixed-fps 는 필수다. 없으면 시드를 고정해도 결과가 재현되지 않는다
+# (실측: 동일 시드 2회에 생존 37.05s vs 28.59s, 킬 35 vs 24).
+"$GODOT" --headless --fixed-fps "${BENCH_FPS:-60}" res://scenes/Benchmark.tscn 2>&1 | tee /tmp/neon_bench_live.log
 
 echo ""
 echo "======================================"

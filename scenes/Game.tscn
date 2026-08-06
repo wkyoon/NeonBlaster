@@ -32,10 +32,10 @@ position = Vector2(360, 960)
 
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("3_spawner")
-initial_spawn_interval = 1.5
+initial_spawn_interval = 1.1
 min_spawn_interval = 0.3
-difficulty_scale = 0.95
-wave_duration = 15.0
+difficulty_scale = 0.88
+wave_duration = 11.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 layer = 10

@@ -459,6 +459,14 @@ func _drop_powerup() -> void:
 		powerup.type = GameManager.PowerUpType.LASER      # 10% rare
 	else:
 		powerup.type = GameManager.PowerUpType.TIME_SLOW  # 6%  legendary
+
+	# EASY 에서는 시간 감속(TIME_SLOW)을 드롭하지 않는다.
+	# 이 게임의 타겟은 속도감을 즐기는 유저인데, 가장 느린 난이도에서
+	# time_scale 0.3 을 4초간 걸면 체감이 더 늘어진다. 6%는 LIGHTNING 으로 넘긴다.
+	if powerup.type == GameManager.PowerUpType.TIME_SLOW \
+			and WordManager.current_difficulty == WordManager.Difficulty.EASY:
+		powerup.type = GameManager.PowerUpType.LIGHTNING
+
 	powerup.global_position = global_position
 	# Use call_deferred to avoid physics query flush error
 	get_tree().current_scene.add_child.call_deferred(powerup)

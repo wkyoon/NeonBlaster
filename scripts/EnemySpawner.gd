@@ -5,10 +5,12 @@ signal wave_started(wave: int)
 signal wave_cleared(wave: int)
 signal enemy_killed(enemy_type: int, points: int)
 
-@export var initial_spawn_interval: float = 1.5
+## ⚠️ 이 네 값은 Game.tscn 의 EnemySpawner 노드가 **덮어쓴다**.
+## 여기만 고치면 게임에 반영되지 않는다 — 반드시 Game.tscn 값도 같이 수정할 것.
+@export var initial_spawn_interval: float = 1.1
 @export var min_spawn_interval: float = 0.3
-@export var difficulty_scale: float = 0.95  # multiplier per wave (faster ramp)
-@export var wave_duration: float = 15.0
+@export var difficulty_scale: float = 0.88  # 웨이브당 스폰 간격 배수 (작을수록 빠른 램프)
+@export var wave_duration: float = 11.0
 
 # 난이도별 배수 (WordManager.current_difficulty 기반)
 # spawn_interval: 스폰 간격 배수 (작을수록 빈번)
@@ -18,11 +20,18 @@ signal enemy_killed(enemy_type: int, points: int)
 func _get_diff_mult() -> Dictionary:
 	match WordManager.current_difficulty:
 		WordManager.Difficulty.EASY:
-			return {"spawn_interval": 1.4, "enemy_hp": 0.85, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.8}
+			# EASY 도 "속도감" 타겟에 맞춰 스폰 간격 배수를 1.4 → 1.05 로 (동시 적 0.9마리는 자극이 없다)
+			# EASY 도 방심하면 죽어야 한다(목표 사망률 25~45%).
+			# 속도 상향(0.85→1.05)은 실패했다 — 적이 화면을 빨리 지나가 잔존이 줄어 밀도가 2.7→2.3으로
+			# 떨어지면서 위협 증가분이 상쇄됐다. 그래서 속도는 되돌리고 체력을 올린다.
+			# 체력↑은 잔존 시간을 늘려 위협과 밀도를 동시에 올린다(처치 1.6초는 너무 빨랐다).
+			return {"spawn_interval": 1.05, "enemy_hp": 0.9, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.8}
 		WordManager.Difficulty.NORMAL:
-			return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
+			return {"spawn_interval": 1.0, "enemy_hp": 0.7, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
 		WordManager.Difficulty.HARD:
-			return {"spawn_interval": 0.65, "enemy_hp": 1.3, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
+			# HARD 는 밀도가 아니라 속도·체력·탄속으로 어려워야 한다.
+			# 배수 0.65(간격 0.715s)는 동시 적 4.9마리를 만들어 16초 만에 죽고 단어를 0개 완성했다.
+			return {"spawn_interval": 0.95, "enemy_hp": 0.9, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
 	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.0}
 
 var _enemy_scene: PackedScene = preload("res://scenes/Enemy.tscn")
