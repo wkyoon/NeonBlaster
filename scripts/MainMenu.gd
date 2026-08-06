@@ -122,7 +122,28 @@ func _create_bottom_buttons() -> void:
 	story_btn.pressed.connect(_on_story)
 	container.add_child(story_btn)
 
+	_create_sfx_lab_button()
 	_create_score_panel()
+
+
+## SFX 후보 비교 화면 진입 버튼 (개발용). 우측 상단 구석에 작게 배치.
+func _create_sfx_lab_button() -> void:
+	var btn := Button.new()
+	btn.name = "SfxLabButton"
+	btn.text = "🔊 SFX"
+	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	btn.position = Vector2(-104, 14)
+	btn.custom_minimum_size = Vector2(90, 38)
+	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_color_override("font_color", Color(0.55, 0.62, 0.8))
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.pressed.connect(_on_sfx_lab)
+	add_child(btn)
+
+
+func _on_sfx_lab() -> void:
+	AudioManager.play_sfx("button")
+	SceneManager.goto_sfx_lab()
 
 
 func _create_score_panel() -> void:

@@ -275,6 +275,11 @@ func stop_music() -> void:
 		_music_player.stop()
 
 
+## BGM 이 실제로 재생 중인지 (SFX Lab 등 외부 화면에서 토글 표시용).
+func is_music_playing() -> bool:
+	return _music_player != null and _music_player.playing
+
+
 ## Convenience helper: generate (once, cached) and play the procedural BGM.
 func play_bgm() -> void:
 	if _bgm_stream == null:
