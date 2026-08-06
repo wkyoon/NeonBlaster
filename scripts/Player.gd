@@ -4,6 +4,7 @@ extends CharacterBody2D
 signal player_died
 signal player_hit
 signal weapon_changed(weapon_level: int)
+signal powerup_collected(type: int)
 signal shield_activated(duration: float)
 signal bomb_triggered
 
@@ -318,6 +319,7 @@ func _on_fire_timer() -> void:
 # ---------------- PowerUp Collection ----------------
 
 func collect_powerup(type: int) -> void:
+	powerup_collected.emit(type)
 	match type:
 		GameManager.PowerUpType.RAPID:
 			_activate_rapid_fire(6.0)

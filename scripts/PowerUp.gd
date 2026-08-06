@@ -77,7 +77,7 @@ func _on_body_entered(body: Node) -> void:
 		collected.emit(type)
 		if body.has_method("collect_powerup"):
 			body.collect_powerup(type)
-		AudioManager.play_sfx("enemy_die")
+		AudioManager.play_sfx("powerup")
 		EffectsManager.flash(global_position, _sprite.color, 0.1)
 		queue_free()
 
