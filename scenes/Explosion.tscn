@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://explosion_scene"]
 
 [ext_resource type="Script" path="res://scripts/Explosion.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://ccv3gca787vv0" path="res://assets/particles/light_01.png" id="2_glow"]
+[ext_resource type="Texture2D" uid="uid://ejxxtmj6vpvy" path="res://assets/particles/glow_soft.png" id="2_glow"]
 [ext_resource type="Texture2D" uid="uid://ct2trs7l6g2wd" path="res://assets/particles/spark_04.png" id="3_spark"]
 
 [sub_resource type="Gradient" id="Gradient_fade"]

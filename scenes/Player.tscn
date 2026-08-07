@@ -1,11 +1,16 @@
-[gd_scene load_steps=6 format=3 uid="uid://player_scene"]
+[gd_scene load_steps=7 format=3 uid="uid://player_scene"]
 
 [ext_resource type="Script" path="res://scripts/Player.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://ccv3gca787vv0" path="res://assets/particles/light_01.png" id="2_glow"]
+[ext_resource type="Texture2D" uid="uid://ejxxtmj6vpvy" path="res://assets/particles/glow_soft.png" id="2_glow"]
 
 [sub_resource type="Gradient" id="Gradient_engine"]
 offsets = PackedFloat32Array(0, 1)
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+; 분사 입자가 멀어질수록 작아져 화염처럼 좁아진다(뚝뚝 끊긴 방울 느낌 제거).
+[sub_resource type="Curve" id="Curve_thrust"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.15), 0.0, 0.0, 0, 0]
+point_count = 2
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 18.0
@@ -53,16 +58,19 @@ one_shot = true
 texture_filter = 2
 position = Vector2(0, 18)
 emitting = false
-amount = 12
+amount = 30
 texture = ExtResource("2_glow")
-lifetime = 0.3
+lifetime = 0.45
 direction = Vector2(0, 1)
-spread = 15.0
+spread = 18.0
 gravity = Vector2(0, 0)
-initial_velocity_min = 50.0
-initial_velocity_max = 120.0
-scale_amount_min = 0.05
-scale_amount_max = 0.12
+initial_velocity_min = 90.0
+initial_velocity_max = 170.0
+damping_min = 120.0
+damping_max = 220.0
+scale_amount_min = 0.035
+scale_amount_max = 0.085
+scale_amount_curve = SubResource("Curve_thrust")
 color = Color(0.3, 0.9, 1, 0.8)
 color_ramp = SubResource("Gradient_engine")
 

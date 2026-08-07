@@ -4,7 +4,10 @@ extends Node2D
 ## 색은 전부 흰색 텍스처 + 부모 modulate 로 결정되므로 호출부에서 네온 색을 그대로 넘기면 된다.
 
 const STAR_TEXTURE: Texture2D = preload("res://assets/particles/star_04.png")
-const GLOW_TEXTURE: Texture2D = preload("res://assets/particles/light_01.png")
+## ⚠️ Kenney 의 light_01 은 동심원(링) 아티팩트가 있어 **작게 그리면 도넛처럼 보인다.**
+## 큰 폭발에서는 안 보이지만 라이트 쿠키·엔진 분사처럼 작은 입자에서 조잡하게 드러났다.
+## glow_soft 는 알파가 중심 255 → 가장자리 0 으로 단조 감소하는 순수 방사형 그라디언트다.
+const GLOW_TEXTURE: Texture2D = preload("res://assets/particles/glow_soft.png")
 
 @onready var _particles: CPUParticles2D = $Particles
 @onready var _sparks: CPUParticles2D = $Sparks

@@ -11,6 +11,9 @@ var _age: float = 0.0
 var _consumed: bool = false  # 충돌 후 중복 처리 방지
 
 @onready var _sprite: Polygon2D = $Sprite
+## ⚠️ Trail 은 `top_level = true` 여야 한다.
+## Line2D 의 점은 로컬 좌표인데 이 코드는 global_position 을 넣는다. top_level 이 없으면
+## 총알의 이동이 이중으로 더해져 트레일이 화면 밖에 그려진다(그래서 여태 안 보였다).
 @onready var _trail: Line2D = $Trail
 @onready var _glow: PointLight2D = $Glow
 
@@ -44,7 +47,7 @@ func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 	# Update trail
 	_trail.add_point(global_position)
-	if _trail.get_point_count() > 6:
+	if _trail.get_point_count() > 4:
 		_trail.remove_point(0)
 	# Despawn if off-screen
 	var screen := get_viewport_rect()
@@ -111,7 +114,7 @@ func _check_letter_hit(enemy: Node) -> void:
 		#
 		# 콤보는 슈터의 "처치 연쇄"이고, 글자 정확도는 단어 진행과 정답 보너스(+50점)로 이미 보상된다.
 		# 오답에 콤보 페널티를 걸면 산수가 성립하지 않는다:
-		#   적의 약 70%가 오답 글자(`WordManager.get_random_letter(0.3)`)이고 처치는 콤보 +1 뿐이라
+		#   적의 절반 이상이 오답 글자(`WordManager.get_random_letter(0.45)`)이고 처치는 콤보 +1 뿐이라
 		#   페널티가 1보다 크면 콤보가 항상 0으로 끌려간다.
 		#   실측(20초 자동 플레이): 14킬·평균 간격 1.15초·콤보창 4.5초인데도 최종 콤보 0.
 		#   과거의 "오답 시 콤보 리셋"은 콤보를 아예 성립 불가능하게 만들고 있었다.

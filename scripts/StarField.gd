@@ -10,6 +10,9 @@ extends Node2D
 @export var star_count: int = 80
 @export var speed: float = 60.0
 
+## 부드러운 방사형 글로우. 알파가 중심에서 가장자리로 단조 감소해 경계(고리)가 생기지 않는다.
+const GLOW_TEXTURE: Texture2D = preload("res://assets/particles/glow_soft.png")
+
 ## 모티프별 입자 수 배율 — 그리기 호출이 많은 모양은 개수를 줄인다.
 const MOTIF_DENSITY := {
 	ThemeStages.Motif.STAR: 1.0,   # draw 1회
@@ -102,11 +105,12 @@ func _draw_motif(star: Dictionary, c: Color) -> void:
 				draw_circle(p, s, c)
 
 		ThemeStages.Motif.BLOB:
-			# 색깔 — 번지는 색 방울(바깥 흐림 + 밝은 코어)
-			var outer := c
-			outer.a = c.a * 0.35
-			draw_circle(p, s * 2.2, outer)
-			draw_circle(p, s * 0.9, c)
+			# 색깔 — 번지는 색 방울.
+			# ⚠️ 예전에는 흐린 큰 원 + 밝은 작은 원을 겹쳐 그렸는데, 작은 크기에서
+			#    두 원의 경계가 드러나 **도넛(고리)처럼** 보였다. 부드러운 방사형 텍스처
+			#    한 장을 그려서 경계가 생기지 않게 한다.
+			var r: float = s * 3.0
+			draw_texture_rect(GLOW_TEXTURE, Rect2(p - Vector2(r, r), Vector2(r * 2, r * 2)), false, c)
 
 		ThemeStages.Motif.PAW:
 			# 동물 — 발바닥(큰 패드 + 발가락 3개)
