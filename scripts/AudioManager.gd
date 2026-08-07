@@ -459,9 +459,15 @@ func _get_tts_voice() -> String:
 	return _tts_voice_id
 
 
-## 단어를 문장 컨텍스트로 감싸서 TTS가 단어로 발음하도록 합니다.
-## macOS AVSpeechSynthesizer는 짧은 단어(arm, bat, cat 등)를 약어로 인식해
-## 스펠링(A-R-M)으로 읽는 문제가 있습니다. 문장 안에 넣으면 단어로 발음합니다.
+## 단어를 문장 컨텍스트로 감싸고 **소문자로** 바꿔서 TTS가 단어로 발음하도록 합니다.
+##
+## ⚠️ 문장으로 감싸는 것만으로는 부족하다. 단어가 전부 대문자면 TTS 가 약어로 인식해
+##    스펠링으로 읽는다. 짧은 단어에서만 발생하며 실측으로 확인했다(voice=Samantha):
+##      "The word is BAT."  1.161초  ← B-A-T 로 스펠링
+##      "The word is bat."  0.883초  ← 단어로 발음
+##      "The word is ARM."  1.057초 / "arm." 0.883초
+##      "The word is YELLOW." 0.941초 = "yellow." 0.941초  (긴 단어는 영향 없음)
+##    단어 데이터는 대문자로 저장되므로(WordDictionary) 발화 직전에 소문자로 변환한다.
 func speak_word(word: String) -> void:
 	if not tts_enabled:
 		return
@@ -474,7 +480,7 @@ func speak_word(word: String) -> void:
 	DisplayServer.tts_stop()
 	# 문장 컨텍스트 추가 + 단어가 단어로 발음되도록 유도
 	# 볼륨 100 (최대), 피치 1.0, 속도 0.9 (자연스러운 속도)
-	var phrase := "The word is " + word + "."
+	var phrase := "The word is " + word.to_lower() + "."
 	DisplayServer.tts_speak(phrase, voice, 100.0, 1.0, 0.9, false)
 	print("[AudioManager] TTS speaking: ", phrase)
 
