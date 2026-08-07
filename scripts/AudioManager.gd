@@ -11,6 +11,7 @@ var _bus_music := "Music"
 
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _music_player: AudioStreamPlayer = null
+var _voice_player: AudioStreamPlayer = null
 var _bgm_stream: AudioStreamWAV = null
 var _next_player_index: int = 0
 const MAX_SFX_PLAYERS := 8
@@ -71,6 +72,10 @@ func _setup_players() -> void:
 	_music_player = AudioStreamPlayer.new()
 	_music_player.bus = _bus_music
 	add_child(_music_player)
+	# 단어 음성 안내 전용 플레이어. SFX 와 섞이면 총소리에 묻혀 안 들린다.
+	_voice_player = AudioStreamPlayer.new()
+	_voice_player.bus = _bus_sfx
+	add_child(_voice_player)
 
 
 # SFX definitions cache
@@ -459,30 +464,47 @@ func _get_tts_voice() -> String:
 	return _tts_voice_id
 
 
-## 단어를 문장 컨텍스트로 감싸고 **소문자로** 바꿔서 TTS가 단어로 발음하도록 합니다.
+## 미리 구운 음성 파일이 있는 디렉터리. 파일명은 대문자 단어 + .wav (tools/gen_voice.sh 가 생성).
+const VOICE_DIR := "res://assets/voice/"
+
+
+## 단어 음성 안내를 재생합니다.
 ##
-## ⚠️ 문장으로 감싸는 것만으로는 부족하다. 단어가 전부 대문자면 TTS 가 약어로 인식해
-##    스펠링으로 읽는다. 짧은 단어에서만 발생하며 실측으로 확인했다(voice=Samantha):
-##      "The word is BAT."  1.161초  ← B-A-T 로 스펠링
-##      "The word is bat."  0.883초  ← 단어로 발음
-##      "The word is ARM."  1.057초 / "arm." 0.883초
-##      "The word is YELLOW." 0.941초 = "yellow." 0.941초  (긴 단어는 영향 없음)
-##    단어 데이터는 대문자로 저장되므로(WordDictionary) 발화 직전에 소문자로 변환한다.
+## 1순위: 미리 구운 음성 파일(assets/voice/WORD.wav).
+##   대사는 "The word is black." 같은 안내 문구가 아니라 **단어를 실제로 쓰는 문장**이다
+##   (WordDictionary 의 phrase, 예: "A black cat is sleeping."). 문맥 속 발음이 학습에 낫다.
+##   파일로 구우면 기기 TTS 엔진마다 발음이 달라지는 문제도 사라진다.
+##   ⚠️ 나중에 **진짜 성우 녹음**으로 바꾸려면 같은 파일명으로 덮어쓰기만 하면 된다.
+##
+## 2순위(폴백): 파일이 없으면 기존 TTS. 단어가 전부 대문자면 TTS 가 약어로 인식해
+##   스펠링으로 읽으므로(실측: "BAT." 1.161초 vs "bat." 0.883초) 소문자로 변환해서 넘긴다.
 func speak_word(word: String) -> void:
 	if not tts_enabled:
 		return
+
+	var clip_path := VOICE_DIR + word.to_upper() + ".wav"
+	if _voice_player != null and ResourceLoader.exists(clip_path):
+		var stream := load(clip_path) as AudioStream
+		if stream != null:
+			DisplayServer.tts_stop()  # 폴백 TTS 가 겹쳐 나오지 않게
+			_voice_player.stop()
+			_voice_player.stream = stream
+			_voice_player.volume_db = linear_to_db(_sfx_volume)
+			_voice_player.play()
+			return
+
 	if not DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
 		return
 	var voice := _get_tts_voice()
 	if voice == "":
 		return
-	# 진행 중인 TTS 정지 후 새 발화
 	DisplayServer.tts_stop()
-	# 문장 컨텍스트 추가 + 단어가 단어로 발음되도록 유도
-	# 볼륨 100 (최대), 피치 1.0, 속도 0.9 (자연스러운 속도)
-	var phrase := "The word is " + word.to_lower() + "."
+	# 파일이 없는 단어(도감의 미수록 단어 등)는 문장 컨텍스트 + 소문자로 읽어준다.
+	var phrase := WordDictionary.get_phrase(word)
+	if phrase == "":
+		phrase = "The word is " + word.to_lower() + "."
 	DisplayServer.tts_speak(phrase, voice, 100.0, 1.0, 0.9, false)
-	print("[AudioManager] TTS speaking: ", phrase)
+	print("[AudioManager] TTS fallback: ", phrase)
 
 
 # ---------------- Persistence ----------------
