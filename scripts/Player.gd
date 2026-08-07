@@ -48,6 +48,10 @@ var _invincible_timer: float = 0.0
 
 func _ready() -> void:
 	_screen_size = get_viewport_rect().size
+	# 시작 위치는 화면 비율로 잡는다(함정 3). Game.tscn 의 Vector2(360, 960) 은 720x1280 전용이라
+	# 세로가 긴 기기(예: 1080x2316 = 1:2.14)에서는 화면의 62% 지점 — 거의 한가운데에 떠 있었다.
+	# 부활 경로(Game._respawn_player)가 쓰는 0.75 와 같은 비율로 맞춘다.
+	global_position = Vector2(_screen_size.x * 0.5, _screen_size.y * 0.75)
 	_base_fire_rate = fire_rate
 	_fire_timer.wait_time = 1.0 / fire_rate
 	_fire_timer.timeout.connect(_on_fire_timer)
