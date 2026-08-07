@@ -51,8 +51,9 @@ for word, phrase in pairs:
         continue
     aiff = pathlib.Path("/tmp") / ("_voice_%s.aiff" % word)
     subprocess.run(["say", "-v", voice, "-r", rate, "-o", str(aiff), phrase], check=True)
-    # Godot 이 바로 임포트할 수 있는 16bit PCM WAV 로 변환
-    subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@22050", "-c", "1",
+    # 16kHz 모노 16bit PCM. 음성 대역에는 16kHz 로 충분하고 22.05kHz 대비 26% 작다.
+    # (Godot 은 임포트 시 QOA 로 한 번 더 압축한다 — 실제 APK 크기는 여기서 다시 5배 준다)
+    subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@16000", "-c", "1",
                     str(aiff), str(wav)], check=True)
     aiff.unlink(missing_ok=True)
     made += 1
