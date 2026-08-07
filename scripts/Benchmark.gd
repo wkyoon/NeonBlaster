@@ -35,6 +35,9 @@ const TARGET_AI_ERROR := 0.15
 ##    이전 목표의 HARD `hits 5~12` 는 목숨 3개 시절 설정이라 **도달 불가능**했다.
 ##    목숨 수를 바꾸면 이 목표도 반드시 함께 조정할 것.
 ##    또한 사망이 확실한 난이도에서 hits 는 사실상 목숨 수만 보고하므로 난이도 판별력이 없다.
+##    ⚠️ hits 목표와 death_rate 목표는 **서로 정합해야 한다.** 목숨 5개에서 사망 = 피격 5회이므로
+##       사망률 25~45%를 만족하려면 평균 피격이 4 근처여야 한다. 예전 EASY 목표(hits 1~3 +
+##       사망률 25~45%)는 양립 불가능한 조합이었다 — 목숨 수를 바꿀 때 함께 못 고친 것이다.
 ##    (실측: HARD 5게임 중 4게임이 정확히 hits=5=MAX_LIVES, 1게임은 hits=10 이상치)
 ##    HARD 상한을 6.0 으로 넉넉히 둔 이유는 부활분과 이 이상치 때문이다.
 ##
@@ -42,7 +45,7 @@ const TARGET_AI_ERROR := 0.15
 ## (EASY 사망률 0~25%, NORMAL 20~55%)보다 전반적으로 상향했다.
 ## 특히 EASY 는 사망률 0%가 정상으로 판정되던 문제가 있었다 — 자극이 없으면 이탈한다.
 const DIFFICULTY_TARGETS := {
-	"EASY":   { "hits": [1.0, 3.0], "death_rate": [0.25, 0.45], "survival_ratio": 0.65 },
+	"EASY":   { "hits": [2.0, 4.0], "death_rate": [0.25, 0.45], "survival_ratio": 0.65 },
 	"NORMAL": { "hits": [3.0, 5.0], "death_rate": [0.45, 0.75], "survival_ratio": 0.35 },
 	"HARD":   { "hits": [4.0, 6.0], "death_rate": [0.75, 1.00], "survival_ratio": 0.15 },
 }

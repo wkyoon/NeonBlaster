@@ -20,14 +20,24 @@ signal enemy_killed(enemy_type: int, points: int)
 func _get_diff_mult() -> Dictionary:
 	match WordManager.current_difficulty:
 		WordManager.Difficulty.EASY:
-			# EASY 도 "속도감" 타겟에 맞춰 스폰 간격 배수를 1.4 → 1.05 로 (동시 적 0.9마리는 자극이 없다)
-			# EASY 도 방심하면 죽어야 한다(목표 사망률 25~45%).
-			# 속도 상향(0.85→1.05)은 실패했다 — 적이 화면을 빨리 지나가 잔존이 줄어 밀도가 2.7→2.3으로
-			# 떨어지면서 위협 증가분이 상쇄됐다. 그래서 속도는 되돌리고 체력을 올린다.
-			# 체력↑은 잔존 시간을 늘려 위협과 밀도를 동시에 올린다(처치 1.6초는 너무 빨랐다).
-			return {"spawn_interval": 1.05, "enemy_hp": 0.9, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.8}
+			# EASY 도 방심하면 죽어야 한다("너무 쉬우면 이탈한다"가 이 게임의 전제).
+			# 원본은 사망률 0%·동시 적 0.9마리로 자극이 전혀 없었다.
+			#
+			# 튜닝 기록 (전부 15게임·오차 0.15·fixed-fps 측정):
+			#  · 적 속도 상향(0.85→1.05)은 **실패**. 적이 화면을 빨리 지나가 잔존이 줄어
+			#    밀도가 2.7→2.3으로 떨어지면서 위협 증가분이 상쇄됐다. 그래서 0.85 로 되돌렸다.
+			#  · 체력 0.6→0.9 는 성공. 잔존 시간이 늘어 위협과 밀도를 동시에 올린다.
+			#    ⚠️ 다만 이 값(0.9)은 NORMAL(0.7)보다 높아 "EASY 적이 더 단단한" 역전 상태다.
+			#  · 적 탄속은 **계단형 응답**이라 미세 조정에 못 쓴다:
+			#      0.80 → 사망률 13% / 0.85 → 13% / 0.90 → 53% / 1.00 → 53%
+			#    AI 회피 모델이 특정 탄속에서 갑자기 못 피하는 것으로 보인다. 0.85 로 고정.
+			#  · 최종 미세 조정은 밀도로 했다: 1.05(13%) → 0.98(**47%**).
+			#    47%는 목표 상한 45%를 2%p 넘지만 15게임 해상도가 6.7%p(한 게임)라 경계값이다.
+			return {"spawn_interval": 0.98, "enemy_hp": 0.9, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.85}
 		WordManager.Difficulty.NORMAL:
-			return {"spawn_interval": 1.0, "enemy_hp": 0.7, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
+			# NORMAL 사망률이 40%로 목표(45~75%) 하한에 미달하고 EASY(20%)와 간격이 좁았다.
+			# 밀도만 올려 분리를 확보한다.
+			return {"spawn_interval": 0.9, "enemy_hp": 0.7, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
 		WordManager.Difficulty.HARD:
 			# HARD 는 밀도가 아니라 속도·체력·탄속으로 어려워야 한다.
 			# 배수 0.65(간격 0.715s)는 동시 적 4.9마리를 만들어 16초 만에 죽고 단어를 0개 완성했다.
