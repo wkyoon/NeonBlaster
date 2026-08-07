@@ -28,11 +28,26 @@ func _ready() -> void:
 
 
 ## Create difficulty selection buttons (Easy / Normal / Hard)
+## PRESET_CENTER_BOTTOM 은 **앵커만** 중앙에 두고 컨트롤의 크기는 고려하지 않는다.
+## 그래서 컨테이너의 왼쪽 끝이 화면 중앙에 붙어 오른쪽으로 넘쳐 나간다.
+## 실측(720 폭): 하단 버튼 행이 x 360~999 로 STORY 버튼이 통째로 화면 밖이었고,
+## 난이도 버튼과 AUTO PLAY 버튼도 같은 이유로 오른쪽으로 밀려 서로 겹쳤다.
+## 크기가 정해질 때마다 폭의 절반만큼 왼쪽으로 당겨 실제로 가운데 정렬한다.
+func _center_horizontally(ctl: Control) -> void:
+	var apply := func() -> void:
+		# position 은 앵커 기준이 아니라 부모 원점 기준 절대값이다.
+		# (-size/2 로 두면 화면 중앙이 아니라 x=0 을 중심으로 몰린다 — 실제로 겪음)
+		ctl.position.x = (get_viewport_rect().size.x - ctl.size.x) * 0.5
+	apply.call()
+	ctl.resized.connect(apply)
+
+
 func _create_difficulty_selector() -> void:
 	_difficulty_buttons = VBoxContainer.new()
 	_difficulty_buttons.name = "DifficultySelector"
 	_difficulty_buttons.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_difficulty_buttons.position.y = -180
+	_difficulty_buttons.position.y = -320
+	_center_horizontally(_difficulty_buttons)
 	_difficulty_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	_difficulty_buttons.add_theme_constant_override("separation", 10)
 	add_child(_difficulty_buttons)
@@ -87,7 +102,8 @@ func _create_bottom_buttons() -> void:
 	var container := HBoxContainer.new()
 	container.name = "BottomButtons"
 	container.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	container.position.y = -40
+	container.position.y = -145
+	_center_horizontally(container)
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
 	container.add_theme_constant_override("separation", 12)
 	add_child(container)
@@ -132,7 +148,8 @@ func _create_sfx_lab_button() -> void:
 	btn.name = "SfxLabButton"
 	btn.text = "🔊 SFX"
 	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	btn.position = Vector2(-104, 14)
+	# 오디오 토글(y 20~64) 아래로. 예전 위치(y14)는 TTS 버튼과 겹쳤다.
+	btn.position = Vector2(-104, 74)
 	btn.custom_minimum_size = Vector2(90, 38)
 	btn.add_theme_font_size_override("font_size", 14)
 	btn.add_theme_color_override("font_color", Color(0.55, 0.62, 0.8))
@@ -246,7 +263,8 @@ func _create_auto_play_toggle() -> void:
 	btn.name = "AutoPlayButton"
 	btn.text = "▶ AUTO PLAY: OFF"
 	btn.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	btn.position.y = -135
+	btn.position.y = -210
+	_center_horizontally(btn)
 	btn.custom_minimum_size = Vector2(280, 50)
 	btn.add_theme_font_size_override("font_size", 18)
 	btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
