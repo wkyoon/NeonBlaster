@@ -325,15 +325,35 @@ func _hide_dummy_banner() -> void:
 func _show_dummy_fullscreen(title: String, subtitle: String, bg: Color, tag: String) -> void:
 	if _dummy_layer == null:
 		_create_dummy_overlay()
+	# 화면 전체를 광고 색으로 덮지 않는다.
+	# 예전에는 full-rect 패널을 alpha 0.96 으로 칠해서 게임오버 화면이 **초록 물감으로 덮여**
+	# GAME OVER·점수·버튼이 거의 보이지 않았다. 어두운 스크림 + 가운데 카드로 바꾼다.
 	var panel := Panel.new()
 	panel.name = "Dummy" + tag.capitalize()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.add_theme_stylebox_override("panel", _make_ad_stylebox(Color(bg.r, bg.g, bg.b, 0.96), Color(0.3, 1.0, 0.9)))
+	panel.add_theme_stylebox_override("panel",
+		_make_ad_stylebox(Color(0.02, 0.02, 0.05, 0.72), Color(0, 0, 0, 0)))
+
+	var card := Panel.new()
+	card.name = "Card"
+	card.set_anchors_preset(Control.PRESET_CENTER)
+	card.anchor_left = 0.5
+	card.anchor_right = 0.5
+	card.anchor_top = 0.5
+	card.anchor_bottom = 0.5
+	card.offset_left = -260.0
+	card.offset_right = 260.0
+	card.offset_top = -140.0
+	card.offset_bottom = 140.0
+	card.add_theme_stylebox_override("panel",
+		_make_ad_stylebox(Color(bg.r, bg.g, bg.b, 0.96), Color(0.3, 1.0, 0.9)))
+	panel.add_child(card)
+
 	var vbox := VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", 16)
-	panel.add_child(vbox)
+	card.add_child(vbox)
 	var t := Label.new()
 	t.text = title
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
