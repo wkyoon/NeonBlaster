@@ -87,10 +87,15 @@ func _create_word_label() -> void:
 	_word_label.add_theme_constant_override("shadow_offset_x", 3)
 	_word_label.add_theme_constant_override("shadow_offset_y", 3)
 	_word_label.add_theme_constant_override("outline_size", 10)
-	_word_label.set_anchors_preset(Control.PRESET_CENTER)
-	_word_label.position.y = 100
-	_word_label.size = Vector2(600, 100)
-	_word_label.position.x = -300
+	# ⚠️ 이 노드(WordReveal)의 size 는 실제로 (0,0) 이다 — FULL_RECT 프리셋이 적용되지 않는다.
+	#    그래서 자식의 PRESET_CENTER 는 "화면 중앙"이 아니라 **원점(0,0)** 을 기준으로 잡는다.
+	#    예전에는 여기에 position.x = -300 을 더해 라벨이 화면 x −300~+300 에 놓였고,
+	#    단어 중심이 화면 왼쪽 끝이라 **글자가 절반 잘려 나갔다**(BLUE→"UE", YELLOW→"LOW").
+	#    아이콘(_icon_container)처럼 뷰포트 크기로 직접 배치해야 한다.
+	var vp := get_viewport_rect().size
+	var label_size := Vector2(vp.x, 100.0)
+	_word_label.size = label_size
+	_word_label.position = Vector2(0.0, vp.y / 2.0 + 100.0)
 	add_child(_word_label)
 
 
