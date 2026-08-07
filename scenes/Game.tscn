@@ -34,7 +34,7 @@ position = Vector2(360, 960)
 script = ExtResource("3_spawner")
 initial_spawn_interval = 1.1
 min_spawn_interval = 0.3
-difficulty_scale = 0.88
+difficulty_scale = 0.91
 wave_duration = 11.0
 
 [node name="HUD" type="CanvasLayer" parent="."]

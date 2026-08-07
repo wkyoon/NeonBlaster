@@ -11,7 +11,9 @@ class_name ThemeStages
 ##   3. motif 는 [StarField](StarField.gd) 가 그릴 수 있는 값이어야 한다.
 
 ## 한 테마 스테이지를 클리어하는 데 필요한 단어 수.
-const WORDS_PER_STAGE := 5
+## ⚠️ 5는 도달 불가능했다 — 실측(EASY·완벽 AI) 첫 단어 34.8초, 단어당 7~16초라
+##    5단어 완주에 75~115초가 필요한데 73.5초에 사망해 테마 전환을 한 번도 못 봤다.
+const WORDS_PER_STAGE := 3
 
 ## 파티클 모티프 종류 — StarField._draw_motif() 가 해석한다.
 enum Motif { STAR, BLOB, PAW, LEAF, PULSE, GEAR }

@@ -25,7 +25,9 @@ const MAX_LIVES := 5
 ## 콤보가 성립조차 하지 않았다** — 18초 자동 플레이에서 콤보가 1~2에 머물고 배수가 x1.0을 못 벗어났다.
 ## 처치 간격의 약 2배로 잡아야 연쇄가 유지된다.
 const COMBO_WINDOW := 4.5  # seconds before combo resets
-const COMBO_STEP := 5  # kills needed per multiplier level
+## 배수 1단계에 필요한 처치 수. 5는 34.8초에 상한 x5.0 에 도달해 이후 콤보 118까지 쌓여도
+## 배수가 고정됐다 — 콤보 보상을 단어 색으로 표현하는 설계가 무력해졌다.
+const COMBO_STEP := 10
 ## 단어 하나를 완성하면 콤보를 이만큼 밀어준다 (학습 → 액션 보상 연결).
 const WORD_COMBO_BONUS := 4
 ## 단어 완성 직후에는 콤보 창을 이 배수만큼 늘려 콤보를 이어갈 여유를 준다.

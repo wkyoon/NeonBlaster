@@ -9,7 +9,7 @@ signal enemy_killed(enemy_type: int, points: int)
 ## 여기만 고치면 게임에 반영되지 않는다 — 반드시 Game.tscn 값도 같이 수정할 것.
 @export var initial_spawn_interval: float = 1.1
 @export var min_spawn_interval: float = 0.3
-@export var difficulty_scale: float = 0.88  # 웨이브당 스폰 간격 배수 (작을수록 빠른 램프)
+@export var difficulty_scale: float = 0.91  # 웨이브당 스폰 간격 배수 (작을수록 빠른 램프)
 @export var wave_duration: float = 11.0
 
 # 난이도별 배수 (WordManager.current_difficulty 기반)
@@ -129,7 +129,8 @@ func _spawn_enemy() -> void:
 	enemy.bullet_speed *= float(dm["bullet_speed"])
 
 	# Assign a letter from WordManager (target letter or random decoy)
-	enemy.letter = WordManager.get_random_letter(0.3)
+	# 타겟 글자가 붙어 나올 확률. 0.3 은 첫 단어 완성이 34.8초까지 늘어져 학습 루프가 느렸다.
+	enemy.letter = WordManager.get_random_letter(0.45)
 
 	# Spawn position: top edge, random X
 	enemy.global_position = Vector2(randf_range(60, _screen_size.x - 60), -50)
