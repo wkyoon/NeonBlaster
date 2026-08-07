@@ -213,10 +213,26 @@ func _refresh_word_style() -> void:
 	_word_label.add_theme_font_size_override("font_size", WORD_FONT_SIZE + _combo_level * 3)
 
 
-## 단어 라벨을 튕긴다. 콤보 단계가 높을수록 크게 튀도록 호출부에서 배율을 준다.
+## 현재 글자 수·폰트에서 화면을 넘지 않는 최대 확대 배율.
+## ⚠️ 이걸 안 걸면 긴 단어(YELLOW=6글자)가 콤보 최고 단계 폰트(71px) + 완성 펀치(1.85배)에서
+##    화면 폭을 넘어 **글자가 좌우로 잘려 나갔다**(실제로 발생).
+func _max_word_scale() -> float:
+	var font := _word_label.get_theme_font("font")
+	var size := _word_label.get_theme_font_size("font_size")
+	if font == null or size <= 0:
+		return 1.6
+	var w: float = font.get_string_size(_word_label.text, HORIZONTAL_ALIGNMENT_CENTER, -1, size).x
+	if w <= 1.0:
+		return 1.6
+	var avail: float = get_viewport().get_visible_rect().size.x * 0.94
+	return clampf(avail / w, 1.0, 1.9)
+
+
+## 단어 라벨을 튕긴다. 콤보 단계가 높을수록 크게 튀지만 화면을 넘지는 않는다.
 func _punch_word(pop: float) -> void:
 	if not _word_label:
 		return
+	pop = minf(pop, _max_word_scale())
 	if _word_tween:
 		_word_tween.kill()
 	_word_label.scale = Vector2(pop, pop)
@@ -241,11 +257,14 @@ func _on_word_completed(word: String) -> void:
 	_word_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.5))
 	if _word_tween:
 		_word_tween.kill()
-	var peak := 1.45 + _combo_level * 0.08
+	var peak: float = minf(1.45 + _combo_level * 0.08, _max_word_scale())
 	_word_tween = create_tween()
 	_word_tween.tween_property(_word_label, "scale", Vector2(peak, peak), 0.22) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	_word_tween.tween_property(_word_label, "scale", Vector2.ONE, 0.24)
+	# 완성 직후에는 WordReveal 오버레이(아이콘 + 발음)가 같은 단어를 크게 보여준다.
+	# HUD 라벨을 그대로 두면 두 개가 겹쳐 보이므로 잠시 숨긴다.
+	_word_tween.tween_property(_word_label, "modulate:a", 0.0, 0.2)
 	_word_tween.tween_interval(0.8)
 	# 색은 현재 콤보 단계 기준으로 되돌린다(기본색으로 되돌리면 콤보 보상이 사라져 보인다)
 	_word_tween.tween_callback(_refresh_word_style)
@@ -253,7 +272,12 @@ func _on_word_completed(word: String) -> void:
 
 func _on_new_word_started(_word: String) -> void:
 	if _word_label:
-		_word_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.9))
+		# 완성 연출에서 숨겼던 라벨을 다시 켠다(WordReveal 오버레이와 겹치지 않게 숨겼다).
+		if _word_tween:
+			_word_tween.kill()
+		_word_label.modulate.a = 1.0
+		_word_label.scale = Vector2.ONE
+		_refresh_word_style()
 
 
 func _on_score_changed(score: int) -> void:
