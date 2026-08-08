@@ -2,7 +2,6 @@ extends CanvasLayer
 ## HUD - score, lives, wave, combo display during gameplay.
 
 @onready var _score_label: Label = $UI/ScoreLabel
-@onready var _high_score_label: Label = $UI/HighScoreLabel
 @onready var _wave_label: Label = $UI/WaveLabel
 @onready var _lives_container: HBoxContainer = $UI/LivesContainer
 
@@ -19,12 +18,10 @@ var _auto_label: Label = null
 
 func _ready() -> void:
 	GameManager.score_changed.connect(_on_score_changed)
-	GameManager.high_score_changed.connect(_on_high_score_changed)
 	GameManager.lives_changed.connect(_on_lives_changed)
 	GameManager.combo_changed.connect(_on_combo_changed)
 	GameManager.combo_level_up.connect(_on_combo_level_up)
 	_on_score_changed(GameManager.score)
-	_on_high_score_changed(GameManager.high_score)
 	_on_lives_changed(GameManager.lives)
 	_create_word_slots()
 	_create_audio_toggles()
@@ -264,11 +261,6 @@ func _on_new_word_started(_word: String) -> void:
 func _on_score_changed(score: int) -> void:
 	if _score_label:
 		_score_label.text = "%06d" % score
-
-
-func _on_high_score_changed(high_score: int) -> void:
-	if _high_score_label:
-		_high_score_label.text = "🏆 %06d" % high_score
 
 
 func _on_lives_changed(lives: int) -> void:
