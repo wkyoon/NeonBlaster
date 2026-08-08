@@ -83,6 +83,16 @@ cd /Users/swyoon/workspace/AndroidStudioProjects/NeonBlaster
 godot   # 에디터 없이 게임 바로 실행. 또는 에디터에서 F5.
 ```
 
+### 오토로드 참조 검증 (오토로드의 이름을 바꿨다면 필수)
+```bash
+python3 tools/check_autoload_refs.py     # 문제 없으면 종료코드 0
+```
+⚠️ **GDScript 는 오토로드 접근(`GameManager.foo`)을 컴파일 시점에 검사하지 않는다.**
+오토로드의 변수/함수 이름을 바꾸면 옛 호출부가 남아도 파스는 통과하고, **그 줄이 실행될 때만** 터진다.
+실제로 겪은 예: `DifficultyDirector.intensity`(변수) → `get_intensity()`(함수) 로 바뀌었는데
+[Enemy.gd](scripts/Enemy.gd) 의 파워업 드롭 분기 하나가 옛 이름을 참조했다.
+**6% 확률(TIME_SLOW 드롭) 경로**라 짧은 플레이 테스트로는 안 걸리고 파스 검사도 통과했다.
+
 ### 스크립트 컴파일 에러 검증 (코드 수정 후 필수)
 이 명령은 프로젝트를 로드하고 즉시 종료하며, **Parse/Script Error**를 잡아낸다.
 ```bash

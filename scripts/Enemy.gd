@@ -464,7 +464,7 @@ func _drop_powerup() -> void:
 	# 이 게임의 타겟은 속도감을 즐기는 유저인데, 이미 느린 판에서
 	# time_scale 0.3 을 4초간 걸면 체감이 더 늘어진다. 6%는 LIGHTNING 으로 넘긴다.
 	if powerup.type == GameManager.PowerUpType.TIME_SLOW \
-			and DifficultyDirector.intensity < 0.4:
+			and DifficultyDirector.get_intensity() < 0.4:
 		powerup.type = GameManager.PowerUpType.LIGHTNING
 
 	powerup.global_position = global_position

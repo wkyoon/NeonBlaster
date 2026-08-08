@@ -14,14 +14,10 @@ config/name="NeonBlaster"
 config/description="Neon top-down shooter with AdMob"
 run/main_scene="res://scenes/Menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
-config/icon="res://assets/icons/icon.png"
-; 부트 스플래시. 설정이 없으면 **Godot 기본 로고**가 뜬다(배포판에서도).
-; 게임 엠블럼으로 교체하고 배경도 게임 톤(어두운 보라)에 맞춘다.
-; 안드로이드는 export_presets 의 splash_screen/disable_godot_boot_splash 도 함께 꺼야 한다.
 boot_splash/bg_color=Color(0.05, 0.03, 0.11, 1)
+boot_splash/stretch_mode=0
 boot_splash/image="res://assets/icons/icon_full.png"
-boot_splash/fullsize=false
-boot_splash/use_filter=true
+config/icon="res://assets/icons/icon.png"
 
 [autoload]
 
