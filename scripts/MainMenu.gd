@@ -21,6 +21,7 @@ func _ready() -> void:
 	GameManager.high_score_changed.connect(_update_high_score)
 	_update_high_score(GameManager.high_score)
 	_animate_title()
+	_create_title_emblem()
 	_create_difficulty_selector()
 	_create_audio_toggles()
 	_create_auto_play_toggle()
@@ -40,6 +41,17 @@ func _center_horizontally(ctl: Control) -> void:
 		ctl.position.x = (get_viewport_rect().size.x - ctl.size.x) * 0.5
 	apply.call()
 	ctl.resized.connect(apply)
+
+
+## 타이틀 위 네온 엠블럼. 로고가 글자뿐이라 게임의 얼굴이 비어 보였다.
+## 이미지 에셋 대신 절차적으로 그린다(TitleEmblem) — APK 증가 0, 해상도 무관하게 선명.
+func _create_title_emblem() -> void:
+	var emblem := TitleEmblem.new()
+	emblem.name = "TitleEmblem"
+	var vp := get_viewport_rect().size
+	# 타이틀(화면 20% 지점) 위쪽에 놓는다.
+	emblem.position = Vector2(vp.x * 0.5, vp.y * 0.2 - 150.0)
+	add_child(emblem)
 
 
 func _create_difficulty_selector() -> void:
@@ -65,15 +77,16 @@ func _create_difficulty_selector() -> void:
 	_difficulty_buttons.add_child(btn_container)
 
 	var difficulties := [
-		{ "name": "EASY", "value": WordManager.Difficulty.EASY, "color": Color(0.3, 1.0, 0.5) },
-		{ "name": "NORMAL", "value": WordManager.Difficulty.NORMAL, "color": Color(1.0, 0.8, 0.2) },
-		{ "name": "HARD", "value": WordManager.Difficulty.HARD, "color": Color(1.0, 0.3, 0.3) },
+		# 별 개수로 난이도를 한눈에 보이게 한다(글자만으로는 상대적 세기가 안 읽힌다).
+		{ "name": "★\nEASY", "value": WordManager.Difficulty.EASY, "color": Color(0.3, 1.0, 0.5) },
+		{ "name": "★★\nNORMAL", "value": WordManager.Difficulty.NORMAL, "color": Color(1.0, 0.8, 0.2) },
+		{ "name": "★★★\nHARD", "value": WordManager.Difficulty.HARD, "color": Color(1.0, 0.3, 0.3) },
 	]
 
 	for diff in difficulties:
 		var btn := Button.new()
 		btn.text = diff["name"]
-		btn.custom_minimum_size = Vector2(110, 50)
+		btn.custom_minimum_size = Vector2(110, 62)
 		btn.add_theme_font_size_override("font_size", 20)
 		btn.add_theme_color_override("font_color", diff["color"])
 		btn.add_theme_color_override("font_hover_color", Color.WHITE)
