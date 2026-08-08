@@ -69,7 +69,7 @@ offset_right = 300.0
 offset_bottom = 98.0
 theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.5, 0.5, 0.7, 1)
-text = "BEST 000000"
+text = "🏆 000000"
 
 [node name="WaveLabel" type="Label" parent="HUD/UI"]
 layout_mode = 1
@@ -79,7 +79,7 @@ offset_right = 446.0
 offset_bottom = 56.0
 theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(0.8, 0.3, 1, 1)
-text = "WAVE 1"
+text = "👾 WAVE 1"
 
 [node name="LivesContainer" type="HBoxContainer" parent="HUD/UI"]
 layout_mode = 1
@@ -127,7 +127,7 @@ offset_right = -20.0
 offset_bottom = 120.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 24
-text = "II"
+text = "⏸"
 
 [node name="GameOverPanel" type="Control" parent="UI"]
 visible = false
@@ -193,7 +193,7 @@ offset_right = 560.0
 offset_bottom = 190.0
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.5, 0.5, 0.7, 1)
-text = "BEST   000000"
+text = "🏆   000000"
 horizontal_alignment = 1
 
 [node name="NewRecord" type="Label" parent="UI/GameOverPanel/Panel"]

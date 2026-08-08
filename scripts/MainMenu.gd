@@ -310,21 +310,21 @@ func _create_audio_toggles() -> void:
 
 	_sfx_btn = Button.new()
 	_sfx_btn.focus_mode = Control.FOCUS_NONE
-	_sfx_btn.custom_minimum_size = Vector2(80, 44)
+	_sfx_btn.custom_minimum_size = Vector2(60, 52)
 	_sfx_btn.add_theme_font_size_override("font_size", 16)
 	_sfx_btn.pressed.connect(_on_sfx_toggle)
 	container.add_child(_sfx_btn)
 
 	_music_btn = Button.new()
 	_music_btn.focus_mode = Control.FOCUS_NONE
-	_music_btn.custom_minimum_size = Vector2(80, 44)
+	_music_btn.custom_minimum_size = Vector2(60, 52)
 	_music_btn.add_theme_font_size_override("font_size", 16)
 	_music_btn.pressed.connect(_on_music_toggle)
 	container.add_child(_music_btn)
 
 	_tts_btn = Button.new()
 	_tts_btn.focus_mode = Control.FOCUS_NONE
-	_tts_btn.custom_minimum_size = Vector2(80, 44)
+	_tts_btn.custom_minimum_size = Vector2(60, 52)
 	_tts_btn.add_theme_font_size_override("font_size", 16)
 	_tts_btn.pressed.connect(_on_tts_toggle)
 	container.add_child(_tts_btn)
@@ -334,13 +334,13 @@ func _create_audio_toggles() -> void:
 
 func _update_audio_buttons() -> void:
 	if _sfx_btn:
-		_sfx_btn.text = "SFX ON" if AudioManager.sfx_enabled else "SFX OFF"
+		_sfx_btn.text = "🔊" if AudioManager.sfx_enabled else "🔇"
 		_sfx_btn.modulate = Color.WHITE if AudioManager.sfx_enabled else Color(0.5, 0.5, 0.5)
 	if _music_btn:
-		_music_btn.text = "BGM ON" if AudioManager.music_enabled else "BGM OFF"
+		_music_btn.text = "🎵"
 		_music_btn.modulate = Color.WHITE if AudioManager.music_enabled else Color(0.5, 0.5, 0.5)
 	if _tts_btn:
-		_tts_btn.text = "TTS ON" if AudioManager.tts_enabled else "TTS OFF"
+		_tts_btn.text = "💬"
 		_tts_btn.modulate = Color.WHITE if AudioManager.tts_enabled else Color(0.5, 0.5, 0.5)
 
 
@@ -368,7 +368,7 @@ func _on_tts_toggle() -> void:
 
 
 func _update_high_score(score: int) -> void:
-	_high_score_label.text = "BEST  %06d" % score
+	_high_score_label.text = "🏆  %06d" % score
 
 
 func _animate_title() -> void:

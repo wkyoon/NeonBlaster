@@ -47,22 +47,22 @@ func _create_audio_toggles() -> void:
 
 	_sfx_btn = Button.new()
 	_sfx_btn.focus_mode = Control.FOCUS_NONE
-	_sfx_btn.custom_minimum_size = Vector2(72, 36)
-	_sfx_btn.add_theme_font_size_override("font_size", 13)
+	_sfx_btn.custom_minimum_size = Vector2(56, 46)
+	_sfx_btn.add_theme_font_size_override("font_size", 22)
 	_sfx_btn.pressed.connect(_on_sfx_toggle)
 	container.add_child(_sfx_btn)
 
 	_music_btn = Button.new()
 	_music_btn.focus_mode = Control.FOCUS_NONE
-	_music_btn.custom_minimum_size = Vector2(72, 36)
-	_music_btn.add_theme_font_size_override("font_size", 13)
+	_music_btn.custom_minimum_size = Vector2(56, 46)
+	_music_btn.add_theme_font_size_override("font_size", 22)
 	_music_btn.pressed.connect(_on_music_toggle)
 	container.add_child(_music_btn)
 
 	_tts_btn = Button.new()
 	_tts_btn.focus_mode = Control.FOCUS_NONE
-	_tts_btn.custom_minimum_size = Vector2(72, 36)
-	_tts_btn.add_theme_font_size_override("font_size", 13)
+	_tts_btn.custom_minimum_size = Vector2(56, 46)
+	_tts_btn.add_theme_font_size_override("font_size", 22)
 	_tts_btn.pressed.connect(_on_tts_toggle)
 	container.add_child(_tts_btn)
 
@@ -71,13 +71,13 @@ func _create_audio_toggles() -> void:
 
 func _update_audio_buttons() -> void:
 	if _sfx_btn:
-		_sfx_btn.text = "SFX\nON" if AudioManager.sfx_enabled else "SFX\nOFF"
+		_sfx_btn.text = "🔊" if AudioManager.sfx_enabled else "🔇"
 		_sfx_btn.modulate = Color.WHITE if AudioManager.sfx_enabled else Color(0.5, 0.5, 0.5)
 	if _music_btn:
-		_music_btn.text = "BGM\nON" if AudioManager.music_enabled else "BGM\nOFF"
+		_music_btn.text = "🎵"
 		_music_btn.modulate = Color.WHITE if AudioManager.music_enabled else Color(0.5, 0.5, 0.5)
 	if _tts_btn:
-		_tts_btn.text = "TTS\nON" if AudioManager.tts_enabled else "TTS\nOFF"
+		_tts_btn.text = "💬"
 		_tts_btn.modulate = Color.WHITE if AudioManager.tts_enabled else Color(0.5, 0.5, 0.5)
 
 
@@ -118,7 +118,7 @@ func _create_auto_play_indicator() -> void:
 
 func set_wave(wave: int) -> void:
 	if _wave_label:
-		_wave_label.text = "WAVE %d" % wave
+		_wave_label.text = "👾 WAVE %d" % wave
 
 
 ## 단어 기본 색 (콤보 0단계).
@@ -287,7 +287,7 @@ func _on_score_changed(score: int) -> void:
 
 func _on_high_score_changed(high_score: int) -> void:
 	if _high_score_label:
-		_high_score_label.text = "BEST %06d" % high_score
+		_high_score_label.text = "🏆 %06d" % high_score
 
 
 func _on_lives_changed(lives: int) -> void:
@@ -297,8 +297,11 @@ func _on_lives_changed(lives: int) -> void:
 		child.queue_free()
 	for i in lives:
 		var icon := Polygon2D.new()
+		# ⚠️ 예전에는 아래를 향한 삼각형이라 위를 향한 플레이어 기체와 방향이 반대였다.
+		# 목숨은 "내 기체"를 뜻하므로 기체 실루엣을 축소해 쓴다.
 		icon.polygon = PackedVector2Array([
-			Vector2(0, 10), Vector2(-8, -5), Vector2(8, -5)
+			Vector2(0, -10), Vector2(-7, 6), Vector2(-3, 4),
+			Vector2(0, 7), Vector2(3, 4), Vector2(7, 6)
 		])
 		icon.color = Color(0.3, 0.9, 1.0)
 		var wrapper := Control.new()
