@@ -2,6 +2,11 @@ extends Control
 ## WordReveal - shows a celebration overlay when a word is completed.
 ## Displays a neon-style procedural icon + the word + TTS pronunciation.
 
+## 리빌이 놓이는 세로 기준점(화면 높이 비율).
+## 0.5(정중앙)에서 0.38로 올렸다 — 플레이 중 기체가 화면 위쪽에 머무는 시간이 많아
+## 정중앙에 띄우면 액션과 겹친다. 약간 위로 올려 시선 흐름과 맞춘다.
+const VERTICAL_ANCHOR := 0.38
+
 var _icon_container: Node2D
 var _word_label: Label
 var _bg: ColorRect
@@ -32,7 +37,7 @@ func _create_background() -> void:
 	_ring = _create_glow_ring()
 	_ring.position = Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y / 2 - 80
+		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
 	)
 	add_child(_ring)
 
@@ -75,7 +80,7 @@ func _create_icon_container() -> void:
 	_icon_container = Node2D.new()
 	_icon_container.position = Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y / 2 - 80
+		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
 	)
 	add_child(_icon_container)
 
@@ -99,7 +104,7 @@ func _create_word_label() -> void:
 	var vp := get_viewport_rect().size
 	var label_size := Vector2(vp.x, 100.0)
 	_word_label.size = label_size
-	_word_label.position = Vector2(0.0, vp.y / 2.0 + 100.0)
+	_word_label.position = Vector2(0.0, vp.y * VERTICAL_ANCHOR + 100.0)
 	add_child(_word_label)
 
 
@@ -129,7 +134,7 @@ func reveal_word(word: String) -> void:
 func _spawn_sparkles() -> void:
 	var icon_pos := Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y / 2 - 80
+		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
 	)
 	# Burst sparkles
 	for i in 24:
