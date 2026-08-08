@@ -13,15 +13,21 @@ enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 @export var max_speed: float = 700.0
 @export var acceleration: float = 3600.0
 @export var friction: float = 3000.0
-@export var fire_rate: float = 8.0  # shots per second
+## 초당 발사 수. "잘하는 것처럼 느끼게" 하려면 화면이 계속 터져야 하는데,
+## 처치 속도의 병목은 스폰이 아니라 **플레이어의 화력 커버리지**였다
+## (스폰만 늘리자 처치는 1.12→1.21회/초로 거의 안 오르고 사망만 생겼다).
+@export var fire_rate: float = 10.0  # shots per second
 @export var bullet_damage: int = 1
-@export var invincible_duration: float = 1.0
+## 피격 후 무적 시간. 게임의 목적이 "잘하는 것처럼 느끼게" 하는 것이라 관대하게 준다.
+## 연속 피격으로 목숨이 우수수 빠지면 실력 부족으로 느껴진다.
+@export var invincible_duration: float = 1.6
 ## 손가락과 기체 사이의 최소 세로 간격(px). 이보다 가까이 잡아도 기체는 이만큼 위에 뜬다.
 ## 130~150 이면 기체와 바로 앞 탄이 손가락에 가리지 않고 함께 보인다.
 @export var touch_lift: float = 140.0
 
 var weapon_type: WeaponType = WeaponType.SINGLE
-var weapon_level: int = 1  # 1-3
+## 시작 화력. 1은 단발이라 화면을 못 덮는다. 2(2줄기)로 시작해 첫 순간부터 시원하게 터진다.
+var weapon_level: int = 2  # 1-3  (레벨3 확산은 탄이 벌어져 오히려 처치가 줄었다: 1.39→1.33회/초)
 var rapid_fire_timer: float = 0.0  # countdown for rapid fire buff
 var shield_timer: float = 0.0  # countdown for shield buff
 var laser_timer: float = 0.0  # countdown for laser buff
@@ -47,8 +53,6 @@ var _is_touching: bool = false
 var _touch_offset: Vector2 = Vector2.ZERO
 var _target_pos: Vector2 = Vector2.ZERO
 var _invincible_timer: float = 0.0
-## 기체 위에 붙는 '지금 쏴야 할 글자' 라벨.
-var _target_letter_label: Label = null
 
 
 func _ready() -> void:
@@ -63,41 +67,6 @@ func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 1  # player layer
 	collision_mask = 2 | 16  # enemy + pickup
-	_create_target_letter()
-
-
-# ---------------- 타겟 글자 표시 ----------------
-
-## 지금 쏴야 할 글자를 **기체 바로 위**에 띄운다.
-##
-## 폰에서는 단어 표시(화면 상단)와 기체(75% 지점)가 화면 높이의 65%,
-## 6.5인치 기준 약 9~10cm 떨어져 있다. 피하면서 단어를 읽으려면 시선이 위아래로 왕복한다.
-## 게다가 플레이 중 실제로 필요한 정보는 전체 단어가 아니라 **다음 글자 하나**다
-## (적들이 글자를 달고 내려오고, 그중 맞는 것을 고른다).
-## 전체 단어는 상단에 맥락으로 두고, 조준에 쓰는 글자만 액션 옆으로 가져온다.
-func _create_target_letter() -> void:
-	_target_letter_label = Label.new()
-	_target_letter_label.name = "TargetLetter"
-	_target_letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_target_letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_target_letter_label.add_theme_font_size_override("font_size", 34)
-	_target_letter_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.4))
-	_target_letter_label.add_theme_color_override("font_outline_color", Color(0.25, 0.15, 0.0))
-	_target_letter_label.add_theme_constant_override("outline_size", 8)
-	# 기체 바로 위 중앙. 손가락은 기체 아래(touch_lift)에 있으므로 가려지지 않는다.
-	_target_letter_label.size = Vector2(120, 44)
-	_target_letter_label.position = Vector2(-60, -86)
-	_target_letter_label.z_index = 5
-	add_child(_target_letter_label)
-	_refresh_target_letter()
-	WordManager.word_progress_updated.connect(func(_f, _t): _refresh_target_letter())
-	WordManager.new_word_started.connect(func(_w): _refresh_target_letter())
-
-
-func _refresh_target_letter() -> void:
-	if _target_letter_label == null:
-		return
-	_target_letter_label.text = WordManager.get_target_letter()
 
 
 func _physics_process(delta: float) -> void:
@@ -509,8 +478,10 @@ func die() -> void:
 
 
 func revive() -> void:
-	# Reset weapon and buffs on respawn
-	weapon_level = 1
+	# 부활 시 버프는 초기화하되 **기본 화력은 시작값(2)으로 되돌린다.**
+	# 1로 떨어뜨리면 부활 직후 단발이 되어 가장 힘든 순간에 가장 약해진다 —
+	# "잘하는 것처럼 느끼게" 하려는 방향과 정반대다.
+	weapon_level = 2
 	rapid_fire_timer = 0.0
 	shield_timer = 0.0
 	laser_timer = 0.0

@@ -41,13 +41,14 @@ const TARGET_AI_ERROR := 0.15
 ##    (실측: HARD 5게임 중 4게임이 정확히 hits=5=MAX_LIVES, 1게임은 hits=10 이상치)
 ##    HARD 상한을 6.0 으로 넉넉히 둔 이유는 부활분과 이 이상치 때문이다.
 ##
-## 목표 유저는 "속도감을 즐기고 너무 쉬우면 이탈하는" 층이다. 그래서 이전 목표
-## (EASY 사망률 0~25%, NORMAL 20~55%)보다 전반적으로 상향했다.
-## 특히 EASY 는 사망률 0%가 정상으로 판정되던 문제가 있었다 — 자극이 없으면 이탈한다.
+## 게임의 목적은 **"플레이어가 잘하는 것처럼 느끼게"** 하는 것이다(조준이 불가능한 슈터이므로
+## 어려움과 선택을 요구하는 방향은 목적에 맞지 않는다). 그래서 목표를 다시 낮췄다:
+## 적은 많고 약하게, 플레이어는 관대하게 — 화면은 계속 터지는데 나는 잘 안 죽는 상태.
+## 이전 목표(EASY 25~45%, NORMAL 45~75% 사망)는 "자주 죽는" 방향이라 목적과 정반대였다.
 const DIFFICULTY_TARGETS := {
-	"EASY":   { "hits": [2.0, 4.0], "death_rate": [0.25, 0.45], "survival_ratio": 0.65 },
-	"NORMAL": { "hits": [3.0, 5.0], "death_rate": [0.45, 0.75], "survival_ratio": 0.35 },
-	"HARD":   { "hits": [4.0, 6.0], "death_rate": [0.75, 1.00], "survival_ratio": 0.15 },
+	"EASY":   { "hits": [0.5, 2.5], "death_rate": [0.00, 0.15], "survival_ratio": 0.85 },
+	"NORMAL": { "hits": [2.0, 4.0], "death_rate": [0.10, 0.35], "survival_ratio": 0.65 },
+	"HARD":   { "hits": [3.0, 5.0], "death_rate": [0.35, 0.70], "survival_ratio": 0.40 },
 }
 
 var _game_scene: Node2D = null

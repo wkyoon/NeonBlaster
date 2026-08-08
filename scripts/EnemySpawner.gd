@@ -33,15 +33,15 @@ func _get_diff_mult() -> Dictionary:
 			#    AI 회피 모델이 특정 탄속에서 갑자기 못 피하는 것으로 보인다. 0.85 로 고정.
 			#  · 최종 미세 조정은 밀도로 했다: 1.05(13%) → 0.98(**47%**).
 			#    47%는 목표 상한 45%를 2%p 넘지만 15게임 해상도가 6.7%p(한 게임)라 경계값이다.
-			return {"spawn_interval": 0.98, "enemy_hp": 0.9, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.85}
+			return {"spawn_interval": 0.62, "enemy_hp": 0.5, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.85}
 		WordManager.Difficulty.NORMAL:
 			# NORMAL 사망률이 40%로 목표(45~75%) 하한에 미달하고 EASY(20%)와 간격이 좁았다.
 			# 밀도만 올려 분리를 확보한다.
-			return {"spawn_interval": 0.9, "enemy_hp": 0.7, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
+			return {"spawn_interval": 0.52, "enemy_hp": 0.45, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
 		WordManager.Difficulty.HARD:
 			# HARD 는 밀도가 아니라 속도·체력·탄속으로 어려워야 한다.
 			# 배수 0.65(간격 0.715s)는 동시 적 4.9마리를 만들어 16초 만에 죽고 단어를 0개 완성했다.
-			return {"spawn_interval": 0.95, "enemy_hp": 0.9, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
+			return {"spawn_interval": 0.52, "enemy_hp": 0.6, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
 	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.0}
 
 var _enemy_scene: PackedScene = preload("res://scenes/Enemy.tscn")
