@@ -108,6 +108,28 @@ func _create_word_label() -> void:
 	add_child(_word_label)
 
 
+## 처음 수집한 단어면 "NEW" 배지를 띄운다. 수집의 순간을 눈에 보이게 만들어야
+## 도감이 동기가 된다 — 조용히 채워지면 모으는 재미가 생기지 않는다.
+func _show_new_badge(total: int, goal: int) -> void:
+	var badge := Label.new()
+	badge.text = "★ NEW!  %d / %d" % [total, goal]
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.add_theme_font_size_override("font_size", 30)
+	badge.add_theme_color_override("font_color", Color(1.0, 0.9, 0.35))
+	badge.add_theme_color_override("font_outline_color", Color(0.3, 0.2, 0.0))
+	badge.add_theme_constant_override("outline_size", 8)
+	var vp := get_viewport_rect().size
+	badge.size = Vector2(vp.x, 40)
+	badge.position = Vector2(0.0, vp.y * VERTICAL_ANCHOR + 160.0)
+	add_child(badge)
+	var tw := create_tween()
+	badge.modulate.a = 0.0
+	tw.tween_property(badge, "modulate:a", 1.0, 0.25)
+	tw.tween_property(badge, "position:y", badge.position.y - 24.0, 0.9)
+	tw.parallel().tween_property(badge, "modulate:a", 0.0, 0.9)
+	tw.tween_callback(badge.queue_free)
+
+
 func reveal_word(word: String) -> void:
 	for child in _icon_container.get_children():
 		child.queue_free()

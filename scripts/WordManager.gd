@@ -23,6 +23,8 @@ signal new_word_started(word: String)
 signal stage_changed(index: int, stage: Dictionary)
 ## 한 테마의 목표 단어 수를 다 채웠을 때 (클리어 연출용).
 signal stage_cleared(index: int, stage: Dictionary)
+## 처음 수집한 단어일 때만 발생한다(도감에 새로 등록됨).
+signal word_collected(word: String, total: int, goal: int)
 
 enum Difficulty { EASY, NORMAL, HARD }
 
@@ -54,9 +56,15 @@ var stage_index: int = 0
 ## 현재 스테이지에서 완성한 단어들. 크기가 WORDS_PER_STAGE 에 닿으면 다음 스테이지로.
 var _stage_done: Array[String] = []
 
+## 도감 수집 기록. 완성한 적 있는 단어 → true.
+## ⚠️ 학습 통계(_word_stats)와 달리 **디스크에 저장**한다. 수집은 앱을 껐다 켜도 남아야
+## 모으는 동기가 생긴다(예전에는 오토로드 메모리에만 있어 재시작하면 사라졌다).
+var _collected: Dictionary = {}
+const COLLECTION_PATH := "user://neonblaster_collection.cfg"
+
 
 func _ready() -> void:
-	pass
+	_load_collection()
 
 
 func set_difficulty(diff: Difficulty) -> void:
@@ -190,6 +198,38 @@ func _record_exposure(word: String) -> void:
 	stats["last_seen"] = _selection_counter
 
 
+## ---------------- 도감 수집 ----------------
+
+func is_collected(word: String) -> bool:
+	return _collected.has(word.to_upper())
+
+
+## (모은 수, 전체 수집 가능 수). 전체는 테마에 실제로 등장하는 단어만 센다 —
+## 게임에 나오지 않는 단어를 목표에 넣으면 도감을 영원히 못 채운다.
+func get_collection_progress() -> Vector2i:
+	var goal := ThemeStages.get_all_words()
+	var got := 0
+	for w in goal:
+		if _collected.has(w):
+			got += 1
+	return Vector2i(got, goal.size())
+
+
+func _save_collection() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("collection", "words", _collected.keys())
+	cfg.save(COLLECTION_PATH)
+
+
+func _load_collection() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(COLLECTION_PATH) != OK:
+		return
+	_collected.clear()
+	for w in cfg.get_value("collection", "words", []):
+		_collected[String(w)] = true
+
+
 ## 단어의 학습 통계(복사본)를 반환합니다. (HUD/디버그용)
 func get_word_stats(word: String) -> Dictionary:
 	return _get_or_init_stats(word).duplicate()
@@ -265,6 +305,13 @@ func check_letter(letter: String) -> bool:
 func _on_word_finished(word: String) -> void:
 	if not _stage_done.has(word):
 		_stage_done.append(word)
+
+	# 도감 수집 — 처음 완성한 단어면 기록하고 알린다.
+	if not _collected.has(word):
+		_collected[word] = true
+		_save_collection()
+		var p := get_collection_progress()
+		word_collected.emit(word, p.x, p.y)
 
 	word_completed.emit(word)
 

@@ -96,6 +96,16 @@ const STAGES: Array[Dictionary] = [
 ]
 
 
+## 모든 테마의 단어를 한 배열로. 도감의 "수집 가능 총수" 기준이다.
+static func get_all_words() -> Array:
+	var out: Array = []
+	for st in STAGES:
+		for w in st["words"]:
+			if not out.has(w):
+				out.append(w)
+	return out
+
+
 static func count() -> int:
 	return STAGES.size()
 

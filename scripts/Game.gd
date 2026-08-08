@@ -42,6 +42,7 @@ func _ready() -> void:
 	WordManager.start_new_word()
 	# Handle word completion -> start new word + bonus
 	WordManager.word_completed.connect(_on_word_completed)
+	WordManager.word_collected.connect(_on_word_collected)
 
 	# Preload ads
 	AdsManager.request_interstitial()
@@ -136,6 +137,12 @@ func _on_quit_to_menu() -> void:
 
 
 ## Called when a word is fully spelled - grant bonus, show reveal, start new word
+## 도감에 새로 등록된 순간 — 리빌 위에 NEW 배지를 띄운다.
+func _on_word_collected(_word: String, total: int, goal: int) -> void:
+	if _word_reveal and _word_reveal.has_method("_show_new_badge"):
+		_word_reveal._show_new_badge(total, goal)
+
+
 func _on_word_completed(word: String) -> void:
 	# Bonus score for completing a word
 	var bonus := word.length() * 100

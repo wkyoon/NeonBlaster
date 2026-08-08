@@ -18,6 +18,7 @@ var _detail_desc_en: Label
 var _detail_speak_btn: Button
 var _detail_close_btn: Button
 var _selected_category: String = "ALL"
+var _progress_label: Label = null
 
 
 func _ready() -> void:
@@ -102,6 +103,24 @@ func _create_category_desc_label() -> void:
 	var initial_lore: Dictionary = StoryData.CATEGORY_LORE.get("ALL", {})
 	_category_desc.text = initial_lore.get("en", "")
 	add_child(_category_desc)
+	_refresh_progress()
+
+
+## 수집 진행도. 도감을 "채우는 것"으로 만들려면 얼마나 남았는지가 늘 보여야 한다.
+func _refresh_progress() -> void:
+	var p := WordManager.get_collection_progress()
+	if _progress_label == null:
+		_progress_label = Label.new()
+		_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_progress_label.add_theme_font_size_override("font_size", 20)
+		_progress_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+		_progress_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		# 제목(30~90)과 카테고리 설명(148~218) 사이의 빈 구간에 놓는다.
+		# 132 로 뒀을 때는 설명과 겹쳤다 — 런타임 사각형을 재서 잡은 값이다.
+		_progress_label.offset_top = 100.0
+		_progress_label.offset_bottom = 132.0
+		add_child(_progress_label)
+	_progress_label.text = "📖  %d / %d  COLLECTED" % [p.x, p.y]
 
 
 func _on_category_selected(cat: String, btn: Button) -> void:
@@ -141,11 +160,13 @@ func _populate_grid() -> void:
 	for child in _grid.get_children():
 		child.queue_free()
 
+	# ⚠️ 사전 전체가 아니라 **테마에 실제로 등장하는 단어만** 보여준다.
+	# 게임에 안 나오는 단어를 도감에 두면 영원히 못 채우는 칸이 생겨 수집 동기가 무너진다.
+	var collectible: Array = ThemeStages.get_all_words()
 	var words: Array = []
-	if _selected_category == "ALL":
-		words = WordDictionary.get_all_words()
-	else:
-		words = WordDictionary.get_words_by_category(_selected_category)
+	for w in collectible:
+		if _selected_category == "ALL" or String(WordDictionary.get_description(w).get("category", "")) == _selected_category:
+			words.append(w)
 	words.sort()
 
 	for word in words:
@@ -158,7 +179,13 @@ func _create_word_card(word: String) -> Control:
 	card.custom_minimum_size = Vector2(210, 220)
 	card.text = ""
 	card.focus_mode = Control.FOCUS_NONE
-	card.pressed.connect(_show_detail.bind(word))
+	var got: bool = WordManager.is_collected(word)
+	if got:
+		card.pressed.connect(_show_detail.bind(word))
+	else:
+		# 미수집 카드는 눌러도 열리지 않는다 — 게임에서 완성해야 열린다.
+		card.disabled = true
+		card.modulate = Color(1, 1, 1, 0.55)
 
 	# Container for icon + label
 	var vbox := VBoxContainer.new()
@@ -173,7 +200,7 @@ func _create_word_card(word: String) -> Control:
 	vbox.add_child(icon_wrapper)
 
 	var icon_node := Label.new()
-	icon_node.text = WordDictionary.get_emoji(word)
+	icon_node.text = WordDictionary.get_emoji(word) if got else "❓"
 	icon_node.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	icon_node.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	icon_node.add_theme_font_size_override("font_size", 64)
@@ -182,10 +209,11 @@ func _create_word_card(word: String) -> Control:
 
 	# Word label
 	var label := Label.new()
-	label.text = word
+	# 미수집은 글자 수만 알려준다 — 무엇을 모아야 하는지 힌트는 주되 답은 감춘다.
+	label.text = word if got else "_ ".repeat(word.length()).strip_edges()
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 22)
-	label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+	label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0) if got else Color(0.45, 0.5, 0.6))
 	vbox.add_child(label)
 
 	# Category tag
