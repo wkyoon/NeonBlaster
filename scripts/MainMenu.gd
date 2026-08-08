@@ -63,11 +63,24 @@ func _create_title_emblem() -> void:
 	add_child(emblem)
 
 
+## 보상 수령 등으로 해금 상태가 바뀌었을 때 난이도 선택을 다시 만든다.
+func _rebuild_difficulty_selector() -> void:
+	if _difficulty_buttons != null:
+		# ⚠️ queue_free() 만 하면 이 프레임 안에서는 노드가 살아 있어 이름("DifficultySelector")을
+		#    계속 붙잡는다. 새로 만든 컨테이너는 자동으로 다른 이름을 받아
+		#    get_node("DifficultySelector") 가 실패한다(실측: 재생성 직후 조회 불가).
+		#    먼저 트리에서 떼어 이름을 놓아준 뒤 해제한다.
+		remove_child(_difficulty_buttons)
+		_difficulty_buttons.queue_free()
+		_difficulty_buttons = null
+	_create_difficulty_selector()
+
+
 func _create_difficulty_selector() -> void:
 	_difficulty_buttons = VBoxContainer.new()
 	_difficulty_buttons.name = "DifficultySelector"
 	_difficulty_buttons.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_difficulty_buttons.position.y = -320
+	_difficulty_buttons.position.y = -350
 	_center_horizontally(_difficulty_buttons)
 	_difficulty_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	_difficulty_buttons.add_theme_constant_override("separation", 10)
@@ -94,16 +107,39 @@ func _create_difficulty_selector() -> void:
 
 	for diff in difficulties:
 		var btn := Button.new()
-		btn.text = diff["name"]
+		var value: int = diff["value"]
+		# 상위 난이도는 **연속 접속 보상으로 올린 랭크**를 갖춘 뒤에 도전한다.
+		# 능력치 없이 들어가면 100% 죽는 판이라 도전이 아니라 벽이 된다.
+		var unlocked: bool = RewardManager.is_difficulty_unlocked(value)
+		btn.text = diff["name"] if unlocked else "🔒\n%d DAY" % RewardManager.days_to_unlock(value)
 		btn.custom_minimum_size = Vector2(110, 62)
 		btn.add_theme_font_size_override("font_size", 20)
 		btn.add_theme_color_override("font_color", diff["color"])
 		btn.add_theme_color_override("font_hover_color", Color.WHITE)
-		btn.pressed.connect(_on_difficulty_selected.bind(diff["value"], btn, btn_container))
+		btn.disabled = not unlocked
+		if unlocked:
+			btn.pressed.connect(_on_difficulty_selected.bind(value, btn, btn_container))
 		btn_container.add_child(btn)
 
-	# Highlight first button (Easy) by default
-	_highlight_selected(btn_container.get_child(0), btn_container)
+	# 열려 있는 것 중 가장 높은 난이도를 기본 선택한다 —
+	# 어렵게 해금해 놓고 매번 EASY 로 되돌아가면 보상이 무의미해 보인다.
+	var top := 0
+	for i in difficulties.size():
+		if RewardManager.is_difficulty_unlocked(difficulties[i]["value"]):
+			top = i
+	_selected_difficulty = difficulties[top]["value"]
+	_highlight_selected(btn_container.get_child(top), btn_container)
+
+	# 현재 랭크와 영구 화력을 난이도 선택 바로 아래에 알려준다.
+	var rank_label := Label.new()
+	rank_label.name = "RankLabel"
+	rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rank_label.add_theme_font_size_override("font_size", 16)
+	rank_label.add_theme_color_override("font_color", Color(0.75, 0.85, 1.0))
+	rank_label.text = "RANK %d/%d    POWER +%d%%" % [
+		RewardManager.get_rank(), RewardManager.MAX_RANK,
+		roundi(RewardManager.get_rank_power() * 100.0)]
+	_difficulty_buttons.add_child(rank_label)
 
 
 func _on_difficulty_selected(diff: WordManager.Difficulty, btn: Button, container: HBoxContainer) -> void:
@@ -411,14 +447,15 @@ func _rebuild_reward_rows() -> void:
 	var streak_line: Label = _reward_panel.get_node("Panel/VBoxContainer/StreakLine")
 	var mins := int(RewardManager.today_seconds) / 60
 	var secs := int(RewardManager.today_seconds) % 60
-	streak_line.text = "🔥 %d DAY STREAK      ▸ TODAY %d:%02d" % [
-		RewardManager.streak_days, mins, secs]
+	streak_line.text = "🔥 %d DAY   RANK %d   POWER +%d%%" % [
+		RewardManager.streak_days, RewardManager.get_rank(),
+		roundi(RewardManager.get_rank_power() * 100.0)]
 
 	var rows: VBoxContainer = _reward_panel.get_node("Panel/VBoxContainer/Rows")
 	for child in rows.get_children():
 		child.queue_free()
 
-	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "POWER +5%",
+	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "POWER +5% (THIS RUN)",
 		RewardManager.today_seconds >= RewardManager.DAILY_GOAL_SECONDS,
 		"%d:%02d / 10:00" % [mins, secs])
 	for m in RewardManager.STREAK_MILESTONES:
@@ -434,13 +471,13 @@ func _streak_effect_text(days: int) -> String:
 	var ship: String = "🚀 %s" % skin["name_en"] if not skin.is_empty() else ""
 	match days:
 		3:
-			return "%s · POWER +8%%" % ship
+			return "%s · RANK 1 · UNLOCK NORMAL" % ship
 		7:
-			return "%s · POWER +12%%" % ship
+			return "%s · RANK 2 · UNLOCK HARD" % ship
 		15:
-			return "%s · POWER +18%% · SCORE x1.1" % ship
+			return "%s · RANK 3 · SCORE x1.1" % ship
 		30:
-			return "%s · POWER +25%% · SCORE x1.2" % ship
+			return "%s · RANK 4 · SCORE x1.2" % ship
 	return ship
 
 
@@ -494,6 +531,9 @@ func _on_claim(kind: String, days: int) -> void:
 	AudioManager.play_sfx("powerup")
 	_rebuild_reward_rows()
 	_refresh_reward_strip()
+	# 랭크가 올랐으면 난이도 잠금이 바로 풀려야 한다 —
+	# 메뉴를 나갔다 와야 반영되면 보상을 받은 순간의 보람이 사라진다.
+	_rebuild_difficulty_selector()
 
 
 ## 기체 선택 화면. 해금한 스킨을 **큰 미리보기로 보여주고** 그 자리에서 갈아끼운다.

@@ -8,7 +8,8 @@ extends Node
 ##
 ## 보상은 두 종류다:
 ##   - **기체 스킨** — 영구 해금, 순수 코스메틱. 눈에 보이는 보상이 여기다([[ShipSkins]]).
-##   - **화력 버프**(연사·탄 크기·점수 배수) — **다음 판에만** 적용. 소수 배수로만 올린다.
+##   - **랭크**(연속 마일스톤) — 영구. 영구 화력 + NORMAL/HARD 난이도 해금.
+##   - **일일 화력 버프** — 오늘 10분을 채우면 **다음 판에만** 붙는 소수 보너스.
 ## ⚠️ 성능 보상을 영구로 주면 맞춰 놓은 난이도가 무너진다
 ##    (사망률 EASY 0% / NORMAL 20% / HARD 60%). 그래서 영구인 것은 코스메틱뿐이다.
 ## ⚠️ 목숨은 보상에서 뺐다 — 숫자만 늘고 화면에 드러나지 않아 보상으로 느껴지지 않았다.
@@ -32,6 +33,20 @@ const STREAK_MILESTONES: Array[int] = [3, 7, 15, 30]
 ##    보상은 조금씩 세지는 느낌이어야 하고, 눈에 보이는 몫은 기체 스킨이 담당한다.
 const MAX_PENDING_POWER := 0.30
 const MAX_PENDING_SCORE_MULT := 1.2
+
+## ---- 랭크 ----
+## 연속 접속 마일스톤을 하나 받을 때마다 랭크가 1 오른다(0~4). **영구**다.
+## 랭크는 두 가지를 준다:
+##   1. 영구 화력 `RANK_POWER_STEP` — 판마다 사라지지 않는 기본기
+##   2. 난이도 해금 — 이 능력치를 갖춘 뒤에 NORMAL/HARD 에 도전하는 구조
+## ⚠️ 랭크는 `_claimed` 의 "streak:*" 개수로 **파생**시킨다. 따로 저장하면 어긋날 수 있다.
+## ⚠️ 해금은 **한 번 받으면 영구**다. 연속이 끊겼다고 난이도를 다시 잠그면
+##    하루 빠뜨린 사람이 하던 난이도를 못 하게 되어 복귀를 막는다.
+const RANK_POWER_STEP := 0.06
+const MAX_RANK := 4
+## 난이도별 필요 랭크. EASY 는 항상 열려 있다.
+const DIFFICULTY_RANK: Array[int] = [0, 1, 2]
+const DIFFICULTY_NAMES: Array[String] = ["EASY", "NORMAL", "HARD"]
 
 ## 오늘 날짜(YYYY-MM-DD)와 오늘 누적 플레이 시간.
 var today: String = ""
@@ -131,18 +146,16 @@ func claim(kind: String, days: int = 0) -> bool:
 	_claimed[_key(kind, days)] = true
 	match kind:
 		"daily":
+			# 오늘 몫은 **그 판 한정** 보너스다. 매일 조금 세게 시작하는 맛.
 			pending_power += 0.05
 		"streak":
+			# 연속 마일스톤은 pending 이 아니라 **랭크**(영구)로 간다.
+			# 랭크는 _claimed 에서 파생되므로 여기서 따로 올릴 것이 없다.
+			# 상위 두 단계는 그 판 점수 배수도 얹어 준다.
 			match days:
-				3:
-					pending_power += 0.08
-				7:
-					pending_power += 0.12
 				15:
-					pending_power += 0.18
 					pending_score_mult = maxf(pending_score_mult, 1.1)
 				30:
-					pending_power += 0.25
 					pending_score_mult = maxf(pending_score_mult, 1.2)
 			# 마일스톤마다 기체 스킨을 해금하고 바로 장착한다 —
 			# 받은 즉시 타이틀 화면의 기체가 바뀌어 보상이 눈에 보인다.
@@ -170,6 +183,38 @@ func consume_pending() -> Dictionary:
 func _key(kind: String, days: int) -> String:
 	# 일일 보상은 날짜별로, 연속 보상은 일수별로 한 번씩만 받는다.
 	return "daily:%s" % today if kind == "daily" else "streak:%d" % days
+
+
+# ---------------- 랭크 / 난이도 해금 ----------------
+
+## 지금까지 받은 연속 접속 보상 수(0~4). 영구.
+func get_rank() -> int:
+	var n := 0
+	for m in STREAK_MILESTONES:
+		if is_claimed("streak", m):
+			n += 1
+	return mini(n, MAX_RANK)
+
+
+## 랭크가 주는 영구 화력. 판이 끝나도 사라지지 않는다.
+func get_rank_power() -> float:
+	return get_rank() * RANK_POWER_STEP
+
+
+## 이 난이도를 열 수 있는가. EASY 는 항상 true.
+func is_difficulty_unlocked(diff: int) -> bool:
+	var i := clampi(diff, 0, DIFFICULTY_RANK.size() - 1)
+	return get_rank() >= DIFFICULTY_RANK[i]
+
+
+## 해금까지 필요한 연속 접속 일수. 이미 열렸으면 0.
+func days_to_unlock(diff: int) -> int:
+	var i := clampi(diff, 0, DIFFICULTY_RANK.size() - 1)
+	var need: int = DIFFICULTY_RANK[i]
+	if get_rank() >= need:
+		return 0
+	# need 번째 마일스톤이 해금 지점이다(1→3일, 2→7일).
+	return STREAK_MILESTONES[mini(need - 1, STREAK_MILESTONES.size() - 1)]
 
 
 # ---------------- 기체 스킨 ----------------
