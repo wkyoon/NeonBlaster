@@ -18,14 +18,21 @@ var _consumed: bool = false  # 충돌 후 중복 처리 방지
 @onready var _glow: PointLight2D = $Glow
 
 
+## 플레이어 탄 색. Player 가 스폰할 때 기체 스킨 색으로 덮어쓴다.
+var skin_color: Color = Color(0.3, 0.9, 1.0)
+
+
 func _ready() -> void:
 	# Set collision layers
 	if is_player_bullet:
 		collision_layer = 4   # bullet_player
 		collision_mask = 2    # enemy
 		add_to_group("player_bullet")
-		_sprite.color = Color(0.3, 0.9, 1.0)
-		_glow.color = Color(0.3, 0.9, 1.0)
+		# 플레이어 탄은 **장착 중인 기체 스킨 색**을 따른다.
+		# 기체만 바뀌고 탄은 기본색이면 스킨이 겉돌아 보인다(실제로 그랬다).
+		# Player._spawn_bullet 이 skin_color 를 넣어 주고, 없으면 기본 시안.
+		_sprite.color = skin_color
+		_glow.color = skin_color
 	else:
 		collision_layer = 8   # bullet_enemy
 		collision_mask = 1    # player

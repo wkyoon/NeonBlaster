@@ -33,6 +33,8 @@ var shield_timer: float = 0.0  # countdown for shield buff
 var laser_timer: float = 0.0  # countdown for laser buff
 var time_slow_timer: float = 0.0  # countdown for time slow (global)
 var _base_fire_rate: float = 8.0
+## @export 로 정해진 원래 연사값. 보상 배수를 매번 여기에 곱해 누적을 막는다.
+var _export_fire_rate: float = 10.0
 var _rapid_effect: Node2D = null
 var _shield_effect: Node2D = null
 var _laser_effect: Node2D = null
@@ -43,6 +45,11 @@ var _laser_effect: Node2D = null
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var _fire_timer: Timer = $FireTimer
 @onready var _engine_particles: CPUParticles2D = $EngineParticles
+
+## 스킨 오라(있는 스킨만). 색이 도는 스킨의 기준 색도 여기서 가져온다.
+var _skin_aura: ShipAura = null
+## 스폰하는 탄에 넘길 색. 스킨의 glow 색을 쓴다(본체 색은 HDR 이라 탄에는 너무 밝다).
+var _skin_bullet_color: Color = Color(0.3, 0.9, 1.0)
 
 var _bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 var _move_input: Vector2 = Vector2.ZERO
@@ -61,8 +68,11 @@ func _ready() -> void:
 	# 세로가 긴 기기(예: 1080x2316 = 1:2.14)에서는 화면의 62% 지점 — 거의 한가운데에 떠 있었다.
 	# 부활 경로(Game._respawn_player)가 쓰는 0.75 와 같은 비율로 맞춘다.
 	global_position = Vector2(_screen_size.x * 0.5, _screen_size.y * 0.75)
-	# 출석/플레이시간 보상으로 받은 화력 보너스를 시작 무기에 얹는다(이번 판에만).
-	weapon_level = clampi(weapon_level + GameManager.reward_weapon_bonus, 1, 4)
+	_apply_skin()
+	# ⚠️ 보상 버프는 여기서 읽으면 안 된다. 자식(Player)의 _ready 는 부모(Game)의 _ready 보다
+	#    **먼저** 실행되므로, 이 시점의 GameManager.reward_* 는 아직 이전 판의 값이다.
+	#    Game._ready 가 start_game() 직후 호출하는 revive() 에서 적용한다.
+	_export_fire_rate = fire_rate
 	_base_fire_rate = fire_rate
 	_fire_timer.wait_time = 1.0 / fire_rate
 	_fire_timer.timeout.connect(_on_fire_timer)
@@ -81,6 +91,7 @@ func _physics_process(delta: float) -> void:
 	_handle_buffs(delta)
 	_handle_laser(delta)
 	_handle_time_slow(delta)
+	_update_skin_color()
 
 
 func _handle_buffs(delta: float) -> void:
@@ -301,6 +312,36 @@ func _handle_invincibility(delta: float) -> void:
 			_sprite.visible = true
 
 
+## 장착 중인 기체 스킨을 입힌다. 출석 보상으로 해금되는 **보이는 보상**의 실체다.
+## 성능에는 영향을 주지 않는다 — 색과 오라만 바꾼다.
+func _apply_skin() -> void:
+	var skin := RewardManager.get_equipped_skin()
+	_sprite.color = skin["body"]
+	_glow.color = skin["glow"]
+	_engine_particles.color = skin["engine"]
+	_skin_bullet_color = skin["glow"]
+	if int(skin.get("aura", 0)) <= 0 and not bool(skin.get("hue", false)):
+		return
+	# 오라는 기체 **뒤**에 그린다(기체 실루엣을 가리지 않게).
+	var aura := ShipAura.new()
+	aura.name = "SkinAura"
+	aura.z_index = -1
+	aura.set_skin(skin)
+	add_child(aura)
+	move_child(aura, 0)
+	_skin_aura = aura
+
+
+## PRISM 처럼 색이 도는 스킨은 기체 본체 색도 함께 돌려야 한 몸으로 보인다.
+func _update_skin_color() -> void:
+	if _skin_aura == null:
+		return
+	var c := _skin_aura.current_body()
+	_sprite.color = c
+	_glow.color = c
+	_skin_bullet_color = c
+
+
 func _fire() -> void:
 	# Fire pattern based on weapon level
 	match weapon_level:
@@ -331,6 +372,8 @@ func _spawn_bullet(pos: Vector2, dir: Vector2) -> void:
 	bullet.direction = dir
 	bullet.damage = bullet_damage
 	bullet.is_player_bullet = true
+	# 탄도 기체 스킨 색을 따른다 — 화면 대부분을 차지하는 게 탄이라 여기가 제일 눈에 띈다.
+	bullet.skin_color = _skin_bullet_color
 	# 적과 같은 화면 높이 보정. 세로가 긴 기기에서 총알이 화면을 가로지르는 시간이
 	# 늘어나면 사거리 체감과 교전 리듬이 달라진다.
 	bullet.speed *= GameManager.screen_speed_scale()
@@ -483,8 +526,11 @@ func revive() -> void:
 	# 부활 시 버프는 초기화하되 **기본 화력은 시작값(2)으로 되돌린다.**
 	# 1로 떨어뜨리면 부활 직후 단발이 되어 가장 힘든 순간에 가장 약해진다 —
 	# "잘하는 것처럼 느끼게" 하려는 방향과 정반대다.
-	# 보상 화력 보너스는 부활 후에도 유지한다(그 판 내내 유효한 보상이므로).
+	# 출석 보상 화력을 여기서 적용한다. Game._ready 가 start_game() 직후 호출하므로
+	# 판 시작·부활 양쪽에서 같은 값이 걸린다(부활 후에도 그 판 내내 유효).
+	# 탄 개수와 연사가 눈에 띄게 늘어야 "보상을 받았다"가 화면에서 읽힌다.
 	weapon_level = clampi(2 + GameManager.reward_weapon_bonus, 1, 4)
+	_base_fire_rate = _export_fire_rate * GameManager.reward_fire_rate_mult
 	rapid_fire_timer = 0.0
 	shield_timer = 0.0
 	laser_timer = 0.0

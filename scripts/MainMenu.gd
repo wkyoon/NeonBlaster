@@ -18,6 +18,7 @@ var _tts_btn: Button
 ## 출석/플레이시간 보상 UI.
 var _reward_strip: Button = null
 var _reward_panel: Control = null
+var _skin_panel: Control = null
 
 
 func _ready() -> void:
@@ -32,6 +33,7 @@ func _ready() -> void:
 	_create_bottom_buttons()
 	_create_reward_strip()
 	_create_reward_panel()
+	_create_skin_panel()
 	_refresh_reward_strip()
 
 
@@ -330,7 +332,7 @@ func _create_reward_panel() -> void:
 
 	var dimmer := ColorRect.new()
 	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	dimmer.color = Color(0.01, 0.01, 0.04, 0.92)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.985)
 	_reward_panel.add_child(dimmer)
 
 	var panel := Panel.new()
@@ -364,18 +366,31 @@ func _create_reward_panel() -> void:
 	# 보상 항목이 들어갈 자리. 열 때마다 다시 채운다.
 	var rows := VBoxContainer.new()
 	rows.name = "Rows"
-	rows.custom_minimum_size = Vector2(510, 400)
+	rows.custom_minimum_size = Vector2(510, 470)
 	rows.add_theme_constant_override("separation", 10)
 	content.add_child(rows)
+
+	var footer := HBoxContainer.new()
+	footer.alignment = BoxContainer.ALIGNMENT_CENTER
+	footer.add_theme_constant_override("separation", 14)
+	content.add_child(footer)
+
+	var ship_btn := Button.new()
+	ship_btn.text = "🚀 SHIPS"
+	ship_btn.custom_minimum_size = Vector2(220, 58)
+	ship_btn.add_theme_font_size_override("font_size", 24)
+	ship_btn.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
+	ship_btn.focus_mode = Control.FOCUS_NONE
+	ship_btn.pressed.connect(_show_skin_panel)
+	footer.add_child(ship_btn)
 
 	var close_btn := Button.new()
 	close_btn.text = "CLOSE"
 	close_btn.custom_minimum_size = Vector2(220, 58)
-	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	close_btn.add_theme_font_size_override("font_size", 24)
 	close_btn.focus_mode = Control.FOCUS_NONE
 	close_btn.pressed.connect(_hide_reward_panel)
-	content.add_child(close_btn)
+	footer.add_child(close_btn)
 
 
 func _show_reward_panel() -> void:
@@ -403,7 +418,7 @@ func _rebuild_reward_rows() -> void:
 	for child in rows.get_children():
 		child.queue_free()
 
-	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "+1 LIFE",
+	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "+1 WEAPON",
 		RewardManager.today_seconds >= RewardManager.DAILY_GOAL_SECONDS,
 		"%d:%02d / 10:00" % [mins, secs])
 	for m in RewardManager.STREAK_MILESTONES:
@@ -413,31 +428,38 @@ func _rebuild_reward_rows() -> void:
 				"" if m - RewardManager.streak_days == 1 else "S"])
 
 
+## 보상 문구. 해금되는 기체 이름을 앞에 둔다 — 눈에 보이는 보상이 주인공이다.
 func _streak_effect_text(days: int) -> String:
+	var skin := ShipSkins.by_streak(days)
+	var ship: String = "🚀 %s" % skin["name_en"] if not skin.is_empty() else ""
 	match days:
 		3:
-			return "+1 WEAPON"
+			return "%s · +1 WEAPON" % ship
 		7:
-			return "+2 LIVES, +1 WEAPON"
+			return "%s · +2 WEAPON" % ship
 		15:
-			return "+2 LIVES, +1 WEAPON, x1.5 SCORE"
+			return "%s · +2 WEAPON · x1.25 FIRE" % ship
 		30:
-			return "+3 LIVES, +2 WEAPON, x2 SCORE"
-	return ""
+			return "%s · +2 WEAPON · x1.4 FIRE · x2 SCORE" % ship
+	return ship
 
 
 func _add_reward_row(parent: VBoxContainer, kind: String, days: int, name_text: String,
 		effect: String, unlocked: bool, progress_text: String) -> void:
 	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(510, 74)
+	row.custom_minimum_size = Vector2(510, 88)
 	row.add_theme_constant_override("separation", 10)
 	parent.add_child(row)
 
 	var claimed := RewardManager.is_claimed(kind, days)
 	var info := Label.new()
-	info.custom_minimum_size = Vector2(340, 74)
+	# ⚠️ autowrap 을 켜지 않으면 Label 의 최소 폭이 **문구 길이만큼** 커져서
+	#    옆의 GET 버튼을 화면 밖으로 밀어낸다(30일 보상 문구에서 실제로 그랬다).
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(344, 88)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	info.add_theme_font_size_override("font_size", 19)
+	info.add_theme_font_size_override("font_size", 18)
 	if claimed:
 		info.text = "✓ %s\n   %s" % [name_text, effect]
 		info.add_theme_color_override("font_color", Color(0.45, 0.5, 0.55))
@@ -450,7 +472,8 @@ func _add_reward_row(parent: VBoxContainer, kind: String, days: int, name_text: 
 	row.add_child(info)
 
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(150, 60)
+	btn.custom_minimum_size = Vector2(148, 62)
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.add_theme_font_size_override("font_size", 20)
 	btn.focus_mode = Control.FOCUS_NONE
 	if claimed:
@@ -471,6 +494,123 @@ func _on_claim(kind: String, days: int) -> void:
 	AudioManager.play_sfx("powerup")
 	_rebuild_reward_rows()
 	_refresh_reward_strip()
+
+
+## 기체 선택 화면. 해금한 스킨을 **큰 미리보기로 보여주고** 그 자리에서 갈아끼운다.
+## 보상이 눈에 보이는 물건이라는 걸 확인하는 자리다.
+func _create_skin_panel() -> void:
+	_skin_panel = Control.new()
+	_skin_panel.name = "SkinPanel"
+	_skin_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_skin_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_skin_panel.visible = false
+	add_child(_skin_panel)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.985)
+	_skin_panel.add_child(dimmer)
+
+	var panel := Panel.new()
+	panel.name = "Panel"
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-290, -420)
+	panel.size = Vector2(580, 840)
+	_skin_panel.add_child(panel)
+
+	var title := Label.new()
+	title.text = "🚀 SHIPS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.position = Vector2(35, 26)
+	title.size = Vector2(510, 46)
+	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
+	panel.add_child(title)
+
+	# 미리보기 — 실제 게임과 같은 실루엣·오라를 그린다(ShipAura.draw_hull).
+	var preview := ShipAura.new()
+	preview.name = "Preview"
+	preview.draw_hull = true
+	preview.position = Vector2(290, 182)
+	preview.scale = Vector2(1.75, 1.75)
+	panel.add_child(preview)
+
+	var pname := Label.new()
+	pname.name = "PreviewName"
+	pname.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pname.position = Vector2(35, 268)
+	pname.size = Vector2(510, 40)
+	pname.add_theme_font_size_override("font_size", 26)
+	panel.add_child(pname)
+
+	var list := VBoxContainer.new()
+	list.name = "List"
+	list.position = Vector2(35, 318)
+	list.size = Vector2(510, 440)
+	list.add_theme_constant_override("separation", 8)
+	panel.add_child(list)
+
+	var close_btn := Button.new()
+	close_btn.text = "CLOSE"
+	close_btn.position = Vector2(180, 752)
+	close_btn.size = Vector2(220, 58)
+	close_btn.add_theme_font_size_override("font_size", 24)
+	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.pressed.connect(_hide_skin_panel)
+	panel.add_child(close_btn)
+
+
+func _show_skin_panel() -> void:
+	AudioManager.play_sfx("button")
+	_rebuild_skin_list()
+	_skin_panel.visible = true
+	_skin_panel.move_to_front()
+
+
+func _hide_skin_panel() -> void:
+	AudioManager.play_sfx("button")
+	_skin_panel.visible = false
+
+
+func _rebuild_skin_list() -> void:
+	var panel := _skin_panel.get_node("Panel")
+	var preview: ShipAura = panel.get_node("Preview")
+	preview.set_skin(RewardManager.get_equipped_skin())
+	var pname: Label = panel.get_node("PreviewName")
+	var eq := RewardManager.get_equipped_skin()
+	pname.text = String(eq["name_en"])
+	pname.add_theme_color_override("font_color", eq["body"])
+
+	var list: VBoxContainer = panel.get_node("List")
+	for child in list.get_children():
+		child.queue_free()
+
+	for skin in ShipSkins.SKINS:
+		var id := String(skin["id"])
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(510, 62)
+		btn.add_theme_font_size_override("font_size", 22)
+		btn.focus_mode = Control.FOCUS_NONE
+		if not RewardManager.is_skin_unlocked(id):
+			# 잠긴 기체도 이름과 조건을 보여준다 — 목표가 보여야 계속 온다.
+			btn.text = "🔒 %s — %d DAY STREAK" % [skin["name_en"], int(skin["streak"])]
+			btn.disabled = true
+		elif RewardManager.equipped_skin == id:
+			# disabled 로 두면 색 오버라이드가 회색으로 덮여 어떤 기체인지 안 읽힌다.
+			btn.text = "● %s" % skin["name_en"]
+			btn.add_theme_color_override("font_color", skin["body"])
+		else:
+			btn.text = String(skin["name_en"])
+			btn.add_theme_color_override("font_color", skin["body"])
+			btn.pressed.connect(_on_equip_skin.bind(id))
+		list.add_child(btn)
+
+
+func _on_equip_skin(id: String) -> void:
+	if not RewardManager.equip_skin(id):
+		return
+	AudioManager.play_sfx("powerup")
+	_rebuild_skin_list()
 
 
 func _on_dictionary() -> void:

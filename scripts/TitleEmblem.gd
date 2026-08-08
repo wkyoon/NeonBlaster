@@ -24,6 +24,9 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	# 가운데 기체는 **장착 중인 스킨 색**으로 그린다 — 보상을 받으면 타이틀부터 달라진다.
+	var skin := RewardManager.get_equipped_skin()
+	ship_color = ShipSkins.shifted(skin["body"], _t) if bool(skin.get("hue", false)) else skin["body"]
 	# 바깥 글로우 — 얇은 링을 여러 겹 겹쳐 네온 번짐을 만든다(셰이더 없이).
 	for i in 4:
 		var r: float = radius + i * 3.0

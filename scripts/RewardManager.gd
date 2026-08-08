@@ -6,13 +6,18 @@ extends Node
 ##   1. 하루 플레이 시간 — 오늘 DAILY_GOAL_SECONDS 이상 플레이하면 보상 1회
 ##   2. 연속 접속 일수(streak) — 3/7/15/30일 마일스톤마다 보상 1회
 ##
-## ⚠️ 보상은 **다음 판에만 적용되는 버프**다. 영구 강화로 주면 난이도 밸런스가 무너진다
-##    (사망률 EASY 0% / NORMAL 20% / HARD 60% 로 맞춰 놓은 상태).
+## 보상은 두 종류다:
+##   - **기체 스킨** — 영구 해금, 순수 코스메틱. 눈에 보이는 보상이 여기다([[ShipSkins]]).
+##   - **화력 버프**(무기 레벨·연사·점수 배수) — **다음 판에만** 적용.
+## ⚠️ 성능 보상을 영구로 주면 맞춰 놓은 난이도가 무너진다
+##    (사망률 EASY 0% / NORMAL 20% / HARD 60%). 그래서 영구인 것은 코스메틱뿐이다.
+## ⚠️ 목숨은 보상에서 뺐다 — 숫자만 늘고 화면에 드러나지 않아 보상으로 느껴지지 않았다.
 ##
 ## ⚠️ 날짜는 **로컬 날짜 문자열(YYYY-MM-DD)** 로 비교한다. 유닉스 시간으로 24시간을 재면
 ##    자정을 넘겨도 "같은 날"이 되거나 그 반대가 되어 출석 판정이 어긋난다.
 
 signal daily_goal_reached()
+signal skin_unlocked(skin_id: String)
 signal streak_milestone_reached(days: int)
 signal reward_claimed(kind: String, days: int)
 
@@ -22,8 +27,8 @@ const DAILY_GOAL_SECONDS := 600.0
 ## 연속 접속 보상이 나오는 지점.
 const STREAK_MILESTONES: Array[int] = [3, 7, 15, 30]
 ## 한 판에 얹을 수 있는 버프 상한(누적 수령 방지). 30일 보상 한 개와 같은 크기.
-const MAX_PENDING_LIVES := 3
 const MAX_PENDING_WEAPON := 2
+const MAX_PENDING_FIRE_RATE := 1.4
 
 ## 오늘 날짜(YYYY-MM-DD)와 오늘 누적 플레이 시간.
 var today: String = ""
@@ -34,9 +39,15 @@ var last_played: String = ""
 ## 이미 수령한 보상. "daily:2026-08-08", "streak:7" 형태로 저장한다.
 var _claimed: Dictionary = {}
 ## 다음 판에 적용될 보류 중인 버프.
-var pending_lives: int = 0
+## ⚠️ 목숨은 일부러 뺐다 — 숫자가 늘 뿐 화면에 드러나지 않아 보상으로 느껴지지 않았다.
+##    보이는 보상은 화력(탄 개수·연사)과 기체 스킨이 담당한다.
 var pending_weapon: int = 0
+var pending_fire_rate: float = 1.0
 var pending_score_mult: float = 1.0
+
+## 해금한 기체 스킨(영구)과 현재 장착 중인 스킨.
+var unlocked_skins: Dictionary = {ShipSkins.DEFAULT_ID: true}
+var equipped_skin: String = ShipSkins.DEFAULT_ID
 
 var _daily_emitted: bool = false
 
@@ -117,27 +128,29 @@ func claim(kind: String, days: int = 0) -> bool:
 	_claimed[_key(kind, days)] = true
 	match kind:
 		"daily":
-			pending_lives += 1
+			pending_weapon += 1
 		"streak":
 			match days:
 				3:
 					pending_weapon += 1
 				7:
-					pending_lives += 2
-					pending_weapon += 1
-				15:
-					pending_lives += 2
-					pending_weapon += 1
-					pending_score_mult = maxf(pending_score_mult, 1.5)
-				30:
-					pending_lives += 3
 					pending_weapon += 2
+				15:
+					pending_weapon += 2
+					pending_fire_rate = maxf(pending_fire_rate, 1.25)
+				30:
+					pending_weapon += 2
+					pending_fire_rate = maxf(pending_fire_rate, 1.4)
 					pending_score_mult = maxf(pending_score_mult, 2.0)
-	# 여러 보상을 한꺼번에 수령했을 때(30일까지 안 열어본 경우) 버프가 누적돼
-	# 목숨 13개짜리 판이 만들어졌다. 가장 센 단일 보상(30일)을 천장으로 잡는다.
-	# 매일 받는 정상 흐름에서는 이 상한에 닿지 않는다.
-	pending_lives = mini(pending_lives, MAX_PENDING_LIVES)
+			# 마일스톤마다 기체 스킨을 해금하고 바로 장착한다 —
+			# 받은 즉시 타이틀 화면의 기체가 바뀌어 보상이 눈에 보인다.
+			var skin: Dictionary = ShipSkins.by_streak(days)
+			if not skin.is_empty():
+				unlock_skin(String(skin["id"]), true)
+	# 여러 보상을 한꺼번에 수령하면(30일까지 안 열어본 경우) 버프가 누적된다.
+	# 가장 센 단일 보상(30일)을 천장으로 잡는다 — 정상 흐름에서는 닿지 않는다.
 	pending_weapon = mini(pending_weapon, MAX_PENDING_WEAPON)
+	pending_fire_rate = minf(pending_fire_rate, MAX_PENDING_FIRE_RATE)
 	_save()
 	reward_claimed.emit(kind, days)
 	return true
@@ -145,9 +158,13 @@ func claim(kind: String, days: int = 0) -> bool:
 
 ## 게임 시작 시 호출 — 쌓인 버프를 돌려주고 비운다(다음 판에만 적용).
 func consume_pending() -> Dictionary:
-	var out := {"lives": pending_lives, "weapon": pending_weapon, "score_mult": pending_score_mult}
-	pending_lives = 0
+	var out := {
+		"weapon": pending_weapon,
+		"fire_rate": pending_fire_rate,
+		"score_mult": pending_score_mult,
+	}
 	pending_weapon = 0
+	pending_fire_rate = 1.0
 	pending_score_mult = 1.0
 	_save()
 	return out
@@ -156,6 +173,32 @@ func consume_pending() -> Dictionary:
 func _key(kind: String, days: int) -> String:
 	# 일일 보상은 날짜별로, 연속 보상은 일수별로 한 번씩만 받는다.
 	return "daily:%s" % today if kind == "daily" else "streak:%d" % days
+
+
+# ---------------- 기체 스킨 ----------------
+
+func is_skin_unlocked(id: String) -> bool:
+	return unlocked_skins.has(id)
+
+
+func unlock_skin(id: String, equip: bool = false) -> void:
+	unlocked_skins[id] = true
+	if equip:
+		equipped_skin = id
+	_save()
+	skin_unlocked.emit(id)
+
+
+func equip_skin(id: String) -> bool:
+	if not is_skin_unlocked(id):
+		return false
+	equipped_skin = id
+	_save()
+	return true
+
+
+func get_equipped_skin() -> Dictionary:
+	return ShipSkins.get_skin(equipped_skin)
 
 
 # ---------------- 저장 ----------------
@@ -167,9 +210,11 @@ func _save() -> void:
 	cfg.set_value("reward", "streak_days", streak_days)
 	cfg.set_value("reward", "last_played", last_played)
 	cfg.set_value("reward", "claimed", _claimed.keys())
-	cfg.set_value("reward", "pending_lives", pending_lives)
 	cfg.set_value("reward", "pending_weapon", pending_weapon)
+	cfg.set_value("reward", "pending_fire_rate", pending_fire_rate)
 	cfg.set_value("reward", "pending_score_mult", pending_score_mult)
+	cfg.set_value("reward", "unlocked_skins", unlocked_skins.keys())
+	cfg.set_value("reward", "equipped_skin", equipped_skin)
 	cfg.save(SAVE_PATH)
 
 
@@ -184,7 +229,13 @@ func _load() -> void:
 	_claimed.clear()
 	for k in cfg.get_value("reward", "claimed", []):
 		_claimed[String(k)] = true
-	pending_lives = cfg.get_value("reward", "pending_lives", 0)
 	pending_weapon = cfg.get_value("reward", "pending_weapon", 0)
+	pending_fire_rate = cfg.get_value("reward", "pending_fire_rate", 1.0)
 	pending_score_mult = cfg.get_value("reward", "pending_score_mult", 1.0)
+	unlocked_skins = {ShipSkins.DEFAULT_ID: true}
+	for k in cfg.get_value("reward", "unlocked_skins", []):
+		unlocked_skins[String(k)] = true
+	equipped_skin = cfg.get_value("reward", "equipped_skin", ShipSkins.DEFAULT_ID)
+	if not unlocked_skins.has(equipped_skin):
+		equipped_skin = ShipSkins.DEFAULT_ID
 	_daily_emitted = today_seconds >= DAILY_GOAL_SECONDS

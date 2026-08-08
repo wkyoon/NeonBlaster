@@ -209,15 +209,27 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 정의는 [`RewardManager`](scripts/RewardManager.gd) 한 곳에 있다(오토로드).
 - **하루 10분**(`DAILY_GOAL_SECONDS`) 플레이 → 보상 1회. 시간은 `GameState.PLAYING` 일 때만 센다.
 - **연속 접속**(`STREAK_MILESTONES` = 3/7/15/30일) → 마일스톤마다 1회.
-- 수령은 메뉴에서만 한다(`MainMenu` 하단 보상 띠 → `🎁 DAILY REWARDS` 패널).
+- 수령은 메뉴에서만 한다(`MainMenu` 하단 보상 띠 → `🎁 DAILY REWARDS` 패널 → `🚀 SHIPS` 기체 선택).
   판 중간에 목숨이 늘면 밸런스가 흔들리므로, 게임 중 10분 달성은 **배너로 알리기만** 한다.
 
-⚠️ **보상은 다음 판에만 적용되는 버프다.** 영구 강화로 주면 맞춰 놓은 난이도가 무너진다.
-`GameManager.start_game()` 이 `consume_pending()` 으로 받아 쓰고 즉시 비운다
-(`reward_lives_bonus` / `reward_weapon_bonus` / `score_multiplier`).
-- 목숨 상한은 `MAX_LIVES + reward_lives_bonus` 로 함께 올려야 보너스가 잘리지 않는다.
-- 여러 보상을 몰아서 수령하면 버프가 누적된다 → `MAX_PENDING_LIVES`(3)/`MAX_PENDING_WEAPON`(2) 로 막는다.
-  (막기 전에는 30일치를 한 번에 받아 **목숨 13개**짜리 판이 나왔다.)
+**보상은 두 종류다.**
+1. **기체 스킨**([`ShipSkins`](scripts/ShipSkins.gd)) — 영구 해금, 순수 코스메틱.
+   마일스톤마다 하나씩 해금되고 즉시 장착된다(AURORA 기본 → SOLAR 3일 → PLASMA 7일 → PRISM 15일 → NOVA 30일).
+   색은 기체·글로우·분사 파티클·**탄**·타이틀 엠블럼에 모두 반영된다.
+   ⚠️ 탄까지 안 물들이면 스킨이 겉돈다 — 화면 면적의 대부분은 탄이다.
+   ⚠️ 스킨 색이 1.0 을 넘는 건 의도적이다(glow_hdr_threshold=1.0 초과분만 번진다).
+2. **화력 버프**(무기 레벨·연사·점수 배수) — **다음 판에만** 적용.
+   `GameManager.start_game()` 이 `consume_pending()` 으로 받고, `Player.revive()` 가 실제로 입힌다.
+
+⚠️ **목숨은 보상에서 뺐다.** 숫자만 늘고 화면에 드러나지 않아 보상으로 느껴지지 않았다.
+   보이는 보상은 탄 개수(무기 레벨 4 = 5방향)·연사·기체 외형이 담당한다.
+
+⚠️ **보상 버프를 `Player._ready` 에서 읽으면 안 된다.** 자식(Player)의 `_ready` 는 부모(Game)의
+   `_ready` 보다 **먼저** 실행되므로 그 시점의 `GameManager.reward_*` 는 아직 이전 판 값이다.
+   `Game._ready` 가 `start_game()` 직후 호출하는 `Player.revive()` 에서 적용한다
+   (실측: 연사 배수만 걸리고 무기 레벨은 안 걸렸다).
+- 여러 보상을 몰아서 수령하면 버프가 누적된다 → `MAX_PENDING_WEAPON`(2)/`MAX_PENDING_FIRE_RATE`(1.4) 로 막는다.
+- 성능 보상을 영구로 주면 맞춰 놓은 난이도가 무너진다. 영구인 것은 코스메틱뿐이다.
 
 ⚠️ **날짜는 로컬 날짜 문자열(YYYY-MM-DD)로 비교한다.** 유닉스 시간으로 24시간을 재면
 자정을 넘겨도 같은 날로 잡히거나 그 반대가 되어 출석 판정이 어긋난다.

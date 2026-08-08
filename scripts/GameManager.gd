@@ -50,8 +50,7 @@ var _current_session_id: int = 0
 
 var lives: int = MAX_LIVES:
 	set(value):
-		# 보상 목숨은 MAX_LIVES 를 넘을 수 있어 상한을 보너스만큼 올린다.
-		lives = clamp(value, 0, MAX_LIVES + reward_lives_bonus)
+		lives = clamp(value, 0, MAX_LIVES)
 		lives_changed.emit(lives)
 
 var current_state: int = GameState.MENU:
@@ -67,8 +66,9 @@ var _peak_combo_level: int = 0
 
 ## 출석/플레이시간 보상으로 **이번 판에만** 적용되는 값들(RewardManager.consume_pending 결과).
 ## 영구 강화로 주면 난이도 밸런스가 무너지므로 start_game 마다 새로 받아 쓰고 버린다.
-var reward_lives_bonus: int = 0
+## 목숨은 일부러 없다 — 보이지 않는 보상이라 화력(무기 레벨·연사)으로 대체했다.
 var reward_weapon_bonus: int = 0
+var reward_fire_rate_mult: float = 1.0
 var score_multiplier: float = 1.0
 
 var revives_used: int = 0
@@ -94,12 +94,12 @@ func _process(delta: float) -> void:
 func start_game() -> void:
 	_current_session_id = int(Time.get_unix_time_from_system() * 1000.0)
 	score = 0
-	# 보상 버프를 이번 판에 적용한다. lives 설정 **전에** 받아야 상한 계산이 맞다.
+	# 보상 버프를 이번 판에 적용한다. Player._ready 가 읽으므로 씬 전환 전에 받아야 한다.
 	var bonus: Dictionary = RewardManager.consume_pending()
-	reward_lives_bonus = int(bonus.get("lives", 0))
 	reward_weapon_bonus = int(bonus.get("weapon", 0))
+	reward_fire_rate_mult = float(bonus.get("fire_rate", 1.0))
 	score_multiplier = float(bonus.get("score_mult", 1.0))
-	lives = MAX_LIVES + reward_lives_bonus
+	lives = MAX_LIVES
 	revives_used = 0
 	combo = 0
 	combo_timer = 0.0
