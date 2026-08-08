@@ -135,8 +135,11 @@ func _spawn_enemy() -> void:
 	# 난이도 배수 적용 (체력/속도/총알속도)
 	var dm := _get_diff_mult()
 	enemy.max_health = max(1, int(round(enemy.max_health * float(dm["enemy_hp"]))))
-	enemy.move_speed *= float(dm["enemy_speed"])
-	enemy.bullet_speed *= float(dm["bullet_speed"])
+	# 화면 높이 보정: 세로가 긴 기기에서 적이 화면을 지나는 시간이 같아지도록
+	# 픽셀 속도를 높이에 비례시킨다(GameManager.screen_speed_scale 주석 참조).
+	var hs := GameManager.screen_speed_scale()
+	enemy.move_speed *= float(dm["enemy_speed"]) * hs
+	enemy.bullet_speed *= float(dm["bullet_speed"]) * hs
 
 	# Assign a letter from WordManager (target letter or random decoy)
 	# 타겟 글자가 붙어 나올 확률. 0.3 은 첫 단어 완성이 34.8초까지 늘어져 학습 루프가 느렸다.

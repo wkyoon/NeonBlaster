@@ -16,6 +16,9 @@ enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 @export var fire_rate: float = 8.0  # shots per second
 @export var bullet_damage: int = 1
 @export var invincible_duration: float = 1.0
+## 손가락과 기체 사이의 최소 세로 간격(px). 이보다 가까이 잡아도 기체는 이만큼 위에 뜬다.
+## 130~150 이면 기체와 바로 앞 탄이 손가락에 가리지 않고 함께 보인다.
+@export var touch_lift: float = 140.0
 
 var weapon_type: WeaponType = WeaponType.SINGLE
 var weapon_level: int = 1  # 1-3
@@ -44,6 +47,8 @@ var _is_touching: bool = false
 var _touch_offset: Vector2 = Vector2.ZERO
 var _target_pos: Vector2 = Vector2.ZERO
 var _invincible_timer: float = 0.0
+## 기체 위에 붙는 '지금 쏴야 할 글자' 라벨.
+var _target_letter_label: Label = null
 
 
 func _ready() -> void:
@@ -58,6 +63,41 @@ func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 1  # player layer
 	collision_mask = 2 | 16  # enemy + pickup
+	_create_target_letter()
+
+
+# ---------------- 타겟 글자 표시 ----------------
+
+## 지금 쏴야 할 글자를 **기체 바로 위**에 띄운다.
+##
+## 폰에서는 단어 표시(화면 상단)와 기체(75% 지점)가 화면 높이의 65%,
+## 6.5인치 기준 약 9~10cm 떨어져 있다. 피하면서 단어를 읽으려면 시선이 위아래로 왕복한다.
+## 게다가 플레이 중 실제로 필요한 정보는 전체 단어가 아니라 **다음 글자 하나**다
+## (적들이 글자를 달고 내려오고, 그중 맞는 것을 고른다).
+## 전체 단어는 상단에 맥락으로 두고, 조준에 쓰는 글자만 액션 옆으로 가져온다.
+func _create_target_letter() -> void:
+	_target_letter_label = Label.new()
+	_target_letter_label.name = "TargetLetter"
+	_target_letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_target_letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_target_letter_label.add_theme_font_size_override("font_size", 34)
+	_target_letter_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.4))
+	_target_letter_label.add_theme_color_override("font_outline_color", Color(0.25, 0.15, 0.0))
+	_target_letter_label.add_theme_constant_override("outline_size", 8)
+	# 기체 바로 위 중앙. 손가락은 기체 아래(touch_lift)에 있으므로 가려지지 않는다.
+	_target_letter_label.size = Vector2(120, 44)
+	_target_letter_label.position = Vector2(-60, -86)
+	_target_letter_label.z_index = 5
+	add_child(_target_letter_label)
+	_refresh_target_letter()
+	WordManager.word_progress_updated.connect(func(_f, _t): _refresh_target_letter())
+	WordManager.new_word_started.connect(func(_w): _refresh_target_letter())
+
+
+func _refresh_target_letter() -> void:
+	if _target_letter_label == null:
+		return
+	_target_letter_label.text = WordManager.get_target_letter()
 
 
 func _physics_process(delta: float) -> void:
@@ -221,6 +261,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.pressed and not _is_touching:
 			_is_touching = true
 			_touch_offset = global_position - event.position
+			# ⚠️ 기체를 손가락 위로 띄운다.
+			# 상대 위치만 잡으면 플레이어가 본능적으로 기체를 직접 눌렀을 때 오프셋이 0이 되어
+			# 그 판 내내 **엄지가 기체를 덮는다.** 실측 환산으로 손가락 접촉면은 지름 82~103px,
+			# 기체는 43x36px — 손가락이 기체보다 2배 이상 커서 자기 위치도, 코앞의 탄도 안 보인다.
+			# 아래에서 잡았을 때만 보정하고(위에서 잡으면 그 간격을 존중), 이동은 기존 추종
+			# 로직이 부드럽게 처리하므로 튀지 않는다.
+			_touch_offset.y = minf(_touch_offset.y, -touch_lift)
 			_target_pos = global_position
 		elif not event.pressed:
 			_is_touching = false
@@ -313,6 +360,9 @@ func _spawn_bullet(pos: Vector2, dir: Vector2) -> void:
 	bullet.direction = dir
 	bullet.damage = bullet_damage
 	bullet.is_player_bullet = true
+	# 적과 같은 화면 높이 보정. 세로가 긴 기기에서 총알이 화면을 가로지르는 시간이
+	# 늘어나면 사거리 체감과 교전 리듬이 달라진다.
+	bullet.speed *= GameManager.screen_speed_scale()
 	get_tree().current_scene.add_child(bullet)
 
 

@@ -143,6 +143,29 @@ func go_to_menu() -> void:
 	current_state = GameState.MENU
 
 
+## 설계 기준 화면 높이. 밸런스는 이 높이(720x1280)에서 측정했다.
+const DESIGN_HEIGHT := 1280.0
+
+
+## 화면 높이에 비례한 속도 보정값.
+##
+## `stretch/aspect = expand` 라 폭은 720 으로 고정되고 **높이만 기기 비율만큼 늘어난다.**
+## 실측: 9:16 → 뷰포트 720x1280, 실기기(1:2.14) → 720x1544, 더 긴 폰(1:2.22) → 720x1600.
+## 픽셀 속도를 그대로 두면 세로가 긴 기기에서 적이 화면을 지나는 데 20~24% 더 걸려
+## 게임이 느리게 느껴지고 동시 적 수도 달라진다(9:16 에서 잡은 밸런스가 전이되지 않는다).
+##
+## 세로 이동 속도에 이 값을 곱하면 **화면을 지나는 시간이 기기와 무관하게 일정**해진다.
+## ⚠️ 가로 이동(플레이어 조작)은 폭이 720 으로 고정이라 보정하면 안 된다.
+func screen_speed_scale() -> float:
+	var vp := get_viewport()
+	if vp == null:
+		return 1.0
+	var h: float = vp.get_visible_rect().size.y
+	if h <= 0.0:
+		return 1.0
+	return h / DESIGN_HEIGHT
+
+
 func add_score(amount: int) -> void:
 	# 점수가 음수가 되지 않도록 보정
 	score = max(0, score + amount)
