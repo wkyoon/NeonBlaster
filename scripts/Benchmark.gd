@@ -11,7 +11,9 @@ extends Node2D
 ##   BENCH_DIFFICULTY - easy / normal / hard / all (기본 all)
 ##   BENCH_FAST       - 1이면 시뮬레이션 가속 (time_scale=3) (기본 1)
 ##   BENCH_AI_ERROR   - AI 회피 실패율 0.0~1.0 (기본 0.15 = 목표치 정의 기준). 인간 스킬 근사치.
-##   BENCH_RANK       - 출석 보상 랭크 강제(0~4). 기본은 난이도별 해금 랭크.
+##   BENCH_RANK       - 출석 보상 랭크 강제(0~4). 기본은 강도별 예상 랭크.
+##   ⚠️ EASY/NORMAL/HARD 는 이제 **자동 조절 강도의 세 지점**(0.0 / 0.5 / 1.0)을 뜻한다.
+##      플레이어가 고르는 난이도가 아니다(DifficultyDirector).
 ##   BENCH_OUT        - 결과 파일 경로 prefix (기본 res://benchmark_results / res://benchmark_log)
 ##                      스윕 시 런마다 다른 값을 주어 결과 덮어쓰기를 방지한다.
 
@@ -51,10 +53,14 @@ const TARGET_AI_ERROR := 0.15
 ##    5번 맞으면 게임이 끝나 그 이상 기록되지 않는다 — 사망이 잦은 난이도에서는
 ##    난이도 판별력이 없다. 압박은 포화되지 않는 **동시 적 수(alive_avg)** 로 본다.
 ##    (실측: HARD 사망률 100% 구간에서 hits 가 5.7 로 고정돼 어떤 조정에도 반응하지 않았다.)
+## ⚠️ 이제 세 이름은 난이도가 아니라 **플레이 이력의 세 지점**이다(_bonus_for 참조).
+##    판정의 핵심은 "목표 생존 시간(10분 + 하루당 1분)쯤에 판이 끝나는가" 다.
+##    판에 끝이 있어야 틈새 시간 게임이 된다 — 예전 EASY 는 사망률 0% 라 영영 안 끝났다.
+##    사망률은 전 구간 90% 이상이어야 한다(끝이 보장돼야 하므로).
 const DIFFICULTY_TARGETS := {
-	"EASY":   { "alive": [1.5, 3.5], "death_rate": [0.00, 0.15], "survival_ratio": 0.85 },
-	"NORMAL": { "alive": [2.5, 5.0], "death_rate": [0.10, 0.35], "survival_ratio": 0.65 },
-	"HARD":   { "alive": [3.5, 6.5], "death_rate": [0.35, 0.70], "survival_ratio": 0.40 },
+	"EASY":   { "alive": [1.5, 4.5], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
+	"NORMAL": { "alive": [1.5, 5.0], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
+	"HARD":   { "alive": [1.5, 5.5], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
 }
 
 var _game_scene: Node2D = null
@@ -121,7 +127,7 @@ func _ready() -> void:
 		str(_difficulty_queue), _total_runs, _max_time, seed_str, _fast_mode, _time_scale_target
 	])
 	_log("AI dodge error: %.0f%% (0=perfect AI, 20=avg human)" % (GameManager.ai_dodge_error * 100))
-	_log("Rank: %s (난이도 해금 랭크에서 측정 — NORMAL=1(+6%%), HARD=2(+12%%))" % (
+	_log("Rank: %s (강도별 예상 랭크에서 측정 — 중간=1(+6%%), 최고=2(+12%%))" % (
 		"BENCH_RANK=%d 강제" % _forced_rank if _forced_rank >= 0 else "자동"))
 	_log("=".repeat(72))
 
@@ -198,6 +204,13 @@ func _start_next_difficulty() -> void:
 	#    랭크 0 으로 재면 실제로는 아무도 겪지 않는 조건을 측정하게 된다.
 	#    BENCH_RANK 로 강제하면 그 값을 모든 난이도에 쓴다(상위 랭크 체감 확인용).
 	RewardManager.bench_rank_override = _rank_for(_current_difficulty)
+	# 난이도 선택이 사라졌으므로 "EASY/NORMAL/HARD" 는 **자동 조절 강도의 세 지점**을 뜻한다.
+	# CALM(0.0) / 중간(0.5) / INTENSE(1.0). 플레이어가 실제로 오가는 구간 전체를 덮는다.
+	# 강도는 강제하지 않는다 — 경과 시간에 따라 오르는 것이 이제 설계의 핵심이다.
+	# 대신 난이도 이름은 **보너스 분수**(= 며칠째 하고 있는가)를 뜻한다.
+	DifficultyDirector.force_intensity = -1.0
+	DifficultyDirector.bonus_minutes = _bonus_for(_current_difficulty)
+	DifficultyDirector.reset_run()
 	_reset_learning_state()
 	_log("\n" + "#".repeat(72))
 	_log("# Difficulty: %s" % _current_difficulty)
@@ -245,12 +258,29 @@ func _reset_learning_state() -> void:
 	WordManager.set_stage(0)
 
 
+## 이 이름이 가리키는 누적 보너스 분수.
+## 난이도 선택이 사라졌으므로 세 이름은 **플레이 이력의 세 지점**을 뜻한다:
+##   EASY = 첫날(목표 10분) / NORMAL = 5일차(15분) / HARD = 20일차 상한(30분)
+func _bonus_for(name: String) -> int:
+	match name:
+		"EASY":   return 0
+		"NORMAL": return 5
+		"HARD":   return DifficultyDirector.MAX_BONUS_MINUTES
+	return 0
+
+
 ## 이 난이도를 여는 최소 랭크. 실제 플레이어가 그 난이도에 들어올 때의 최저 능력치다.
+## 그 강도에 도달한 플레이어가 대략 갖고 있을 랭크.
+## 강도는 오래 잘한 사람에게서 올라가고, 랭크도 오래 접속한 사람에게서 올라간다 —
+## 랭크 0 으로 최고 강도를 재면 실제로는 아무도 겪지 않는 조건을 재게 된다.
 func _rank_for(name: String) -> int:
 	if _forced_rank >= 0:
 		return _forced_rank
-	var i := _parse_difficulty(name)
-	return RewardManager.DIFFICULTY_RANK[clampi(i, 0, RewardManager.DIFFICULTY_RANK.size() - 1)]
+	match name:
+		"EASY":   return 0
+		"NORMAL": return 1
+		"HARD":   return 2
+	return 0
 
 
 func _parse_difficulty(name: String) -> int:
@@ -553,6 +583,24 @@ func _diagnose_balance(diff: String, st: Dictionary) -> Array:
 		])
 	else:
 		lines.append("  피격 %.1f (참고) | 위험상황 %.1f회" % [hits, avg["near_death"]])
+
+	# --- 1-1) 목표 생존 시간 도달률 (이 설계의 핵심 판정) ---
+	var goal := DifficultyDirector.get_target_seconds()
+	var ratio := float(avg["survival_time"]) / maxf(1.0, goal)
+	if float(avg["survival_time"]) >= _max_time - 1.0:
+		lines.append("⚠ 제한시간(%ds)에 걸렸다 — BENCH_TIME 을 목표(%ds)보다 크게 줄 것" % [
+			int(_max_time), int(goal)])
+	elif ratio < 0.75:
+		lines.append("✗ 너무 일찍 끝남 — 평균 %.0fs / 목표 %.0fs (%.0f%%)" % [
+			avg["survival_time"], goal, ratio * 100.0])
+		lines.append("  → DifficultyDirector 의 CALM_RATIO/CALM_MAX 를 올리거나 INTENSE 를 완화할 것")
+	elif ratio > 1.25:
+		lines.append("✗ 너무 늦게 끝남 — 평균 %.0fs / 목표 %.0fs (%.0f%%)" % [
+			avg["survival_time"], goal, ratio * 100.0])
+		lines.append("  → LETHAL 을 강화하거나 LETHAL_AT 을 낮출 것")
+	else:
+		lines.append("✓ 목표 시간 적중 — 평균 %.0fs / 목표 %.0fs (%.0f%%)" % [
+			avg["survival_time"], goal, ratio * 100.0])
 
 	# --- 2) 사망률 ---
 	if death_rate < dr_lo:

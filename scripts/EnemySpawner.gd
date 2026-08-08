@@ -9,52 +9,25 @@ signal enemy_killed(enemy_type: int, points: int)
 ## 여기만 고치면 게임에 반영되지 않는다 — 반드시 Game.tscn 값도 같이 수정할 것.
 @export var initial_spawn_interval: float = 1.1
 @export var min_spawn_interval: float = 0.3
-@export var difficulty_scale: float = 0.91  # 웨이브당 스폰 간격 배수 (작을수록 빠른 램프)
+## ⚠️ 더 이상 쓰지 않는다. 난이도 램프는 DifficultyDirector 가 경과 시간으로 만든다.
+## (Game.tscn 이 이 @export 를 덮어쓰고 있으므로 선언은 남겨 둔다.)
+@export var difficulty_scale: float = 0.91
 @export var wave_duration: float = 11.0
+## 적 체력 가산에 쓰이는 웨이브 상한. 이 위로는 더 단단해지지 않는다.
+const MAX_STAT_WAVE := 8
 
-# 난이도별 배수 (WordManager.current_difficulty 기반)
-# spawn_interval: 스폰 간격 배수 (작을수록 빈번)
-# enemy_hp: 적 체력 배수
-# enemy_speed: 적 속도 배수
-# wave_duration: 웨이브 지속시간 배수 (작을수록 빠른 웨이브 진행)
+## 스포너 배수. 난이도는 **플레이어가 고르지 않고** DifficultyDirector 가 맞춘다.
+## 조절 폭과 튜닝 기록은 그쪽에 모여 있다(CALM ~ INTENSE 보간).
+##
+## ⚠️ 예전에는 EASY/NORMAL/HARD 를 여기서 분기했는데, 틈새 시간용 게임에
+##    난이도 선택이 맞지 않았다 — 켤 때마다 판단을 요구하고, 해금할수록 더 자주 죽어
+##    보상이 벌처럼 느껴졌다(실측 사망률 EASY 0% → HARD 50%).
 func _get_diff_mult() -> Dictionary:
-	match WordManager.current_difficulty:
-		WordManager.Difficulty.EASY:
-			# EASY 는 **랭크 0 = 신규 플레이어가 처음 만나는 판**이다. 여기서 잘한다고 느껴야
-			# NORMAL/HARD 를 열고 싶어진다(난이도 해금은 RewardManager.DIFFICULTY_RANK).
-			# 목표 사망률 0~15%.
-			#
-			# ⚠️ 예전 값(spawn 0.62 / hp 0.5)은 **"EASY 도 방심하면 죽어야 한다(목표 45%)"**
-			#    시절의 튜닝이다. 이후 "잘하는 것처럼 느끼게" 방향으로 바뀌며 목표가 0~15% 로
-			#    내려갔는데 배수는 그대로여서 실측 사망률이 40% 였다.
-			# ⚠️ hp 0.5 는 NORMAL(0.45)보다 **높아 역전**이었다. EASY 적이 더 단단해
-			#    처치시간 1.6초(NORMAL 1.4초)로 잔존이 늘고 동시 적 수까지 EASY 가 더 많았다.
-			#
-			# 튜닝 기록 (전부 오차 0.15·fixed-fps·해금 랭크 측정):
-			#  · 적 속도 상향(0.85→1.05)은 실패. 적이 화면을 빨리 지나가 잔존이 줄어
-			#    밀도가 떨어지면서 위협 증가분이 상쇄됐다. 0.85 유지.
-			#  · 적 탄속은 계단형 응답이라 미세 조정에 못 쓴다(0.85→13% / 0.90→53%).
-			# 실측(10게임·오차0.15·랭크0): 동시 적 3.1 / 사망률 0% / 생존 100% / 4.6단어분
-			return {"spawn_interval": 0.85, "enemy_hp": 0.38, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.80}
-		WordManager.Difficulty.NORMAL:
-			# NORMAL 은 랭크 1(영구 화력 +6%)에서 열린다. 목표 사망률 10~35%.
-			# 압박(동시 적)은 이미 목표 안이었고 사망률만 60% 로 과다했다 →
-			# 밀도는 두고 **치사율**(적 탄속)만 낮춘다. 그 뒤 밀도로 미세 조정했는데
-			# 밀도 응답이 매우 가파르다: spawn_interval 0.58→0% / 0.53→43% / 0.48→80%.
-			# 0.56 이 목표 구간 한가운데다.
-			# 실측(10게임·오차0.15·랭크1): 동시 적 3.7 / 사망률 20% / 생존 92% / 6.6단어분
-			return {"spawn_interval": 0.56, "enemy_hp": 0.45, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 0.90}
-		WordManager.Difficulty.HARD:
-			# HARD 는 랭크 2(영구 화력 +12%)에서 열린다. 목표 사망률 35~70%.
-			# 밀도가 아니라 속도·체력으로 어려워야 한다. 실측 100% 였으므로
-			# 탄속과 적 속도를 함께 내려 치사율만 낮춘다(압박은 목표 안이었다).
-			# 실측(10게임·오차0.15·랭크2): 동시 적 4.4 / 사망률 50% / 생존 83% / 7.0단어분
-			return {"spawn_interval": 0.52, "enemy_hp": 0.6, "enemy_speed": 1.15, "wave_duration": 0.8, "bullet_speed": 1.0}
-	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.0}
+	return DifficultyDirector.get_multipliers()
+
 
 var _enemy_scene: PackedScene = preload("res://scenes/Enemy.tscn")
 var _spawn_timer: float = 0.0
-var _spawn_interval: float = 2.0
 var _wave_timer: float = 0.0
 var _current_wave: int = 1
 var _enemies_alive: int = 0
@@ -69,8 +42,6 @@ func _ready() -> void:
 
 func start() -> void:
 	_current_wave = 1
-	var dm := _get_diff_mult()
-	_spawn_interval = initial_spawn_interval * float(dm["spawn_interval"])
 	_spawn_timer = 1.0  # first spawn after 1s
 	_wave_timer = 0.0
 	_is_active = true
@@ -89,7 +60,7 @@ func _process(delta: float) -> void:
 	_spawn_timer -= delta
 	if _spawn_timer <= 0:
 		_spawn_enemy()
-		_spawn_timer = _spawn_interval
+		_spawn_timer = _current_spawn_interval()
 
 	_wave_timer += delta
 	var dm := _get_diff_mult()
@@ -102,40 +73,44 @@ func _spawn_enemy() -> void:
 	var enemy: Enemy = _enemy_scene.instantiate()
 	var type: Enemy.EnemyType = _pick_enemy_type()
 	enemy.enemy_type = type
+	# ⚠️ 웨이브 기반 체력 가산에는 상한이 필요하다. 목표가 10분이면 웨이브가 50을 넘어
+	#    체력이 끝없이 불어난다(예전엔 90초 판이라 웨이브 8이 최대였다).
+	#    시간에 따른 난이도 상승은 DifficultyDirector 가 담당한다.
+	var wave := mini(_current_wave, MAX_STAT_WAVE)
 
 	match type:
 		Enemy.EnemyType.CHASER:
-			enemy.max_health = 1 + _current_wave / 5
+			enemy.max_health = 1 + wave / 5
 			enemy.move_speed = randf_range(160.0, 230.0)
 			enemy.score_value = 10
 		Enemy.EnemyType.SHOOTER:
-			enemy.max_health = 2 + _current_wave / 4
+			enemy.max_health = 2 + wave / 4
 			enemy.move_speed = randf_range(130.0, 180.0)
 			enemy.fire_rate = randf_range(1.2, 2.2)
 			enemy.score_value = 20
 		Enemy.EnemyType.TANK:
-			enemy.max_health = 5 + _current_wave / 2
+			enemy.max_health = 5 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
 			enemy.fire_rate = randf_range(0.5, 1.0)
 			enemy.score_value = 50
 		Enemy.EnemyType.DASHER:
 			# 빠른 지그재그 돌진형 - 체력 낮음, 속도 매우 빠름
-			enemy.max_health = 1 + _current_wave / 6
+			enemy.max_health = 1 + wave / 6
 			enemy.move_speed = randf_range(250.0, 330.0)
 			enemy.score_value = 15
 		Enemy.EnemyType.BOMBER:
 			# 자폭형 - 체력 보통, 보통 속도
-			enemy.max_health = 2 + _current_wave / 5
+			enemy.max_health = 2 + wave / 5
 			enemy.move_speed = randf_range(140.0, 190.0)
 			enemy.score_value = 25
 		Enemy.EnemyType.SPLITTER:
 			# 분열형 - 체력 높음 (죽으면 3마리로 분열)
-			enemy.max_health = 3 + _current_wave / 3
+			enemy.max_health = 3 + wave / 3
 			enemy.move_speed = randf_range(100.0, 140.0)
 			enemy.score_value = 30
 		Enemy.EnemyType.SHIELDER:
 			# 쉴드형 - 체력 매우 높음, 재생, 원형 탄막
-			enemy.max_health = 6 + _current_wave / 2
+			enemy.max_health = 6 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
 			enemy.fire_rate = randf_range(0.6, 1.0)
 			enemy.score_value = 40
@@ -201,12 +176,20 @@ func _pick_enemy_type() -> Enemy.EnemyType:
 	return Enemy.EnemyType.CHASER
 
 
+## 지금 이 순간의 스폰 간격. **경과 시간에 따라 매번 다시 계산한다.**
+##
+## ⚠️ 예전에는 웨이브마다 `_spawn_interval *= difficulty_scale`(0.91) 로 누적했다.
+##    그 램프는 90초짜리 판 기준이라, 목표가 10분으로 늘어난 지금은 폭주한다
+##    (웨이브 11초 × 55웨이브 → 0.91^54 ≈ 0.006, 사실상 무한 스폰).
+##    난이도 곡선의 주인은 DifficultyDirector 하나뿐이어야 한다.
+func _current_spawn_interval() -> float:
+	var dm := _get_diff_mult()
+	return maxf(min_spawn_interval, initial_spawn_interval * float(dm["spawn_interval"]))
+
+
 func _next_wave() -> void:
 	wave_cleared.emit(_current_wave)
 	_current_wave += 1
-	var dm := _get_diff_mult()
-	var min_int: float = min_spawn_interval * float(dm["spawn_interval"])
-	_spawn_interval = max(min_int, _spawn_interval * difficulty_scale)
 	_wave_timer = 0.0
 	wave_started.emit(_current_wave)
 	# Bonus score for wave clear

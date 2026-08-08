@@ -7,7 +7,6 @@ extends Control
 @onready var _start_button: Button = $StartButton
 @onready var _high_score_label: Label = $HighScoreLabel
 var _difficulty_buttons: VBoxContainer
-var _selected_difficulty: WordManager.Difficulty = WordManager.Difficulty.EASY
 var _auto_play_btn: Button = null
 var _score_panel: Control = null
 
@@ -63,96 +62,56 @@ func _create_title_emblem() -> void:
 	add_child(emblem)
 
 
-## 보상 수령 등으로 해금 상태가 바뀌었을 때 난이도 선택을 다시 만든다.
-func _rebuild_difficulty_selector() -> void:
-	if _difficulty_buttons != null:
-		# ⚠️ queue_free() 만 하면 이 프레임 안에서는 노드가 살아 있어 이름("DifficultySelector")을
-		#    계속 붙잡는다. 새로 만든 컨테이너는 자동으로 다른 이름을 받아
-		#    get_node("DifficultySelector") 가 실패한다(실측: 재생성 직후 조회 불가).
-		#    먼저 트리에서 떼어 이름을 놓아준 뒤 해제한다.
-		remove_child(_difficulty_buttons)
-		_difficulty_buttons.queue_free()
-		_difficulty_buttons = null
-	_create_difficulty_selector()
-
-
+## 난이도 선택 대신 **랭크·화력 표시**만 둔다.
+## 난이도는 DifficultyDirector 가 최근 판 결과로 알아서 맞춘다 —
+## 틈새 시간에 켜는 게임이라 시작 전에 판단을 요구하면 안 된다.
 func _create_difficulty_selector() -> void:
 	_difficulty_buttons = VBoxContainer.new()
 	_difficulty_buttons.name = "DifficultySelector"
 	_difficulty_buttons.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_difficulty_buttons.position.y = -350
+	_difficulty_buttons.position.y = -300
 	_center_horizontally(_difficulty_buttons)
 	_difficulty_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
-	_difficulty_buttons.add_theme_constant_override("separation", 10)
+	_difficulty_buttons.add_theme_constant_override("separation", 6)
 	add_child(_difficulty_buttons)
 
-	var label := Label.new()
-	label.text = "DIFFICULTY"
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", Color(0.6, 0.7, 0.9))
-	_difficulty_buttons.add_child(label)
+	# 오늘의 목표 생존 시간. 이 게임의 성장 축이라 반드시 보여야 한다 —
+	# "매일 하면 1분씩 더 오래 산다"가 화면에 없으면 성장이 안 보인다.
+	var goal_label := Label.new()
+	goal_label.name = "GoalLabel"
+	goal_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	goal_label.add_theme_font_size_override("font_size", 26)
+	goal_label.add_theme_color_override("font_color", Color(0.45, 1.0, 0.85))
+	var secs := int(DifficultyDirector.get_target_seconds())
+	goal_label.text = "SURVIVE  %d:%02d" % [secs / 60, secs % 60]
+	_difficulty_buttons.add_child(goal_label)
 
-	var btn_container := HBoxContainer.new()
-	btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_container.add_theme_constant_override("separation", 12)
-	_difficulty_buttons.add_child(btn_container)
+	var hint := Label.new()
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_font_size_override("font_size", 15)
+	hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.85))
+	hint.text = "+1 MIN EVERY DAY YOU PLAY"
+	_difficulty_buttons.add_child(hint)
 
-	var difficulties := [
-		# 별 개수로 난이도를 한눈에 보이게 한다(글자만으로는 상대적 세기가 안 읽힌다).
-		{ "name": "★\nEASY", "value": WordManager.Difficulty.EASY, "color": Color(0.3, 1.0, 0.5) },
-		{ "name": "★★\nNORMAL", "value": WordManager.Difficulty.NORMAL, "color": Color(1.0, 0.8, 0.2) },
-		{ "name": "★★★\nHARD", "value": WordManager.Difficulty.HARD, "color": Color(1.0, 0.3, 0.3) },
-	]
-
-	for diff in difficulties:
-		var btn := Button.new()
-		var value: int = diff["value"]
-		# 상위 난이도는 **연속 접속 보상으로 올린 랭크**를 갖춘 뒤에 도전한다.
-		# 능력치 없이 들어가면 100% 죽는 판이라 도전이 아니라 벽이 된다.
-		var unlocked: bool = RewardManager.is_difficulty_unlocked(value)
-		btn.text = diff["name"] if unlocked else "🔒\n%d DAY" % RewardManager.days_to_unlock(value)
-		btn.custom_minimum_size = Vector2(110, 62)
-		btn.add_theme_font_size_override("font_size", 20)
-		btn.add_theme_color_override("font_color", diff["color"])
-		btn.add_theme_color_override("font_hover_color", Color.WHITE)
-		btn.disabled = not unlocked
-		if unlocked:
-			btn.pressed.connect(_on_difficulty_selected.bind(value, btn, btn_container))
-		btn_container.add_child(btn)
-
-	# 열려 있는 것 중 가장 높은 난이도를 기본 선택한다 —
-	# 어렵게 해금해 놓고 매번 EASY 로 되돌아가면 보상이 무의미해 보인다.
-	var top := 0
-	for i in difficulties.size():
-		if RewardManager.is_difficulty_unlocked(difficulties[i]["value"]):
-			top = i
-	_selected_difficulty = difficulties[top]["value"]
-	_highlight_selected(btn_container.get_child(top), btn_container)
-
-	# 현재 랭크와 영구 화력을 난이도 선택 바로 아래에 알려준다.
-	var rank_label := Label.new()
-	rank_label.name = "RankLabel"
-	rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rank_label.add_theme_font_size_override("font_size", 16)
-	rank_label.add_theme_color_override("font_color", Color(0.75, 0.85, 1.0))
-	rank_label.text = "RANK %d/%d    POWER +%d%%" % [
+	var power_label := Label.new()
+	power_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	power_label.add_theme_font_size_override("font_size", 16)
+	power_label.add_theme_color_override("font_color", Color(0.7, 0.8, 0.95))
+	power_label.text = "RANK %d/%d   SHIP POWER +%d%%" % [
 		RewardManager.get_rank(), RewardManager.MAX_RANK,
 		roundi(RewardManager.get_rank_power() * 100.0)]
-	_difficulty_buttons.add_child(rank_label)
+	_difficulty_buttons.add_child(power_label)
 
 
-func _on_difficulty_selected(diff: WordManager.Difficulty, btn: Button, container: HBoxContainer) -> void:
-	AudioManager.play_sfx("button")
-	_selected_difficulty = diff
-	_highlight_selected(btn, container)
-
-
-func _highlight_selected(selected: Button, container: HBoxContainer) -> void:
-	for child in container.get_children():
-		child.modulate = Color(0.6, 0.6, 0.6)
-	selected.modulate = Color(1.0, 1.0, 1.0)
-	selected.add_theme_color_override("font_color", Color.WHITE)
+## 보상 수령 등으로 랭크가 바뀌었을 때 다시 만든다.
+func _rebuild_difficulty_selector() -> void:
+	if _difficulty_buttons != null:
+		# ⚠️ queue_free() 만 하면 이 프레임 안에서는 노드가 살아 있어 이름을 계속 붙잡는다.
+		#    새로 만든 컨테이너가 다른 이름을 받아 get_node 가 실패한다(실측).
+		remove_child(_difficulty_buttons)
+		_difficulty_buttons.queue_free()
+		_difficulty_buttons = null
+	_create_difficulty_selector()
 
 
 func _create_bottom_buttons() -> void:
@@ -700,7 +659,6 @@ func _on_auto_play_toggle() -> void:
 
 func _on_start() -> void:
 	AudioManager.play_sfx("button")
-	WordManager.set_difficulty(_selected_difficulty)
 	GameManager.start_game()
 	SceneManager.goto_game()
 

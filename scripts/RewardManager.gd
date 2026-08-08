@@ -18,6 +18,9 @@ extends Node
 ##    자정을 넘겨도 "같은 날"이 되거나 그 반대가 되어 출석 판정이 어긋난다.
 
 signal daily_goal_reached()
+## 날짜가 넘어갔을 때. days_missed = 건너뛴 날수(0 이면 어제도 했다).
+## DifficultyDirector 가 목표 생존 시간을 늘리거나 되돌리는 데 쓴다.
+signal day_advanced(days_missed: int)
 signal skin_unlocked(skin_id: String)
 signal streak_milestone_reached(days: int)
 signal reward_claimed(kind: String, days: int)
@@ -38,15 +41,13 @@ const MAX_PENDING_SCORE_MULT := 1.2
 ## 연속 접속 마일스톤을 하나 받을 때마다 랭크가 1 오른다(0~4). **영구**다.
 ## 랭크는 두 가지를 준다:
 ##   1. 영구 화력 `RANK_POWER_STEP` — 판마다 사라지지 않는 기본기
-##   2. 난이도 해금 — 이 능력치를 갖춘 뒤에 NORMAL/HARD 에 도전하는 구조
+##   2. 기체 스킨 해금(ShipSkins)
 ## ⚠️ 랭크는 `_claimed` 의 "streak:*" 개수로 **파생**시킨다. 따로 저장하면 어긋날 수 있다.
-## ⚠️ 해금은 **한 번 받으면 영구**다. 연속이 끊겼다고 난이도를 다시 잠그면
-##    하루 빠뜨린 사람이 하던 난이도를 못 하게 되어 복귀를 막는다.
 const RANK_POWER_STEP := 0.06
 const MAX_RANK := 4
-## 난이도별 필요 랭크. EASY 는 항상 열려 있다.
-const DIFFICULTY_RANK: Array[int] = [0, 1, 2]
-const DIFFICULTY_NAMES: Array[String] = ["EASY", "NORMAL", "HARD"]
+## ⚠️ 예전에는 랭크로 NORMAL/HARD 를 해금했다. 없앴다 —
+##    해금할수록 더 자주 죽는 판이 열려 보상이 벌처럼 느껴졌다(실측 사망률 0% → 50%).
+##    난이도는 DifficultyDirector 가 맞추고, 랭크는 기체 스킨과 화력만 담당한다.
 
 ## 오늘 날짜(YYYY-MM-DD)와 오늘 누적 플레이 시간.
 var today: String = ""
@@ -96,19 +97,31 @@ func _roll_over_day() -> void:
 	today_seconds = 0.0
 	_daily_emitted = false
 
+	var missed := 0
 	if last_played == "":
 		streak_days = 1
 	elif last_played == _yesterday_string():
 		streak_days += 1
 	elif last_played != d:
-		# 하루 이상 걸렀다 — 연속 기록이 끊긴다.
+		# 하루 이상 걸렀다 — 연속 기록(streak)은 끊긴다.
+		# ⚠️ 다만 DifficultyDirector 의 보너스 시간은 **거른 날수만큼만** 줄어든다.
+		#    거기까지 0으로 되돌리면 며칠 못 한 사람이 돌아올 이유가 사라진다.
+		missed = _days_between(last_played, d) - 1
 		streak_days = 1
 	last_played = d
 	_save()
+	day_advanced.emit(maxi(missed, 0))
 
 	for m in STREAK_MILESTONES:
 		if streak_days == m and not is_claimed("streak", m):
 			streak_milestone_reached.emit(m)
+
+
+## 두 날짜 문자열 사이의 일수. 며칠을 걸렀는지 세는 데 쓴다.
+func _days_between(from_date: String, to_date: String) -> int:
+	var a := Time.get_unix_time_from_datetime_string(from_date + "T00:00:00")
+	var b := Time.get_unix_time_from_datetime_string(to_date + "T00:00:00")
+	return int(roundf((b - a) / 86400.0))
 
 
 func _today_string() -> String:
@@ -207,22 +220,6 @@ func get_rank() -> int:
 ## 랭크가 주는 영구 화력. 판이 끝나도 사라지지 않는다.
 func get_rank_power() -> float:
 	return get_rank() * RANK_POWER_STEP
-
-
-## 이 난이도를 열 수 있는가. EASY 는 항상 true.
-func is_difficulty_unlocked(diff: int) -> bool:
-	var i := clampi(diff, 0, DIFFICULTY_RANK.size() - 1)
-	return get_rank() >= DIFFICULTY_RANK[i]
-
-
-## 해금까지 필요한 연속 접속 일수. 이미 열렸으면 0.
-func days_to_unlock(diff: int) -> int:
-	var i := clampi(diff, 0, DIFFICULTY_RANK.size() - 1)
-	var need: int = DIFFICULTY_RANK[i]
-	if get_rank() >= need:
-		return 0
-	# need 번째 마일스톤이 해금 지점이다(1→3일, 2→7일).
-	return STREAK_MILESTONES[mini(need - 1, STREAK_MILESTONES.size() - 1)]
 
 
 # ---------------- 기체 스킨 ----------------

@@ -21,6 +21,10 @@ var _is_game_over: bool = false
 var _word_reveal: Control
 
 
+## 이번 판의 경과 시간. 난이도 자동 조절이 "제대로 한 판이었는지" 판단하는 데 쓴다.
+var _run_seconds: float = 0.0
+
+
 func _ready() -> void:
 	EffectsManager.set_camera(_camera)
 	# Create word reveal overlay
@@ -37,6 +41,7 @@ func _ready() -> void:
 	_pause_button.pressed.connect(_on_pause_button)
 
 	# Start game
+	DifficultyDirector.reset_run()
 	GameManager.start_game()
 	_spawner.start()
 	_player.revive()
@@ -215,3 +220,10 @@ func _on_word_completed(word: String) -> void:
 func _start_next_word() -> void:
 	if not _is_game_over and GameManager.current_state == GameManager.GameState.PLAYING:
 		WordManager.start_new_word()
+
+
+func _process(delta: float) -> void:
+	if GameManager.current_state == GameManager.GameState.PLAYING:
+		_run_seconds += delta
+		# 난이도는 경과 시간으로 정해진다 — 목표 시간 근처에서 판이 끝나도록.
+		DifficultyDirector.set_elapsed(_run_seconds)

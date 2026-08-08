@@ -32,6 +32,7 @@ AudioManager="*res://scripts/AudioManager.gd"
 EffectsManager="*res://scripts/EffectsManager.gd"
 WordManager="*res://scripts/WordManager.gd"
 RewardManager="*res://scripts/RewardManager.gd"
+DifficultyDirector="*res://scripts/DifficultyDirector.gd"
 
 [display]
 

@@ -460,11 +460,11 @@ func _drop_powerup() -> void:
 	else:
 		powerup.type = GameManager.PowerUpType.TIME_SLOW  # 6%  legendary
 
-	# EASY 에서는 시간 감속(TIME_SLOW)을 드롭하지 않는다.
-	# 이 게임의 타겟은 속도감을 즐기는 유저인데, 가장 느린 난이도에서
+	# 잔잔한 구간에서는 시간 감속(TIME_SLOW)을 드롭하지 않는다.
+	# 이 게임의 타겟은 속도감을 즐기는 유저인데, 이미 느린 판에서
 	# time_scale 0.3 을 4초간 걸면 체감이 더 늘어진다. 6%는 LIGHTNING 으로 넘긴다.
 	if powerup.type == GameManager.PowerUpType.TIME_SLOW \
-			and WordManager.current_difficulty == WordManager.Difficulty.EASY:
+			and DifficultyDirector.intensity < 0.4:
 		powerup.type = GameManager.PowerUpType.LIGHTNING
 
 	powerup.global_position = global_position

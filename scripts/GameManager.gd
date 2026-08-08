@@ -119,12 +119,13 @@ func game_over() -> void:
 
 
 func _record_current_score() -> void:
-	var difficulty_names: Array[String] = ["EASY", "NORMAL", "HARD"]
-	var difficulty_idx := clampi(int(WordManager.current_difficulty), 0, difficulty_names.size() - 1)
+	# 난이도 선택이 사라졌으므로 그 판의 **자동 조절 강도**를 남긴다(LV 1~5).
+	# 기록에만 쓰고 플레이 중에는 보여주지 않는다 — 숫자를 띄우면 결국 난이도를 의식하게 된다.
+	var level_name := "LV %d" % DifficultyDirector.get_level()
 	var record := {
 		"session_id": _current_session_id,
 		"score": score,
-		"difficulty": difficulty_names[difficulty_idx],
+		"difficulty": level_name,
 		"timestamp": Time.get_unix_time_from_system(),
 	}
 	# 부활 후 다시 게임오버가 되어도 같은 플레이 기록을 최종 점수로 갱신합니다.
