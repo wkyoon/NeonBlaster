@@ -5,6 +5,13 @@ class_name ThemeStages
 ## 다음 테마로 넘어가고 배경 팔레트·파티클 모티프도 함께 바뀐다.
 ## (난이도 EASY/NORMAL/HARD 는 적 밀도·속도·체력만 담당한다 — AGENTS.md 밸런스 절차 참조.)
 ##
+## ⚠️ 테마 구성 규칙 (이 셋이 어긋나면 학습 흐름이 무너진다)
+##   1. words 는 전부 **그 테마와 같은 카테고리**여야 한다. 예전 MACHINE 은 사전에 단어가
+##      3개뿐이라 탈것(JET/ROCKET/SPACESHIP)과 과학(LASER)을 섞어 놨었다 — 주제와 단어가 어긋났다.
+##   2. 테마마다 **같은 개수**(현재 8개). 예전에는 ANIMAL 13 / MACHINE 7 로 편중돼 있었다.
+##   3. 스테이지 순서는 **평균 글자수 오름차순** — 진행할수록 조금씩 어려워진다.
+##      예전 순서는 4.6 → 3.9 → 3.4 → 4.9 → 4.9 → 5.9 로 중간에 쉬워졌다.
+##
 ## 새 테마를 추가할 때:
 ##   1. words 는 전부 [WordDictionary](WordDictionary.gd) 에 등록돼 있어야 한다(설명·이모지·TTS용).
 ##   2. words 는 WORDS_PER_STAGE개 이상이어야 스테이지가 완주 가능하다.
@@ -20,62 +27,67 @@ enum Motif { STAR, BLOB, PAW, LEAF, PULSE, GEAR }
 
 const STAGES: Array[Dictionary] = [
 	{
-		"id": "COLOR",
-		"name_ko": "색깔",
-		"name_en": "COLORS",
-		"words": ["RED", "BLUE", "PINK", "YELLOW", "BLACK", "GREEN", "WHITE"],
-		"bg": Color(0.10, 0.04, 0.13),
-		"accent": Color(1.0, 0.45, 0.85),
-		"particle": Color(1.0, 0.75, 0.35),
-		"motif": Motif.BLOB,
-		# 색깔 테마만 입자마다 다른 색을 쓴다(무지개 방울).
-		"particle_rainbow": true,
-	},
-	{
-		"id": "ANIMAL",
-		"name_ko": "동물",
-		"name_en": "ANIMALS",
-		"words": ["DOG", "CAT", "TIGER", "SNAKE", "RACCOON", "FOX", "BEAR", "OWL", "BEE", "BIRD", "FISH", "WOLF", "BAT"],
-		"bg": Color(0.05, 0.10, 0.06),
-		"accent": Color(1.0, 0.72, 0.25),
-		"particle": Color(0.75, 1.0, 0.55),
-		"motif": Motif.PAW,
-	},
-	{
 		"id": "BODY",
 		"name_ko": "몸",
 		"name_en": "BODY",
-		"words": ["EYE", "EAR", "ARM", "LEG", "HAND", "FOOT", "HEAD"],
+		# 평균 3.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["EYE", "ARM", "LEG", "EAR", "NOSE", "HAND", "FOOT", "HEAD"],
 		"bg": Color(0.11, 0.05, 0.07),
 		"accent": Color(1.0, 0.35, 0.45),
 		"particle": Color(1.0, 0.55, 0.6),
 		"motif": Motif.PULSE,
 	},
 	{
-		"id": "NATURE",
-		"name_ko": "자연",
-		"name_en": "NATURE",
-		"words": ["SKY", "ICE", "FIRE", "STORM", "FLAME", "THUNDER", "VOLCANO"],
-		"bg": Color(0.03, 0.09, 0.11),
-		"accent": Color(0.35, 1.0, 0.8),
-		"particle": Color(0.6, 1.0, 0.85),
-		"motif": Motif.LEAF,
+		"id": "ANIMAL",
+		"name_ko": "동물",
+		"name_en": "ANIMALS",
+		# 평균 3.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["CAT", "DOG", "BAT", "BIRD", "FISH", "WOLF", "TIGER", "SNAKE"],
+		"bg": Color(0.05, 0.10, 0.06),
+		"accent": Color(1.0, 0.72, 0.25),
+		"particle": Color(0.75, 1.0, 0.55),
+		"motif": Motif.PAW,
+	},
+	{
+		"id": "COLOR",
+		"name_ko": "색깔",
+		"name_en": "COLORS",
+		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["RED", "BLUE", "PINK", "GRAY", "BLACK", "GREEN", "WHITE", "YELLOW"],
+		"bg": Color(0.10, 0.04, 0.13),
+		"accent": Color(1.0, 0.45, 0.85),
+		"particle": Color(1.0, 0.75, 0.35),
+		"motif": Motif.BLOB,
+		"particle_rainbow": true,
 	},
 	{
 		"id": "SPACE",
 		"name_ko": "우주",
 		"name_en": "SPACE",
-		"words": ["SUN", "STAR", "MOON", "MARS", "COMET", "EARTH", "PLANET", "GALAXY", "NEBULA", "METEOR"],
+		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["SUN", "STAR", "MOON", "MARS", "COMET", "EARTH", "PLANET", "GALAXY"],
 		"bg": Color(0.04, 0.03, 0.09),
 		"accent": Color(0.4, 0.85, 1.0),
 		"particle": Color(1.0, 1.0, 1.0),
 		"motif": Motif.STAR,
 	},
 	{
+		"id": "NATURE",
+		"name_ko": "자연",
+		"name_en": "NATURE",
+		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["SKY", "ICE", "FIRE", "RAIN", "STORM", "FLAME", "VOLCANO", "THUNDER"],
+		"bg": Color(0.03, 0.09, 0.11),
+		"accent": Color(0.35, 1.0, 0.8),
+		"particle": Color(0.6, 1.0, 0.85),
+		"motif": Motif.LEAF,
+	},
+	{
 		"id": "MACHINE",
 		"name_ko": "기계",
 		"name_en": "MACHINES",
-		"words": ["JET", "ROBOT", "ROCKET", "ANDROID", "CYBORG", "SPACESHIP", "LASER"],
+		# 평균 5.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["GEAR", "WIRE", "MOTOR", "ROBOT", "ENGINE", "CYBORG", "ANDROID", "CIRCUIT"],
 		"bg": Color(0.06, 0.07, 0.10),
 		"accent": Color(0.7, 0.8, 1.0),
 		"particle": Color(0.55, 0.7, 0.9),

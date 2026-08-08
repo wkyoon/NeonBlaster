@@ -95,6 +95,19 @@ const WORD_DATA: Dictionary = {
 	"HAND": {"category": "BODY", "emoji": "✋", "ko": "손. 물건을 쥐고 만질 수 있어요.", "en": "The body part we use to grab and touch.", "phrase": "Wave your hand and say hi."},
 	"FOOT": {"category": "BODY", "emoji": "🦶", "ko": "발. 땅을 딛고 서게 해줘요.", "en": "The body part we stand on.", "phrase": "My foot fits this shoe."},
 	"HEAD": {"category": "BODY", "emoji": "🧠", "ko": "머리. 생각하고 기억하는 곳이에요.", "en": "The body part we think with.", "phrase": "Wear a helmet on your head."},
+
+
+	# ---- 테마 균형용 보강 단어 ----
+	# 각 테마를 8단어로 맞추기 위해 추가. MACHINE 은 사전에 3단어(ROBOT/CYBORG/ANDROID)뿐이라
+	# 예전에는 탈것(JET/ROCKET/SPACESHIP)과 과학(LASER)을 섞어 주제와 단어가 어긋나 있었다.
+	"NOSE": {"category": "BODY", "emoji": "👃", "ko": "코. 냄새를 맡는 기관이에요.", "en": "The body part we smell with.", "phrase": "I smell flowers with my nose."},
+	"GRAY": {"category": "COLOR", "emoji": "⬜", "ko": "회색. 검정과 흰색의 중간색이에요.", "en": "The color between black and white.", "phrase": "Gray clouds fill the sky."},
+	"RAIN": {"category": "NATURE", "emoji": "🌧️", "ko": "비. 하늘에서 떨어지는 물방울이에요.", "en": "Water falling from the clouds.", "phrase": "Rain taps on the window."},
+	"GEAR": {"category": "MACHINE", "emoji": "⚙️", "ko": "톱니바퀴. 기계를 돌리는 부품이에요.", "en": "A toothed wheel that turns a machine.", "phrase": "The gear turns inside the clock."},
+	"WIRE": {"category": "MACHINE", "emoji": "🔌", "ko": "전선. 전기가 흐르는 줄이에요.", "en": "A thin metal line that carries electricity.", "phrase": "A wire carries power to the lamp."},
+	"MOTOR": {"category": "MACHINE", "emoji": "🛠️", "ko": "모터. 힘을 만들어 돌리는 장치예요.", "en": "A device that makes things spin.", "phrase": "The motor spins the tiny fan."},
+	"ENGINE": {"category": "MACHINE", "emoji": "🚂", "ko": "엔진. 연료로 힘을 만드는 기계예요.", "en": "A machine that turns fuel into power.", "phrase": "The engine roars and the truck moves."},
+	"CIRCUIT": {"category": "MACHINE", "emoji": "💡", "ko": "회로. 전기가 도는 길이에요.", "en": "The path electricity travels along.", "phrase": "Electricity flows through the circuit."},
 }
 
 
