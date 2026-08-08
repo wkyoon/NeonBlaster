@@ -466,6 +466,9 @@ func _get_tts_voice() -> String:
 
 ## 미리 구운 음성 파일이 있는 디렉터리. 파일명은 대문자 단어 + .wav (tools/gen_voice.sh 가 생성).
 const VOICE_DIR := "res://assets/voice/"
+## 찾는 순서. 압축 포맷을 먼저 본다(mp3 는 wav 대비 8배 작다).
+## 나중에 성우 녹음이 어떤 포맷으로 들어와도 그대로 동작하도록 wav 도 남겨둔다.
+const VOICE_EXTENSIONS: Array[String] = [".mp3", ".ogg", ".wav"]
 
 
 ## 단어 음성 안내를 재생합니다.
@@ -482,10 +485,15 @@ func speak_word(word: String) -> void:
 	if not tts_enabled:
 		return
 
-	var clip_path := VOICE_DIR + word.to_upper() + ".wav"
-	if _voice_player != null and ResourceLoader.exists(clip_path):
-		var stream := load(clip_path) as AudioStream
-		if stream != null:
+	# .ogg 를 먼저 찾는다(용량이 훨씬 작다). 나중에 성우 녹음이 wav 로 들어와도 그대로 동작한다.
+	if _voice_player != null:
+		for ext in VOICE_EXTENSIONS:
+			var clip_path: String = VOICE_DIR + word.to_upper() + ext
+			if not ResourceLoader.exists(clip_path):
+				continue
+			var stream := load(clip_path) as AudioStream
+			if stream == null:
+				continue
 			DisplayServer.tts_stop()  # 폴백 TTS 가 겹쳐 나오지 않게
 			_voice_player.stop()
 			_voice_player.stream = stream

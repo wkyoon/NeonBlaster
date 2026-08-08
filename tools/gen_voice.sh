@@ -1,5 +1,5 @@
 #!/bin/bash
-# gen_voice.sh - 단어별 음성 안내 파일을 미리 구워 assets/voice/ 에 넣는다.
+# gen_voice.sh - 단어별 음성 안내 파일을 미리 구워 assets/voice/ 에 넣는다. (MP3 32kbps 모노)
 #
 # 왜 미리 굽는가:
 #   1) 기기 TTS 엔진마다 발음이 다르다. macOS 는 소문자로 넘기면 단어로 읽지만,
@@ -25,6 +25,8 @@ OUT_DIR="assets/voice"
 
 mkdir -p "$OUT_DIR"
 
+command -v ffmpeg >/dev/null || { echo "ffmpeg 가 필요합니다: brew install ffmpeg"; exit 1; }
+
 if ! say -v "$VOICE" -o /tmp/_voicetest.aiff "test" 2>/dev/null; then
 	echo "음성 '$VOICE' 를 쓸 수 없습니다. 사용 가능한 음성: say -v '?'"
 	exit 1
@@ -45,16 +47,18 @@ print("대상 단어 %d개" % len(pairs))
 
 made = skipped = 0
 for word, phrase in pairs:
-    wav = pathlib.Path(out_dir) / ("%s.wav" % word)
+    wav = pathlib.Path(out_dir) / ("%s.mp3" % word)
     if wav.exists() and not force:
         skipped += 1
         continue
     aiff = pathlib.Path("/tmp") / ("_voice_%s.aiff" % word)
     subprocess.run(["say", "-v", voice, "-r", rate, "-o", str(aiff), phrase], check=True)
-    # 16kHz 모노 16bit PCM. 음성 대역에는 16kHz 로 충분하고 22.05kHz 대비 26% 작다.
-    # (Godot 은 임포트 시 QOA 로 한 번 더 압축한다 — 실제 APK 크기는 여기서 다시 5배 준다)
-    subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@16000", "-c", "1",
-                    str(aiff), str(wav)], check=True)
+    # MP3 32kbps 모노 16kHz. WAV 대비 8배 작다(64KB → 8KB).
+    # ⚠️ Ogg Vorbis 가 더 적합하지만 이 ffmpeg 빌드에 libvorbis 가 없고
+    #    native vorbis 인코더는 스테레오만 지원한다. Godot 은 mp3 도 네이티브 지원한다.
+    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                    "-i", str(aiff), "-c:a", "libmp3lame", "-b:a", "32k",
+                    "-ar", "16000", "-ac", "1", str(wav)], check=True)
     aiff.unlink(missing_ok=True)
     made += 1
 
