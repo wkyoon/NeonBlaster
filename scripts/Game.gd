@@ -2,6 +2,9 @@ extends Node2D
 ## Game - main gameplay scene controller.
 ## Manages player, spawner, HUD, UI panels, and ad integration.
 
+## 테마 하나(8단어)를 다 모았을 때 주는 보너스 점수.
+const THEME_MASTER_BONUS := 2000
+
 ## 단어 완성 후 다음 단어가 시작되기까지의 시간(초). 리빌이 뜨고 사라지는 동안 플레이는 계속된다.
 const REVEAL_DURATION := 2.0
 
@@ -43,6 +46,7 @@ func _ready() -> void:
 	# Handle word completion -> start new word + bonus
 	WordManager.word_completed.connect(_on_word_completed)
 	WordManager.word_collected.connect(_on_word_collected)
+	WordManager.theme_mastered.connect(_on_theme_mastered)
 
 	# Preload ads
 	AdsManager.request_interstitial()
@@ -141,6 +145,42 @@ func _on_quit_to_menu() -> void:
 func _on_word_collected(_word: String, total: int, goal: int) -> void:
 	if _word_reveal and _word_reveal.has_method("_show_new_badge"):
 		_word_reveal._show_new_badge(total, goal)
+
+
+## 테마 완주 — 8개를 다 모은 순간. 48개 전체보다 훨씬 자주 오는 "해냈다" 지점이라
+## 여기에 보상을 몰아준다(화면 배너 + 보너스 점수 + 목숨 1개).
+func _on_theme_mastered(_theme_id: String, name_en: String) -> void:
+	GameManager.add_score(THEME_MASTER_BONUS)
+	# 목숨을 하나 돌려준다 — 수집이 곧 생존으로 이어져 계속 플레이할 이유가 된다.
+	if GameManager.lives < GameManager.MAX_LIVES:
+		GameManager.lives += 1
+	AudioManager.play_sfx("powerup")
+	_show_master_banner(name_en)
+
+
+## 테마 완주 배너. 화면을 가리지 않도록 위쪽에서 떠올랐다 사라진다.
+func _show_master_banner(name_en: String) -> void:
+	var layer := get_node_or_null("UI")
+	if layer == null:
+		return
+	var lbl := Label.new()
+	lbl.text = "★ %s COMPLETE!  +%d" % [name_en, THEME_MASTER_BONUS]
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 34)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3))
+	lbl.add_theme_color_override("font_outline_color", Color(0.3, 0.2, 0.0))
+	lbl.add_theme_constant_override("outline_size", 10)
+	lbl.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	lbl.offset_top = 240.0
+	lbl.offset_bottom = 290.0
+	layer.add_child(lbl)
+	lbl.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(1.4)
+	tw.parallel().tween_property(lbl, "offset_top", 205.0, 1.4)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(lbl.queue_free)
 
 
 func _on_word_completed(word: String) -> void:

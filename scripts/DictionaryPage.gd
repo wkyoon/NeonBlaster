@@ -74,11 +74,20 @@ func _create_category_filter() -> void:
 	_category_container.add_theme_constant_override("separation", 6)
 	add_child(_category_container)
 
+	# ⚠️ 사전의 17개 카테고리가 아니라 **테마 6개**로 탭을 만든다.
+	# 도감이 테마 단어만 보여주므로, 사전 카테고리로 탭을 만들면 WEAPON·VEHICLE 처럼
+	# 아무것도 안 나오는 빈 탭이 생긴다.
 	var categories := ["ALL"]
-	categories.append_array(WordDictionary.get_categories())
+	for st in ThemeStages.STAGES:
+		categories.append(String(st["id"]))
 	for cat in categories:
 		var btn := Button.new()
-		btn.text = cat
+		# 완주한 테마에는 ★ — 8개는 48개보다 손에 잡히는 중간 목표다.
+		if cat != "ALL" and WordManager.is_theme_mastered(cat):
+			btn.text = "★ " + cat
+			btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		else:
+			btn.text = cat
 		btn.custom_minimum_size = Vector2(80, 40)
 		btn.add_theme_font_size_override("font_size", 14)
 		btn.focus_mode = Control.FOCUS_NONE

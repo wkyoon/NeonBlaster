@@ -133,9 +133,14 @@ func _create_bottom_buttons() -> void:
 
 	var dict_btn := Button.new()
 	dict_btn.name = "DictionaryButton"
+	# 메뉴에서 **다음 목표를 구체적으로** 보여준다.
+	# "48개 중 3개" 보다 "ANIMALS 3개 남음" 이 훨씬 강한 동기다.
 	var _cp := WordManager.get_collection_progress()
-	# 메뉴에서도 진행도를 보여준다 — "몇 개 남았는지"가 다시 플레이할 이유가 된다.
-	dict_btn.text = "📖 %d/%d" % [_cp.x, _cp.y]
+	var _goal := WordManager.get_next_goal()
+	if _goal.is_empty():
+		dict_btn.text = "📖 %d/%d ★" % [_cp.x, _cp.y]
+	else:
+		dict_btn.text = "📖 %s -%d" % [_goal["name_en"], _goal["left"]]
 	dict_btn.custom_minimum_size = Vector2(205, 50)
 	dict_btn.add_theme_font_size_override("font_size", 18)
 	dict_btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))

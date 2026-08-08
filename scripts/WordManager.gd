@@ -25,6 +25,8 @@ signal stage_changed(index: int, stage: Dictionary)
 signal stage_cleared(index: int, stage: Dictionary)
 ## 처음 수집한 단어일 때만 발생한다(도감에 새로 등록됨).
 signal word_collected(word: String, total: int, goal: int)
+## 한 테마의 단어를 **전부** 모았을 때 발생한다(중간 목표 달성).
+signal theme_mastered(theme_id: String, name_en: String)
 
 enum Difficulty { EASY, NORMAL, HARD }
 
@@ -215,6 +217,39 @@ func get_collection_progress() -> Vector2i:
 	return Vector2i(got, goal.size())
 
 
+## 특정 테마의 (모은 수, 전체 수).
+func get_theme_progress(theme_id: String) -> Vector2i:
+	for st in ThemeStages.STAGES:
+		if String(st["id"]) != theme_id:
+			continue
+		var words: Array = st["words"]
+		var got := 0
+		for w in words:
+			if _collected.has(w):
+				got += 1
+		return Vector2i(got, words.size())
+	return Vector2i(0, 0)
+
+
+func is_theme_mastered(theme_id: String) -> bool:
+	var p := get_theme_progress(theme_id)
+	return p.y > 0 and p.x >= p.y
+
+
+## 가장 가까운 목표(남은 개수가 가장 적은 미완성 테마). 메뉴가 "다음에 뭘 하면 되는지" 보여줄 때 쓴다.
+## "48개 중 3개" 보다 "동물 3개 남음" 이 훨씬 강한 동기다.
+func get_next_goal() -> Dictionary:
+	var best := {}
+	for st in ThemeStages.STAGES:
+		var p := get_theme_progress(String(st["id"]))
+		if p.x >= p.y:
+			continue
+		var left: int = p.y - p.x
+		if best.is_empty() or left < int(best["left"]):
+			best = {"id": st["id"], "name_en": st["name_en"], "left": left, "got": p.x, "goal": p.y}
+	return best
+
+
 func _save_collection() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("collection", "words", _collected.keys())
@@ -312,6 +347,11 @@ func _on_word_finished(word: String) -> void:
 		_save_collection()
 		var p := get_collection_progress()
 		word_collected.emit(word, p.x, p.y)
+		# 이 단어로 테마가 완성됐는지 — 48개는 멀지만 8개는 손에 잡히는 목표다.
+		var st := get_stage()
+		var tid := String(st.get("id", ""))
+		if tid != "" and is_theme_mastered(tid):
+			theme_mastered.emit(tid, String(st.get("name_en", tid)))
 
 	word_completed.emit(word)
 
