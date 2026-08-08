@@ -18,6 +18,9 @@ var _auto_label: Label = null
 
 
 func _ready() -> void:
+	# 단어 완성 리빌 동안 게임이 멈추므로(Game._on_word_completed) HUD 트윈도 함께 얼어붙는다.
+	# 그러면 "리빌 중 HUD 단어 숨기기" 연출이 동작하지 않아 같은 단어가 두 곳에 겹쳐 보인다.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	GameManager.score_changed.connect(_on_score_changed)
 	GameManager.high_score_changed.connect(_on_high_score_changed)
 	GameManager.lives_changed.connect(_on_lives_changed)
