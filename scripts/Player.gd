@@ -61,6 +61,8 @@ func _ready() -> void:
 	# 세로가 긴 기기(예: 1080x2316 = 1:2.14)에서는 화면의 62% 지점 — 거의 한가운데에 떠 있었다.
 	# 부활 경로(Game._respawn_player)가 쓰는 0.75 와 같은 비율로 맞춘다.
 	global_position = Vector2(_screen_size.x * 0.5, _screen_size.y * 0.75)
+	# 출석/플레이시간 보상으로 받은 화력 보너스를 시작 무기에 얹는다(이번 판에만).
+	weapon_level = clampi(weapon_level + GameManager.reward_weapon_bonus, 1, 4)
 	_base_fire_rate = fire_rate
 	_fire_timer.wait_time = 1.0 / fire_rate
 	_fire_timer.timeout.connect(_on_fire_timer)
@@ -481,7 +483,8 @@ func revive() -> void:
 	# 부활 시 버프는 초기화하되 **기본 화력은 시작값(2)으로 되돌린다.**
 	# 1로 떨어뜨리면 부활 직후 단발이 되어 가장 힘든 순간에 가장 약해진다 —
 	# "잘하는 것처럼 느끼게" 하려는 방향과 정반대다.
-	weapon_level = 2
+	# 보상 화력 보너스는 부활 후에도 유지한다(그 판 내내 유효한 보상이므로).
+	weapon_level = clampi(2 + GameManager.reward_weapon_bonus, 1, 4)
 	rapid_fire_timer = 0.0
 	shield_timer = 0.0
 	laser_timer = 0.0

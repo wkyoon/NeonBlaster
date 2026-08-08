@@ -31,6 +31,7 @@ AdsManager="*res://scripts/AdsManager.gd"
 AudioManager="*res://scripts/AudioManager.gd"
 EffectsManager="*res://scripts/EffectsManager.gd"
 WordManager="*res://scripts/WordManager.gd"
+RewardManager="*res://scripts/RewardManager.gd"
 
 [display]
 

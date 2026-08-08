@@ -15,6 +15,10 @@ var _sfx_btn: Button
 var _music_btn: Button
 var _tts_btn: Button
 
+## 출석/플레이시간 보상 UI.
+var _reward_strip: Button = null
+var _reward_panel: Control = null
+
 
 func _ready() -> void:
 	_start_button.pressed.connect(_on_start)
@@ -26,6 +30,9 @@ func _ready() -> void:
 	_create_audio_toggles()
 	_create_auto_play_toggle()
 	_create_bottom_buttons()
+	_create_reward_strip()
+	_create_reward_panel()
+	_refresh_reward_strip()
 
 
 ## Create difficulty selection buttons (Easy / Normal / Hard)
@@ -197,12 +204,16 @@ func _create_score_panel() -> void:
 	_score_panel.add_child(dimmer)
 
 	var panel := Panel.new()
+	# ⚠️ 이름을 지정하지 않으면 런타임에 "@Panel@29" 로 자동 생성되어
+	#    get_node("Panel/VBoxContainer/Records") 가 실패한다(에디터에서만 예쁜 이름이 붙는다).
+	panel.name = "Panel"
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.position = Vector2(-290, -420)
 	panel.size = Vector2(580, 840)
 	_score_panel.add_child(panel)
 
 	var content := VBoxContainer.new()
+	content.name = "VBoxContainer"
 	content.position = Vector2(35, 30)
 	content.size = Vector2(510, 780)
 	content.add_theme_constant_override("separation", 14)
@@ -268,6 +279,200 @@ func _hide_score_history() -> void:
 	_score_panel.visible = false
 
 
+# ---------------- 출석 / 플레이시간 보상 ----------------
+
+## 메뉴 하단 버튼 위에 붙는 가로 띠. 연속 일수와 오늘 진행을 항상 보이게 해서
+## "오늘 조금만 더 하면 받는다"를 메뉴에 진입할 때마다 상기시킨다.
+func _create_reward_strip() -> void:
+	_reward_strip = Button.new()
+	_reward_strip.name = "RewardStrip"
+	_reward_strip.custom_minimum_size = Vector2(639, 46)
+	_reward_strip.size = Vector2(639, 46)
+	_reward_strip.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_reward_strip.position.y = -205
+	_center_horizontally(_reward_strip)
+	_reward_strip.add_theme_font_size_override("font_size", 19)
+	_reward_strip.focus_mode = Control.FOCUS_NONE
+	_reward_strip.pressed.connect(_show_reward_panel)
+	add_child(_reward_strip)
+
+
+## 띠의 문구·색을 현재 상태로 갱신한다. 보상을 받은 직후에도 호출된다.
+func _refresh_reward_strip() -> void:
+	if _reward_strip == null:
+		return
+	var claimable := RewardManager.get_claimable()
+	var mins := int(RewardManager.today_seconds) / 60
+	var secs := int(RewardManager.today_seconds) % 60
+	var goal_min := int(RewardManager.DAILY_GOAL_SECONDS) / 60
+	if claimable.is_empty():
+		_reward_strip.text = "🔥 %d DAY STREAK    ▸ %d:%02d / %d:00" % [
+			RewardManager.streak_days, mins, secs, goal_min]
+		_reward_strip.add_theme_color_override("font_color", Color(0.6, 0.8, 0.95))
+		_reward_strip.modulate = Color(1, 1, 1)
+	else:
+		# 받을 게 있으면 눈에 띄게 — 색을 바꾸고 천천히 맥동시킨다.
+		_reward_strip.text = "🎁 %d REWARD%s READY — TAP" % [
+			claimable.size(), "" if claimable.size() == 1 else "S"]
+		_reward_strip.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+		var tw := create_tween().set_loops()
+		tw.tween_property(_reward_strip, "modulate", Color(1.35, 1.2, 0.7), 0.6)
+		tw.tween_property(_reward_strip, "modulate", Color(1, 1, 1), 0.6)
+
+
+func _create_reward_panel() -> void:
+	_reward_panel = Control.new()
+	_reward_panel.name = "RewardPanel"
+	_reward_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_reward_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_reward_panel.visible = false
+	add_child(_reward_panel)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.92)
+	_reward_panel.add_child(dimmer)
+
+	var panel := Panel.new()
+	panel.name = "Panel"
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-290, -420)
+	panel.size = Vector2(580, 840)
+	_reward_panel.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.name = "VBoxContainer"
+	content.position = Vector2(35, 30)
+	content.size = Vector2(510, 780)
+	content.add_theme_constant_override("separation", 12)
+	panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "🎁 DAILY REWARDS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	content.add_child(title)
+
+	var streak := Label.new()
+	streak.name = "StreakLine"
+	streak.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	streak.add_theme_font_size_override("font_size", 22)
+	streak.add_theme_color_override("font_color", Color(0.55, 0.9, 1.0))
+	content.add_child(streak)
+
+	# 보상 항목이 들어갈 자리. 열 때마다 다시 채운다.
+	var rows := VBoxContainer.new()
+	rows.name = "Rows"
+	rows.custom_minimum_size = Vector2(510, 400)
+	rows.add_theme_constant_override("separation", 10)
+	content.add_child(rows)
+
+	var close_btn := Button.new()
+	close_btn.text = "CLOSE"
+	close_btn.custom_minimum_size = Vector2(220, 58)
+	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	close_btn.add_theme_font_size_override("font_size", 24)
+	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.pressed.connect(_hide_reward_panel)
+	content.add_child(close_btn)
+
+
+func _show_reward_panel() -> void:
+	AudioManager.play_sfx("button")
+	_rebuild_reward_rows()
+	_reward_panel.visible = true
+	_reward_panel.move_to_front()
+
+
+func _hide_reward_panel() -> void:
+	AudioManager.play_sfx("button")
+	_reward_panel.visible = false
+
+
+## 보상 목록을 현재 상태로 다시 그린다.
+## 세 상태를 색으로 구분한다: 받을 수 있음(금색+버튼) / 이미 받음(회색 ✓) / 아직(어두움 + 남은 조건).
+func _rebuild_reward_rows() -> void:
+	var streak_line: Label = _reward_panel.get_node("Panel/VBoxContainer/StreakLine")
+	var mins := int(RewardManager.today_seconds) / 60
+	var secs := int(RewardManager.today_seconds) % 60
+	streak_line.text = "🔥 %d DAY STREAK      ▸ TODAY %d:%02d" % [
+		RewardManager.streak_days, mins, secs]
+
+	var rows: VBoxContainer = _reward_panel.get_node("Panel/VBoxContainer/Rows")
+	for child in rows.get_children():
+		child.queue_free()
+
+	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "+1 LIFE",
+		RewardManager.today_seconds >= RewardManager.DAILY_GOAL_SECONDS,
+		"%d:%02d / 10:00" % [mins, secs])
+	for m in RewardManager.STREAK_MILESTONES:
+		_add_reward_row(rows, "streak", m, "%d DAY STREAK" % m, _streak_effect_text(m),
+			RewardManager.streak_days >= m,
+			"%d MORE DAY%s" % [m - RewardManager.streak_days,
+				"" if m - RewardManager.streak_days == 1 else "S"])
+
+
+func _streak_effect_text(days: int) -> String:
+	match days:
+		3:
+			return "+1 WEAPON"
+		7:
+			return "+2 LIVES, +1 WEAPON"
+		15:
+			return "+2 LIVES, +1 WEAPON, x1.5 SCORE"
+		30:
+			return "+3 LIVES, +2 WEAPON, x2 SCORE"
+	return ""
+
+
+func _add_reward_row(parent: VBoxContainer, kind: String, days: int, name_text: String,
+		effect: String, unlocked: bool, progress_text: String) -> void:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size = Vector2(510, 74)
+	row.add_theme_constant_override("separation", 10)
+	parent.add_child(row)
+
+	var claimed := RewardManager.is_claimed(kind, days)
+	var info := Label.new()
+	info.custom_minimum_size = Vector2(340, 74)
+	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	info.add_theme_font_size_override("font_size", 19)
+	if claimed:
+		info.text = "✓ %s\n   %s" % [name_text, effect]
+		info.add_theme_color_override("font_color", Color(0.45, 0.5, 0.55))
+	elif unlocked:
+		info.text = "%s\n   %s" % [name_text, effect]
+		info.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	else:
+		info.text = "%s  (%s)\n   %s" % [name_text, progress_text, effect]
+		info.add_theme_color_override("font_color", Color(0.55, 0.6, 0.7))
+	row.add_child(info)
+
+	var btn := Button.new()
+	btn.custom_minimum_size = Vector2(150, 60)
+	btn.add_theme_font_size_override("font_size", 20)
+	btn.focus_mode = Control.FOCUS_NONE
+	if claimed:
+		btn.text = "DONE"
+		btn.disabled = true
+	elif unlocked:
+		btn.text = "GET"
+		btn.pressed.connect(_on_claim.bind(kind, days))
+	else:
+		btn.text = "LOCKED"
+		btn.disabled = true
+	row.add_child(btn)
+
+
+func _on_claim(kind: String, days: int) -> void:
+	if not RewardManager.claim(kind, days):
+		return
+	AudioManager.play_sfx("powerup")
+	_rebuild_reward_rows()
+	_refresh_reward_strip()
+
+
 func _on_dictionary() -> void:
 	AudioManager.play_sfx("button")
 	SceneManager.goto_dictionary()
@@ -281,12 +486,13 @@ func _on_story() -> void:
 func _create_auto_play_toggle() -> void:
 	var btn := Button.new()
 	btn.name = "AutoPlayButton"
-	btn.text = "▶ AUTO PLAY: OFF"
-	btn.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	btn.position.y = -210
-	_center_horizontally(btn)
-	btn.custom_minimum_size = Vector2(280, 50)
-	btn.add_theme_font_size_override("font_size", 18)
+	btn.text = "▶ AUTO: OFF"
+	# 보상 띠가 하단 -205 를 쓰게 되면서 자리가 겹쳤다(둘 다 같은 y 였다).
+	# 상시 노출이 필요한 건 보상 띠 쪽이므로, 개발용 토글은 SFX 랩 버튼처럼 구석으로 뺀다.
+	btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	btn.position = Vector2(14, 74)
+	btn.custom_minimum_size = Vector2(130, 38)
+	btn.add_theme_font_size_override("font_size", 14)
 	btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.pressed.connect(_on_auto_play_toggle)
@@ -299,10 +505,10 @@ func _update_auto_play_btn() -> void:
 	if not _auto_play_btn:
 		return
 	if GameManager.auto_play:
-		_auto_play_btn.text = "▶ AUTO PLAY: ON"
+		_auto_play_btn.text = "▶ AUTO: ON"
 		_auto_play_btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 	else:
-		_auto_play_btn.text = "▶ AUTO PLAY: OFF"
+		_auto_play_btn.text = "▶ AUTO: OFF"
 		_auto_play_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 
 

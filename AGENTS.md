@@ -204,6 +204,24 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 3. `motif` 는 [StarField](scripts/StarField.gd) 가 그릴 수 있는 `ThemeStages.Motif` 값이어야 한다.
    모티프별 그리기 호출 수가 다르므로 `StarField.MOTIF_DENSITY` 에 입자 수 배율을 함께 넣는다(모바일 draw call).
 
+### 출석 / 플레이시간 보상
+
+정의는 [`RewardManager`](scripts/RewardManager.gd) 한 곳에 있다(오토로드).
+- **하루 10분**(`DAILY_GOAL_SECONDS`) 플레이 → 보상 1회. 시간은 `GameState.PLAYING` 일 때만 센다.
+- **연속 접속**(`STREAK_MILESTONES` = 3/7/15/30일) → 마일스톤마다 1회.
+- 수령은 메뉴에서만 한다(`MainMenu` 하단 보상 띠 → `🎁 DAILY REWARDS` 패널).
+  판 중간에 목숨이 늘면 밸런스가 흔들리므로, 게임 중 10분 달성은 **배너로 알리기만** 한다.
+
+⚠️ **보상은 다음 판에만 적용되는 버프다.** 영구 강화로 주면 맞춰 놓은 난이도가 무너진다.
+`GameManager.start_game()` 이 `consume_pending()` 으로 받아 쓰고 즉시 비운다
+(`reward_lives_bonus` / `reward_weapon_bonus` / `score_multiplier`).
+- 목숨 상한은 `MAX_LIVES + reward_lives_bonus` 로 함께 올려야 보너스가 잘리지 않는다.
+- 여러 보상을 몰아서 수령하면 버프가 누적된다 → `MAX_PENDING_LIVES`(3)/`MAX_PENDING_WEAPON`(2) 로 막는다.
+  (막기 전에는 30일치를 한 번에 받아 **목숨 13개**짜리 판이 나왔다.)
+
+⚠️ **날짜는 로컬 날짜 문자열(YYYY-MM-DD)로 비교한다.** 유닉스 시간으로 24시간을 재면
+자정을 넘겨도 같은 날로 잡히거나 그 반대가 되어 출석 판정이 어긋난다.
+
 ### 콤보
 
 - 콤보는 **처치 연쇄**이고, 글자 정확도는 단어 진행·정답 보너스(+50점)로 보상한다. 이 분리가 중요하다.

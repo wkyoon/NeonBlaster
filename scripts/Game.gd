@@ -47,6 +47,7 @@ func _ready() -> void:
 	WordManager.word_completed.connect(_on_word_completed)
 	WordManager.word_collected.connect(_on_word_collected)
 	WordManager.theme_mastered.connect(_on_theme_mastered)
+	RewardManager.daily_goal_reached.connect(_on_daily_goal_reached)
 
 	# Preload ads
 	AdsManager.request_interstitial()
@@ -155,16 +156,23 @@ func _on_theme_mastered(_theme_id: String, name_en: String) -> void:
 	if GameManager.lives < GameManager.MAX_LIVES:
 		GameManager.lives += 1
 	AudioManager.play_sfx("powerup")
-	_show_master_banner(name_en)
+	_show_banner("★ %s COMPLETE!  +%d" % [name_en, THEME_MASTER_BONUS])
 
 
-## 테마 완주 배너. 화면을 가리지 않도록 위쪽에서 떠올랐다 사라진다.
-func _show_master_banner(name_en: String) -> void:
+## 오늘 10분 플레이 달성 — 플레이를 끊지 않고 그 자리에서 알려준다.
+## 보상 자체는 메뉴에서 받는다(판 중간에 목숨이 늘어나면 밸런스가 흔들린다).
+func _on_daily_goal_reached() -> void:
+	AudioManager.play_sfx("powerup")
+	_show_banner("🎁 DAILY GOAL! CLAIM IN MENU")
+
+
+## 화면 위쪽에서 떠올랐다 사라지는 배너. 단어를 가리지 않게 위쪽에만 머문다.
+func _show_banner(text: String) -> void:
 	var layer := get_node_or_null("UI")
 	if layer == null:
 		return
 	var lbl := Label.new()
-	lbl.text = "★ %s COMPLETE!  +%d" % [name_en, THEME_MASTER_BONUS]
+	lbl.text = text
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 34)
 	lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3))
