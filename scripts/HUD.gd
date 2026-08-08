@@ -8,7 +8,7 @@ extends CanvasLayer
 
 ## 현재 콤보 배수 단계. 단어 스타일(색·글로우·크기)을 여기서 파생시킨다.
 var _combo_level: int = 0
-var _word_label: Label
+var _word_slots: WordSlots
 var _word_tween: Tween
 
 var _sfx_btn: Button
@@ -26,7 +26,7 @@ func _ready() -> void:
 	_on_score_changed(GameManager.score)
 	_on_high_score_changed(GameManager.high_score)
 	_on_lives_changed(GameManager.lives)
-	_create_word_label()
+	_create_word_slots()
 	_create_audio_toggles()
 	_create_auto_play_indicator()
 	# Connect to WordManager signals
@@ -167,61 +167,39 @@ func _on_combo_level_up(level: int, _multiplier: float) -> void:
 
 # ---------------- Word Display ----------------
 
-func _create_word_label() -> void:
-	_word_label = Label.new()
-	_word_label.name = "WordLabel"
-	_word_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_word_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_word_label.add_theme_font_size_override("font_size", 56)
-	_word_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.9))
-	_word_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	_word_label.add_theme_color_override("font_outline_color", Color(0, 0.3, 0.4))
-	_word_label.add_theme_constant_override("shadow_offset_x", 2)
-	_word_label.add_theme_constant_override("shadow_offset_y", 3)
-	_word_label.add_theme_constant_override("outline_size", 8)
-	# 화면 전체 폭을 가진 라벨 안에서 정렬해야 글자 수와 기기 비율에 관계없이
-	# 텍스트의 실제 중심이 화면 중심과 일치합니다.
-	_word_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	_word_label.offset_left = 0.0
-	_word_label.offset_top = 120.0
-	_word_label.offset_right = 0.0
-	_word_label.offset_bottom = 200.0
-	$UI.add_child(_word_label)
-	_word_label.resized.connect(_update_word_label_pivot)
-	_update_word_label_pivot()
-
-
-func _update_word_label_pivot() -> void:
-	if _word_label:
-		_word_label.pivot_offset = _word_label.size * 0.5
+func _create_word_slots() -> void:
+	# ⚠️ Label 에 "W _ _ _" 를 그대로 넣으면 밑줄 문자가 글자 baseline 아래에 그려져
+	# 채워진 글자와 빈 칸의 높이가 어긋나 보인다. 글자와 칸을 각각 고정 위치에 그린다.
+	_word_slots = WordSlots.new()
+	_word_slots.name = "WordSlots"
+	# 화면 가로 중앙, 기존 단어 라벨과 같은 높이(y 120~200 대의 baseline).
+	var vp := get_viewport().get_visible_rect().size
+	_word_slots.position = Vector2(vp.x * 0.5, 178.0)
+	$UI.add_child(_word_slots)
+	_refresh_word_style()
 
 
 ## 콤보 단계를 단어 스타일에 반영한다 — **콤보의 보상이 단어에 나타나는 지점.**
 ## 단계가 오를수록 단어가 콤보 색으로 물들고, 외곽 글로우가 두꺼워지고, 글자가 조금 커진다.
 func _refresh_word_style() -> void:
-	if not _word_label:
+	if not _word_slots:
 		return
 	var color: Color = WORD_BASE_COLOR if _combo_level <= 0 \
 		else COMBO_COLORS[clampi(_combo_level, 0, COMBO_COLORS.size() - 1)]
-	_word_label.add_theme_color_override("font_color", color)
 	# 외곽선을 콤보 색의 어두운 버전으로 — 네온 글로우가 단계와 함께 강해진다
 	var outline := color
 	outline.s = minf(outline.s + 0.2, 1.0)
 	outline.v *= 0.35
-	_word_label.add_theme_color_override("font_outline_color", outline)
-	_word_label.add_theme_constant_override("outline_size", 8 + _combo_level * 3)
-	_word_label.add_theme_font_size_override("font_size", WORD_FONT_SIZE + _combo_level * 3)
+	_word_slots.set_style(WORD_FONT_SIZE + _combo_level * 3, color, outline)
 
 
 ## 현재 글자 수·폰트에서 화면을 넘지 않는 최대 확대 배율.
 ## ⚠️ 이걸 안 걸면 긴 단어(YELLOW=6글자)가 콤보 최고 단계 폰트(71px) + 완성 펀치(1.85배)에서
 ##    화면 폭을 넘어 **글자가 좌우로 잘려 나갔다**(실제로 발생).
 func _max_word_scale() -> float:
-	var font := _word_label.get_theme_font("font")
-	var size := _word_label.get_theme_font_size("font_size")
-	if font == null or size <= 0:
+	if _word_slots == null:
 		return 1.6
-	var w: float = font.get_string_size(_word_label.text, HORIZONTAL_ALIGNMENT_CENTER, -1, size).x
+	var w: float = _word_slots.get_line_width()
 	if w <= 1.0:
 		return 1.6
 	var avail: float = get_viewport().get_visible_rect().size.x * 0.94
@@ -230,53 +208,56 @@ func _max_word_scale() -> float:
 
 ## 단어 라벨을 튕긴다. 콤보 단계가 높을수록 크게 튀지만 화면을 넘지는 않는다.
 func _punch_word(pop: float) -> void:
-	if not _word_label:
+	if not _word_slots:
 		return
 	pop = minf(pop, _max_word_scale())
 	if _word_tween:
 		_word_tween.kill()
-	_word_label.scale = Vector2(pop, pop)
+	_word_slots.scale = Vector2(pop, pop)
 	_word_tween = create_tween()
-	_word_tween.tween_property(_word_label, "scale", Vector2.ONE, 0.18) \
+	_word_tween.tween_property(_word_slots, "scale", Vector2.ONE, 0.18) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 
 func _on_word_progress_updated(filled: String, _target: String) -> void:
-	if _word_label:
-		_word_label.text = filled
+	if _word_slots:
+		_word_slots.set_tokens(filled.split(" ", false))
 		# 글자를 맞힐 때마다 팝 — 콤보가 높으면 더 크게 튄다
 		_punch_word(1.16 + _combo_level * 0.04)
 
 
 func _on_word_completed(word: String) -> void:
-	if not _word_label:
+	if not _word_slots:
 		return
 	# 단어 완성이 이 게임의 최고 보상 순간이다 — 연출을 여기에 몰아준다.
 	# 콤보 단계가 높을수록 더 크게 터진다(콤보를 쌓은 보람이 단어에서 나타난다).
-	_word_label.text = word
-	_word_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.5))
+	var done := PackedStringArray()
+	for c in word:
+		done.append(c)
+	_word_slots.set_tokens(done)
+	_word_slots.set_style(WORD_FONT_SIZE + _combo_level * 3, Color(0.35, 1.0, 0.5), Color(0.0, 0.25, 0.1))
 	if _word_tween:
 		_word_tween.kill()
 	var peak: float = minf(1.45 + _combo_level * 0.08, _max_word_scale())
 	_word_tween = create_tween()
-	_word_tween.tween_property(_word_label, "scale", Vector2(peak, peak), 0.22) \
+	_word_tween.tween_property(_word_slots, "scale", Vector2(peak, peak), 0.22) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	_word_tween.tween_property(_word_label, "scale", Vector2.ONE, 0.24)
+	_word_tween.tween_property(_word_slots, "scale", Vector2.ONE, 0.24)
 	# 완성 직후에는 WordReveal 오버레이(아이콘 + 발음)가 같은 단어를 크게 보여준다.
 	# HUD 라벨을 그대로 두면 두 개가 겹쳐 보이므로 잠시 숨긴다.
-	_word_tween.tween_property(_word_label, "modulate:a", 0.0, 0.2)
+	_word_tween.tween_property(_word_slots, "modulate:a", 0.0, 0.2)
 	_word_tween.tween_interval(0.8)
 	# 색은 현재 콤보 단계 기준으로 되돌린다(기본색으로 되돌리면 콤보 보상이 사라져 보인다)
 	_word_tween.tween_callback(_refresh_word_style)
 
 
 func _on_new_word_started(_word: String) -> void:
-	if _word_label:
-		# 완성 연출에서 숨겼던 라벨을 다시 켠다(WordReveal 오버레이와 겹치지 않게 숨겼다).
+	if _word_slots:
+		# 완성 연출에서 숨겼던 표시를 다시 켠다(WordReveal 오버레이와 겹치지 않게 숨겼다).
 		if _word_tween:
 			_word_tween.kill()
-		_word_label.modulate.a = 1.0
-		_word_label.scale = Vector2.ONE
+		_word_slots.modulate.a = 1.0
+		_word_slots.scale = Vector2.ONE
 		_refresh_word_style()
 
 
