@@ -164,7 +164,7 @@ func show_interstitial_if_ready() -> bool:
 	# Stub: show dummy interstitial for 2.5s
 	_last_interstitial_time = now
 	_interstitial_ready = false
-	_show_dummy_fullscreen("Interstitial Ad", "전면 광고 (Dummy)", Color(0.1, 0.3, 0.1), "interstitial")
+	_show_dummy_fullscreen("Interstitial Ad", "Interstitial (Dummy)", Color(0.1, 0.3, 0.1), "interstitial")
 	var fs := get_tree().create_timer(2.5)
 	fs.timeout.connect(func():
 		_close_dummy_fullscreen("interstitial")
@@ -195,7 +195,7 @@ func show_rewarded_if_ready(on_earned: Callable) -> bool:
 		_admob.show_rewarded()
 		return true
 	# Stub: show dummy rewarded ad for 3s, then grant reward
-	_show_dummy_fullscreen("Rewarded Ad", "리워드 광고 (Dummy) — 보상 획득!", Color(0.2, 0.15, 0.4), "rewarded")
+	_show_dummy_fullscreen("Rewarded Ad", "Rewarded (Dummy) — Reward earned!", Color(0.2, 0.15, 0.4), "rewarded")
 	var fs := get_tree().create_timer(3.0)
 	fs.timeout.connect(func():
 		_close_dummy_fullscreen("rewarded")
@@ -367,7 +367,7 @@ func _show_dummy_fullscreen(title: String, subtitle: String, bg: Color, tag: Str
 	s.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	vbox.add_child(s)
 	var hint := Label.new()
-	hint.text = "(자동으로 닫힙니다...)"
+	hint.text = "(closing automatically...)"
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 16)
 	hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))

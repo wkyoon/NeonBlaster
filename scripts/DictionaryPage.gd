@@ -13,7 +13,7 @@ var _detail_panel: Panel
 var _detail_icon: Label
 var _detail_word: Label
 var _detail_category: Label
-var _detail_desc_ko: Label
+var _detail_phrase: Label
 var _detail_desc_en: Label
 var _detail_speak_btn: Button
 var _detail_close_btn: Button
@@ -81,7 +81,7 @@ func _create_category_filter() -> void:
 		btn.custom_minimum_size = Vector2(80, 40)
 		btn.add_theme_font_size_override("font_size", 14)
 		btn.focus_mode = Control.FOCUS_NONE
-		btn.tooltip_text = StoryData.CATEGORY_LORE.get(cat, {}).get("ko", "")
+		btn.tooltip_text = StoryData.CATEGORY_LORE.get(cat, {}).get("en", "")
 		btn.pressed.connect(_on_category_selected.bind(cat, btn))
 		_category_container.add_child(btn)
 	# Highlight ALL
@@ -100,7 +100,7 @@ func _create_category_desc_label() -> void:
 	_category_desc.add_theme_color_override("font_color", Color(0.6, 0.7, 0.9))
 	# Set initial description for ALL
 	var initial_lore: Dictionary = StoryData.CATEGORY_LORE.get("ALL", {})
-	_category_desc.text = initial_lore.get("ko", "")
+	_category_desc.text = initial_lore.get("en", "")
 	add_child(_category_desc)
 
 
@@ -110,7 +110,7 @@ func _on_category_selected(cat: String, btn: Button) -> void:
 	_highlight_category(btn)
 	# Update category lore description
 	var lore: Dictionary = StoryData.CATEGORY_LORE.get(cat, {})
-	_category_desc.text = lore.get("ko", "")
+	_category_desc.text = lore.get("en", "")
 	_populate_grid()
 
 
@@ -254,15 +254,16 @@ func _create_detail_panel() -> void:
 	_detail_category.size = Vector2(560, 30)
 	_detail_panel.add_child(_detail_category)
 
-	# Korean description
-	_detail_desc_ko = Label.new()
-	_detail_desc_ko.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_detail_desc_ko.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail_desc_ko.add_theme_font_size_override("font_size", 24)
-	_detail_desc_ko.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7))
-	_detail_desc_ko.position = Vector2(50, 300)
-	_detail_desc_ko.size = Vector2(560, 80)
-	_detail_panel.add_child(_detail_desc_ko)
+	# 예문 — 🔊 LISTEN 이 읽어주는 바로 그 문장이다(WordDictionary.phrase).
+	# 예전에는 이 자리에 한국어 뜻이 있었으나 게임 문구를 영문으로 통일하면서 예문으로 바꿨다.
+	_detail_phrase = Label.new()
+	_detail_phrase.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_detail_phrase.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_phrase.add_theme_font_size_override("font_size", 24)
+	_detail_phrase.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7))
+	_detail_phrase.position = Vector2(50, 300)
+	_detail_phrase.size = Vector2(560, 80)
+	_detail_panel.add_child(_detail_phrase)
 
 	# English description
 	_detail_desc_en = Label.new()
@@ -276,7 +277,7 @@ func _create_detail_panel() -> void:
 
 	# Speak button
 	_detail_speak_btn = Button.new()
-	_detail_speak_btn.text = "🔊 듣기"
+	_detail_speak_btn.text = "🔊 LISTEN"
 	_detail_speak_btn.position = Vector2(200, 470)
 	_detail_speak_btn.size = Vector2(140, 50)
 	_detail_speak_btn.add_theme_font_size_override("font_size", 20)
@@ -285,7 +286,7 @@ func _create_detail_panel() -> void:
 
 	# Close button
 	_detail_close_btn = Button.new()
-	_detail_close_btn.text = "✕ 닫기"
+	_detail_close_btn.text = "✕ CLOSE"
 	_detail_close_btn.position = Vector2(360, 470)
 	_detail_close_btn.size = Vector2(140, 50)
 	_detail_close_btn.add_theme_font_size_override("font_size", 20)
@@ -304,7 +305,7 @@ func _show_detail(word: String) -> void:
 	var desc := WordDictionary.get_description(word)
 	_detail_word.text = word
 	_detail_category.text = "[" + desc["category"] + "]"
-	_detail_desc_ko.text = desc["ko"]
+	_detail_phrase.text = WordDictionary.get_phrase(word)
 	_detail_desc_en.text = desc["en"]
 	_detail_panel.visible = true
 	# Pop animation

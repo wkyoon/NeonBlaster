@@ -225,7 +225,7 @@ func _show_score_history() -> void:
 	var records: Label = _score_panel.get_node("Panel/VBoxContainer/Records")
 	var history := GameManager.get_score_history()
 	if history.is_empty():
-		records.text = "\n\n아직 기록이 없습니다.\n게임을 플레이해 첫 기록을 만들어 보세요!"
+		records.text = "\n\nNo records yet.\nPlay a game to set your first score!"
 	else:
 		var lines: Array[String] = []
 		for i in history.size():

@@ -6,7 +6,7 @@ class_name StoryData
 # 메인 스토리 (챕터)
 # ============================================================
 const STORY_INTRO := {
-	"title": "프롤로그: 빛의 언어",
+	"title": "프롤로그: 빛의 언어", "title_en": "Prologue: The Language of Light",
 	"ko": """어느 먼 미래, 우주는 '루미나(Lumina)'라는 신비한 에너지로 가득 차 있었다.
 
 루미나는 특별한 힘을 가진 에너지였다.
@@ -47,7 +47,7 @@ Fire the power of words to defeat the enemy, and reclaim the light of the cosmos
 const STORY_CHAPTERS: Array = [
 	{
 		"wave": 1,
-		"title": "제1장: 보이드의 침공",
+		"title": "제1장: 보이드의 침공", "title_en": "Chapter 1: The Void Invasion",
 		"ko": """보이드의 첫 번째 파병이 도착했다.
 '추적자(Chaser)' 무리가 은하의 외곽을 향해 몰려온다.
 
@@ -61,7 +61,7 @@ Take aim, and fire. Show them the marksmanship of a Lumina Guardian!"""
 	},
 	{
 		"wave": 3,
-		"title": "제2장: 원거리 위협",
+		"title": "제2장: 원거리 위협", "title_en": "Chapter 2: Threats from Afar",
 		"ko": """이제 '포격수(Shooter)'들이 전장에 합류한다.
 이들은 멀리서 어둠의 탄환을 쏴대는 위험한 적이다.
 
@@ -75,7 +75,7 @@ and feel the multiplied power of Lumina!"""
 	},
 	{
 		"wave": 5,
-		"title": "제3장: 중갑의 벽",
+		"title": "제3장: 중갑의 벽", "title_en": "Chapter 3: The Armored Wall",
 		"ko": """보이드의 '중갑병(Tank)'이 모습을 드러낸다.
 두꺼운 어둠의 장갑은 단어 여러 발을 맞아야 뚫린다.
 
@@ -89,7 +89,7 @@ Defeating them yields precious power-ups!"""
 	},
 	{
 		"wave": 8,
-		"title": "제4장: 보이드의 분노",
+		"title": "제4장: 보이드의 분노", "title_en": "Chapter 4: Wrath of the Void",
 		"ko": """적들의 공격이 점점 거세진다.
 보이드가 분노하기 시작한 것이다.
 
@@ -105,7 +105,7 @@ Laser, Lightning, Time Slow and more!"""
 	},
 	{
 		"wave": 12,
-		"title": "제5장: 최후의 결전",
+		"title": "제5장: 최후의 결전", "title_en": "Chapter 5: The Final Battle",
 		"ko": """은하의 중심부. 별빛이 가장 밝은 곳에서
 최후의 결전이 시작된다.
 

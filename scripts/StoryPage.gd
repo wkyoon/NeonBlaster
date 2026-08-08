@@ -105,31 +105,21 @@ func _create_intro_tab() -> void:
 
 	# --- 제목 ---
 	var title := Label.new()
-	title.text = StoryData.STORY_INTRO["title"]
+	title.text = StoryData.STORY_INTRO.get("title_en", StoryData.STORY_INTRO["title"])
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 32)
 	title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
 	vbox.add_child(title)
 
-	# --- 한국어 스토리 ---
-	var ko_label := Label.new()
-	ko_label.text = StoryData.STORY_INTRO["ko"]
-	ko_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	ko_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ko_label.add_theme_font_size_override("font_size", 20)
-	ko_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
-	vbox.add_child(ko_label)
-
-	# 구분선
-	vbox.add_child(_create_separator())
-
-	# --- 영어 스토리 ---
+	# --- 스토리 (영문) ---
+	# 게임 문구를 영문으로 통일하면서 한국어 라벨과 구분선을 제거하고 영문만 남겼다.
+	# 데이터에는 ko 가 그대로 있으므로 한국어판이 필요하면 여기만 되돌리면 된다.
 	var en_label := Label.new()
 	en_label.text = StoryData.STORY_INTRO["en"]
 	en_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	en_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	en_label.add_theme_font_size_override("font_size", 16)
-	en_label.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	en_label.add_theme_font_size_override("font_size", 20)
+	en_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
 	vbox.add_child(en_label)
 
 
@@ -200,14 +190,14 @@ func _create_chapter_panel(chapter: Dictionary) -> PanelContainer:
 	header.add_child(wave_badge)
 
 	var title := Label.new()
-	title.text = chapter["title"]
+	title.text = chapter.get("title_en", chapter["title"])
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.3, 1.0, 0.9))
 	header.add_child(title)
 
 	# 한국어 설명
 	var ko := Label.new()
-	ko.text = chapter["ko"]
+	ko.text = chapter["en"]
 	ko.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ko.add_theme_font_size_override("font_size", 18)
 	ko.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
@@ -336,7 +326,7 @@ func _create_faction_panel(data: Dictionary, faction_key: String) -> PanelContai
 
 	# --- 이름 ---
 	var name_label := Label.new()
-	name_label.text = "%s   (%s)" % [data["name"], data["name_en"]]
+	name_label.text = data["name_en"]
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 26)
 	name_label.add_theme_color_override("font_color", accent)
@@ -344,7 +334,7 @@ func _create_faction_panel(data: Dictionary, faction_key: String) -> PanelContai
 
 	# --- 설명 ---
 	var ko := Label.new()
-	ko.text = data["ko"]
+	ko.text = data["en"]
 	ko.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ko.add_theme_font_size_override("font_size", 18)
 	ko.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
@@ -423,13 +413,13 @@ func _create_enemy_panel(data: Dictionary, enemy_key: String) -> PanelContainer:
 	hbox.add_child(text_vbox)
 
 	var name_label := Label.new()
-	name_label.text = "%s   (%s)" % [data["name"], data["name_en"]]
+	name_label.text = data["name_en"]
 	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 	text_vbox.add_child(name_label)
 
 	var ko := Label.new()
-	ko.text = data["ko"]
+	ko.text = data["en"]
 	ko.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ko.add_theme_font_size_override("font_size", 17)
 	ko.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
@@ -507,13 +497,13 @@ func _create_powerup_panel(data: Dictionary, powerup_key: String) -> PanelContai
 	hbox.add_child(text_vbox)
 
 	var name_label := Label.new()
-	name_label.text = "%s   (%s)" % [data["name"], data["name_en"]]
+	name_label.text = data["name_en"]
 	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.7))
 	text_vbox.add_child(name_label)
 
 	var ko := Label.new()
-	ko.text = data["ko"]
+	ko.text = data["en"]
 	ko.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ko.add_theme_font_size_override("font_size", 17)
 	ko.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
