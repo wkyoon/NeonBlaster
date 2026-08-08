@@ -2,8 +2,8 @@ extends Node2D
 ## Game - main gameplay scene controller.
 ## Manages player, spawner, HUD, UI panels, and ad integration.
 
-## 단어 완성 후 리빌 오버레이를 보여주는 시간(초). 이 동안 게임은 멈춘다.
-const REVEAL_DURATION := 2.5
+## 단어 완성 후 다음 단어가 시작되기까지의 시간(초). 리빌이 뜨고 사라지는 동안 플레이는 계속된다.
+const REVEAL_DURATION := 2.0
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _spawner: Node2D = $EnemySpawner
@@ -151,20 +151,12 @@ func _on_word_completed(word: String) -> void:
 	# Show the word reveal overlay (icon + pronunciation)
 	if _word_reveal:
 		_word_reveal.reveal_word(word)
-	# ⚠️ 리빌 동안 게임을 멈춘다.
-	# 예전에는 화면을 70% 어둡게 덮은 채로 적이 계속 내려와서, 가장 기분 좋아야 할
-	# 보상 순간이 곧 "앞이 안 보이는데 맞는" 순간이었다. 학습 게임이라 단어를 각인시키는
-	# 구간이기도 하므로 잠깐 멈추는 편이 맞다.
-	# create_timer 는 기본이 process_always=true 라 멈춤 중에도 진행된다.
-	if _word_reveal:
-		_word_reveal.process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = true
+	# ⚠️ 리빌 동안 게임을 **멈추지 않는다.** 멈추면 흐름이 끊기는 느낌이 든다.
+	# 대신 오버레이가 시야를 가리지 않도록 만들었다(WordReveal 의 배경 alpha 0.12).
+	# 자연스럽게 떴다가 사라지고, 그 사이 플레이는 계속된다.
 	get_tree().create_timer(REVEAL_DURATION).timeout.connect(_start_next_word)
 
 
 func _start_next_word() -> void:
-	# 리빌 일시정지 해제. 그 사이 게임오버·일시정지 메뉴로 넘어갔으면 건드리지 않는다.
-	if GameManager.current_state == GameManager.GameState.PLAYING:
-		get_tree().paused = false
 	if not _is_game_over and GameManager.current_state == GameManager.GameState.PLAYING:
 		WordManager.start_new_word()

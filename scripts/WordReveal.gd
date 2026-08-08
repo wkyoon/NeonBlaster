@@ -20,7 +20,11 @@ func _ready() -> void:
 
 func _create_background() -> void:
 	_bg = ColorRect.new()
-	_bg.color = Color(0.02, 0.02, 0.08, 0.7)
+	# ⚠️ 화면 전체를 어둡게 덮지 않는다.
+	# alpha 0.7 로 덮던 시절에는 이 2.5초 동안 앞이 안 보인 채로 적에게 맞았고,
+	# 그래서 게임을 멈춰야 했다. 멈춤은 "끊긴다"는 느낌을 줘서 멈추지 않기로 했으므로,
+	# 대신 오버레이가 시야를 가리지 않아야 한다. 아주 옅은 톤만 남긴다.
+	_bg.color = Color(0.02, 0.02, 0.08, 0.12)
 	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bg)
@@ -115,8 +119,8 @@ func reveal_word(word: String) -> void:
 	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	# Pulsing ring effect
 	_tween.parallel().tween_property(_ring, "scale", Vector2(1.3, 1.3), 0.6).set_ease(Tween.EASE_OUT)
-	_tween.tween_interval(1.5)
-	_tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	_tween.tween_interval(0.9)
+	_tween.tween_property(self, "modulate:a", 0.0, 0.45)
 	_tween.tween_callback(_on_reveal_complete)
 	_animate_icon(word)
 	AudioManager.speak_word(word)
