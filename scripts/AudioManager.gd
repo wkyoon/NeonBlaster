@@ -406,11 +406,6 @@ func set_music_volume(vol: float) -> void:
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(_bus_music), linear_to_db(_music_volume))
 
 
-func toggle_mute() -> void:
-	var master_idx := AudioServer.get_bus_index("Master")
-	AudioServer.set_bus_mute(master_idx, not AudioServer.is_bus_mute(master_idx))
-
-
 # ---------------- Individual Toggles ----------------
 
 func toggle_sfx() -> void:
