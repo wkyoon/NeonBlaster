@@ -418,7 +418,7 @@ func _rebuild_reward_rows() -> void:
 	for child in rows.get_children():
 		child.queue_free()
 
-	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "+1 WEAPON",
+	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "POWER +5%",
 		RewardManager.today_seconds >= RewardManager.DAILY_GOAL_SECONDS,
 		"%d:%02d / 10:00" % [mins, secs])
 	for m in RewardManager.STREAK_MILESTONES:
@@ -434,13 +434,13 @@ func _streak_effect_text(days: int) -> String:
 	var ship: String = "🚀 %s" % skin["name_en"] if not skin.is_empty() else ""
 	match days:
 		3:
-			return "%s · +1 WEAPON" % ship
+			return "%s · POWER +8%%" % ship
 		7:
-			return "%s · +2 WEAPON" % ship
+			return "%s · POWER +12%%" % ship
 		15:
-			return "%s · +2 WEAPON · x1.25 FIRE" % ship
+			return "%s · POWER +18%% · SCORE x1.1" % ship
 		30:
-			return "%s · +2 WEAPON · x1.4 FIRE · x2 SCORE" % ship
+			return "%s · POWER +25%% · SCORE x1.2" % ship
 	return ship
 
 

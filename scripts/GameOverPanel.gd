@@ -65,7 +65,7 @@ func _update_nudge() -> void:
 		return
 	var left := RewardManager.DAILY_GOAL_SECONDS - RewardManager.today_seconds
 	if left > 0.0:
-		_nudge.text = "▸ %d:%02d MORE TODAY → +1 WEAPON" % [int(left) / 60, int(left) % 60]
+		_nudge.text = "▸ %d:%02d MORE TODAY → POWER +5%%" % [int(left) / 60, int(left) % 60]
 		return
 	# 오늘 몫은 끝났다 — 다음 연속 마일스톤까지 며칠 남았는지 보여준다.
 	for m in RewardManager.STREAK_MILESTONES:

@@ -33,6 +33,8 @@ func _ready() -> void:
 		# Player._spawn_bullet 이 skin_color 를 넣어 주고, 없으면 기본 시안.
 		_sprite.color = skin_color
 		_glow.color = skin_color
+		# 꼬리도 같은 색이어야 한다 — 본체만 바꾸면 궤적이 기본 시안으로 남아 스킨이 어긋나 보인다.
+		_trail.default_color = Color(skin_color.r, skin_color.g, skin_color.b, 0.4)
 	else:
 		collision_layer = 8   # bullet_enemy
 		collision_mask = 1    # player

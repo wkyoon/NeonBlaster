@@ -79,8 +79,28 @@ func get_stage() -> Dictionary:
 
 
 ## 현재 스테이지의 단어 풀. (WordSim 등 기존 호출부 호환용 이름)
+##
+## 기본 단어 8개를 **모두 수집한 뒤에는** 심화 단어가 합류한다.
+## 단, 한 번에 하나만 — 아직 수집하지 않은 심화 단어 중 **맨 앞 하나**만 넣는다.
+## 어려운 단어를 한꺼번에 풀면 전부 반쯤 익힌 상태로 흩어져 학습이 무너진다.
 func get_word_list() -> Array:
-	return ThemeStages.get_words(stage_index)
+	var words: Array = ThemeStages.get_words(stage_index)
+	var next_adv := get_pending_advanced()
+	if next_adv != "":
+		words.append(next_adv)
+	return words
+
+
+## 이 테마에서 지금 노출 중인 심화 단어. 없으면 "".
+## 기본 단어를 전부 모으기 전에는 항상 "" 다.
+func get_pending_advanced() -> String:
+	for w in ThemeStages.get_words(stage_index):
+		if not is_collected(w):
+			return ""
+	for w in ThemeStages.get_advanced(stage_index):
+		if not is_collected(w):
+			return w
+	return ""
 
 
 ## 현재 스테이지에서 완성한 단어 수 / 목표 수.
@@ -209,7 +229,10 @@ func is_collected(word: String) -> bool:
 ## (모은 수, 전체 수집 가능 수). 전체는 테마에 실제로 등장하는 단어만 센다 —
 ## 게임에 나오지 않는 단어를 목표에 넣으면 도감을 영원히 못 채운다.
 func get_collection_progress() -> Vector2i:
+	# 도감이 심화 단어까지 보여주므로 총수에도 함께 센다(48 → 72).
+	# ⚠️ 테마 완주(mastery)는 여전히 **기본 8개** 기준이다 — get_theme_progress 참조.
 	var goal := ThemeStages.get_all_words()
+	goal.append_array(ThemeStages.get_all_advanced())
 	var got := 0
 	for w in goal:
 		if _collected.has(w):
@@ -247,7 +270,20 @@ func get_next_goal() -> Dictionary:
 		var left: int = p.y - p.x
 		if best.is_empty() or left < int(best["left"]):
 			best = {"id": st["id"], "name_en": st["name_en"], "left": left, "got": p.x, "goal": p.y}
-	return best
+	if not best.is_empty():
+		return best
+	# 기본 단어를 다 모았으면 심화 단어가 다음 목표다.
+	# 여기서 빈 사전을 돌려주면 메뉴가 "다 모았다"고 표시해 더 할 일이 없어 보인다.
+	for st in ThemeStages.STAGES:
+		var adv: Array = st.get("advanced", [])
+		var left_adv := 0
+		for w in adv:
+			if not _collected.has(w):
+				left_adv += 1
+		if left_adv > 0:
+			return {"id": st["id"], "name_en": "%s✦" % st["name_en"], "left": left_adv,
+				"got": adv.size() - left_adv, "goal": adv.size()}
+	return {}
 
 
 func _save_collection() -> void:

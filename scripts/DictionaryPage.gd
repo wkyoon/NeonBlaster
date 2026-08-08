@@ -171,19 +171,30 @@ func _populate_grid() -> void:
 
 	# ⚠️ 사전 전체가 아니라 **테마에 실제로 등장하는 단어만** 보여준다.
 	# 게임에 안 나오는 단어를 도감에 두면 영원히 못 채우는 칸이 생겨 수집 동기가 무너진다.
-	var collectible: Array = ThemeStages.get_all_words()
-	var words: Array = []
-	for w in collectible:
-		if _selected_category == "ALL" or String(WordDictionary.get_description(w).get("category", "")) == _selected_category:
-			words.append(w)
+	var words: Array = _filter(ThemeStages.get_all_words())
 	words.sort()
+	# 심화 단어는 기본 단어 **뒤에** 붙인다 — 도감에서도 "기본을 먼저, 심화는 그다음"이라는
+	# 게임 안의 학습 순서가 그대로 보여야 한다.
+	var advanced: Array = _filter(ThemeStages.get_all_advanced())
+	advanced.sort()
 
 	for word in words:
-		var card := _create_word_card(word)
-		_grid.add_child(card)
+		_grid.add_child(_create_word_card(word, false))
+	for word in advanced:
+		_grid.add_child(_create_word_card(word, true))
 
 
-func _create_word_card(word: String) -> Control:
+## 선택된 카테고리 탭에 해당하는 단어만 남긴다.
+func _filter(pool: Array) -> Array:
+	var out: Array = []
+	for w in pool:
+		if _selected_category == "ALL" or String(WordDictionary.get_description(w).get("category", "")) == _selected_category:
+			out.append(w)
+	return out
+
+
+## is_advanced 인 카드는 ✦ 로 표시한다 — 기본 8개를 다 모아야 나오는 보너스 단어다.
+func _create_word_card(word: String, is_advanced: bool) -> Control:
 	var card := Button.new()
 	card.custom_minimum_size = Vector2(210, 220)
 	card.text = ""
@@ -220,6 +231,8 @@ func _create_word_card(word: String) -> Control:
 	var label := Label.new()
 	# 미수집은 글자 수만 알려준다 — 무엇을 모아야 하는지 힌트는 주되 답은 감춘다.
 	label.text = word if got else "_ ".repeat(word.length()).strip_edges()
+	if is_advanced:
+		label.text = "✦ " + label.text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 22)
 	label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0) if got else Color(0.45, 0.5, 0.6))
@@ -231,7 +244,8 @@ func _create_word_card(word: String) -> Control:
 	cat_label.text = "[" + desc["category"] + "]"
 	cat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cat_label.add_theme_font_size_override("font_size", 13)
-	cat_label.add_theme_color_override("font_color", Color(0.6, 0.7, 0.9))
+	cat_label.add_theme_color_override("font_color",
+		Color(1.0, 0.8, 0.35) if is_advanced else Color(0.6, 0.7, 0.9))
 	vbox.add_child(cat_label)
 
 	return card

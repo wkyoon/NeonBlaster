@@ -374,6 +374,8 @@ func _spawn_bullet(pos: Vector2, dir: Vector2) -> void:
 	bullet.is_player_bullet = true
 	# 탄도 기체 스킨 색을 따른다 — 화면 대부분을 차지하는 게 탄이라 여기가 제일 눈에 띈다.
 	bullet.skin_color = _skin_bullet_color
+	# 보상 화력은 탄을 조금 굵게 만든다. 개수를 늘리는 대신 **같은 탄이 세 보이게** 한다.
+	bullet.scale = Vector2.ONE * (1.0 + GameManager.reward_power * 0.6)
 	# 적과 같은 화면 높이 보정. 세로가 긴 기기에서 총알이 화면을 가로지르는 시간이
 	# 늘어나면 사거리 체감과 교전 리듬이 달라진다.
 	bullet.speed *= GameManager.screen_speed_scale()
@@ -528,9 +530,10 @@ func revive() -> void:
 	# "잘하는 것처럼 느끼게" 하려는 방향과 정반대다.
 	# 출석 보상 화력을 여기서 적용한다. Game._ready 가 start_game() 직후 호출하므로
 	# 판 시작·부활 양쪽에서 같은 값이 걸린다(부활 후에도 그 판 내내 유효).
-	# 탄 개수와 연사가 눈에 띄게 늘어야 "보상을 받았다"가 화면에서 읽힌다.
-	weapon_level = clampi(2 + GameManager.reward_weapon_bonus, 1, 4)
-	_base_fire_rate = _export_fire_rate * GameManager.reward_fire_rate_mult
+	# ⚠️ 무기 레벨은 건드리지 않는다 — 레벨을 올리면 탄 개수가 뛰어 판이 통째로 달라진다.
+	#    보상은 연사와 탄 크기를 소수 배수로만 올린다.
+	weapon_level = 2
+	_base_fire_rate = _export_fire_rate * (1.0 + GameManager.reward_power)
 	rapid_fire_timer = 0.0
 	shield_timer = 0.0
 	laser_timer = 0.0
