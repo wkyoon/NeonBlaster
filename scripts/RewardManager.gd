@@ -187,8 +187,16 @@ func _key(kind: String, days: int) -> String:
 
 # ---------------- 랭크 / 난이도 해금 ----------------
 
+## 벤치마크 전용 랭크 강제값(-1 이면 사용 안 함).
+## ⚠️ 난이도별 밸런스는 **그 난이도를 여는 최소 랭크**에서 재야 한다.
+##    랭크 0 으로 HARD 를 재면 실제로는 아무도 겪지 않는 조건을 측정하는 것이다.
+var bench_rank_override: int = -1
+
+
 ## 지금까지 받은 연속 접속 보상 수(0~4). 영구.
 func get_rank() -> int:
+	if bench_rank_override >= 0:
+		return clampi(bench_rank_override, 0, MAX_RANK)
 	var n := 0
 	for m in STREAK_MILESTONES:
 		if is_claimed("streak", m):

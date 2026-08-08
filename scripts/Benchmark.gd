@@ -10,7 +10,8 @@ extends Node2D
 ##   BENCH_SEED       - 랜덤 시드 (기본 42)
 ##   BENCH_DIFFICULTY - easy / normal / hard / all (기본 all)
 ##   BENCH_FAST       - 1이면 시뮬레이션 가속 (time_scale=3) (기본 1)
-##   BENCH_AI_ERROR   - AI 회피 실패율 0.0~1.0 (기본 0.0). 인간 스킬 근사치.
+##   BENCH_AI_ERROR   - AI 회피 실패율 0.0~1.0 (기본 0.15 = 목표치 정의 기준). 인간 스킬 근사치.
+##   BENCH_RANK       - 출석 보상 랭크 강제(0~4). 기본은 난이도별 해금 랭크.
 ##   BENCH_OUT        - 결과 파일 경로 prefix (기본 res://benchmark_results / res://benchmark_log)
 ##                      스윕 시 런마다 다른 값을 주어 결과 덮어쓰기를 방지한다.
 
@@ -45,10 +46,15 @@ const TARGET_AI_ERROR := 0.15
 ## 어려움과 선택을 요구하는 방향은 목적에 맞지 않는다). 그래서 목표를 다시 낮췄다:
 ## 적은 많고 약하게, 플레이어는 관대하게 — 화면은 계속 터지는데 나는 잘 안 죽는 상태.
 ## 이전 목표(EASY 25~45%, NORMAL 45~75% 사망)는 "자주 죽는" 방향이라 목적과 정반대였다.
+## ⚠️ 판정의 주축은 **사망률**과 **생존 비율**이다.
+##    피격 수(`hits_taken`)는 `GameManager.MAX_LIVES`(5)에서 포화되므로 —
+##    5번 맞으면 게임이 끝나 그 이상 기록되지 않는다 — 사망이 잦은 난이도에서는
+##    난이도 판별력이 없다. 압박은 포화되지 않는 **동시 적 수(alive_avg)** 로 본다.
+##    (실측: HARD 사망률 100% 구간에서 hits 가 5.7 로 고정돼 어떤 조정에도 반응하지 않았다.)
 const DIFFICULTY_TARGETS := {
-	"EASY":   { "hits": [0.5, 2.5], "death_rate": [0.00, 0.15], "survival_ratio": 0.85 },
-	"NORMAL": { "hits": [2.0, 4.0], "death_rate": [0.10, 0.35], "survival_ratio": 0.65 },
-	"HARD":   { "hits": [3.0, 5.0], "death_rate": [0.35, 0.70], "survival_ratio": 0.40 },
+	"EASY":   { "alive": [1.5, 3.5], "death_rate": [0.00, 0.15], "survival_ratio": 0.85 },
+	"NORMAL": { "alive": [2.5, 5.0], "death_rate": [0.10, 0.35], "survival_ratio": 0.65 },
+	"HARD":   { "alive": [3.5, 6.5], "death_rate": [0.35, 0.70], "survival_ratio": 0.40 },
 }
 
 var _game_scene: Node2D = null
@@ -69,6 +75,8 @@ var _per_difficulty_results: Dictionary = {}  # difficulty -> Array[metrics]
 var _fast_mode: bool = true
 var _time_scale_target: float = 1.0
 var _seed_value: int = 42
+## BENCH_RANK 로 강제한 랭크(-1 이면 난이도별 해금 랭크를 쓴다).
+var _forced_rank: int = -1
 var _log_path: String = LOG_PATH
 var _json_path: String = JSON_PATH
 
@@ -96,7 +104,10 @@ func _ready() -> void:
 		_log_path = out_prefix + ".txt"
 
 	# AI 회피 실수율 (0=완벽, 0.1=숙련자, 0.2=일반, 0.3=초보)
-	GameManager.ai_dodge_error = float(_env_or("BENCH_AI_ERROR", "0.0"))
+	# 목표치가 0.15 기준으로 정의돼 있으므로 기본값도 0.15 로 둔다.
+	# 0.0(완벽 AI)으로 재고 목표와 비교하면 항상 어긋난다.
+	GameManager.ai_dodge_error = float(_env_or("BENCH_AI_ERROR", "0.15"))
+	_forced_rank = int(_env_or("BENCH_RANK", "-1"))
 
 	var diff_arg := _env_or("BENCH_DIFFICULTY", "all").to_upper()
 	if diff_arg == "ALL":
@@ -110,6 +121,8 @@ func _ready() -> void:
 		str(_difficulty_queue), _total_runs, _max_time, seed_str, _fast_mode, _time_scale_target
 	])
 	_log("AI dodge error: %.0f%% (0=perfect AI, 20=avg human)" % (GameManager.ai_dodge_error * 100))
+	_log("Rank: %s (난이도 해금 랭크에서 측정 — NORMAL=1(+6%%), HARD=2(+12%%))" % (
+		"BENCH_RANK=%d 강제" % _forced_rank if _forced_rank >= 0 else "자동"))
 	_log("=".repeat(72))
 
 	_start_msec = Time.get_ticks_msec()
@@ -181,6 +194,11 @@ func _start_next_difficulty() -> void:
 	_current_difficulty = _difficulty_queue.pop_front()
 	_per_difficulty_results[_current_difficulty] = []
 	WordManager.set_difficulty(_parse_difficulty(_current_difficulty))
+	# ⚠️ 이 난이도를 **여는 최소 랭크**로 맞춘다. NORMAL 은 랭크1(+6%), HARD 는 랭크2(+12%) 라
+	#    랭크 0 으로 재면 실제로는 아무도 겪지 않는 조건을 측정하게 된다.
+	#    BENCH_RANK 로 강제하면 그 값을 모든 난이도에 쓴다(상위 랭크 체감 확인용).
+	RewardManager.bench_rank_override = _rank_for(_current_difficulty)
+	_reset_learning_state()
 	_log("\n" + "#".repeat(72))
 	_log("# Difficulty: %s" % _current_difficulty)
 	_log("#".repeat(72))
@@ -215,6 +233,24 @@ func _start_next_run() -> void:
 
 	# 메트릭 수집을 위한 신호 연결 (다음 프레임에 노드가 준비된 후)
 	call_deferred("_connect_signals")
+
+
+## 모든 난이도를 **같은 학습 상태**에서 출발시킨다.
+## ⚠️ 도감 수집 상태는 user:// 에 저장되므로, 그대로 두면 벤치마크를 돌릴수록 쌓여
+##    단어 풀과 심화 단어 해금이 달라진다 — 같은 설정에서 결과가 재현되지 않는 원인이었다.
+func _reset_learning_state() -> void:
+	WordManager.persist_enabled = false
+	WordManager._collected.clear()
+	WordManager.reset_learning()
+	WordManager.set_stage(0)
+
+
+## 이 난이도를 여는 최소 랭크. 실제 플레이어가 그 난이도에 들어올 때의 최저 능력치다.
+func _rank_for(name: String) -> int:
+	if _forced_rank >= 0:
+		return _forced_rank
+	var i := _parse_difficulty(name)
+	return RewardManager.DIFFICULTY_RANK[clampi(i, 0, RewardManager.DIFFICULTY_RANK.size() - 1)]
 
 
 func _parse_difficulty(name: String) -> int:
@@ -492,25 +528,31 @@ func _diagnose_balance(diff: String, st: Dictionary) -> Array:
 	var target: Dictionary = DIFFICULTY_TARGETS.get(diff, DIFFICULTY_TARGETS["NORMAL"])
 	var avg: Dictionary = st["avg"]
 	var hits := float(avg["hits_taken"])
+	var alive := float(avg["alive_avg"])
 	var death_rate := float(st["death_rate"])
 	var survival_ratio := float(avg["survival_time"]) / _max_time
-	var hits_lo := float(target["hits"][0])
-	var hits_hi := float(target["hits"][1])
+	var alive_lo := float(target["alive"][0])
+	var alive_hi := float(target["alive"][1])
 	var dr_lo := float(target["death_rate"][0])
 	var dr_hi := float(target["death_rate"][1])
 	var sr_min := float(target["survival_ratio"])
 
-	# --- 1) 압박: 피격 횟수 ---
-	if hits < hits_lo:
-		lines.append("✗ 압박 부족 — 피격 %.1f, 목표 %.1f~%.1f" % [hits, hits_lo, hits_hi])
-		lines.append("  → spawn_interval 낮추거나(적 더 촘촘) bullet_speed 올릴 것")
-	elif hits > hits_hi:
-		lines.append("✗ 압박 과다 — 피격 %.1f, 목표 %.1f~%.1f" % [hits, hits_lo, hits_hi])
-		lines.append("  → spawn_interval 올리거나 enemy_speed 낮출 것")
+	# --- 1) 압박: 동시 적 수 (포화되지 않는 지표) ---
+	if alive < alive_lo:
+		lines.append("✗ 압박 부족 — 동시 적 %.1f, 목표 %.1f~%.1f" % [alive, alive_lo, alive_hi])
+		lines.append("  → spawn_interval 낮출 것(적 더 촘촘)")
+	elif alive > alive_hi:
+		lines.append("✗ 압박 과다 — 동시 적 %.1f, 목표 %.1f~%.1f" % [alive, alive_lo, alive_hi])
+		lines.append("  → spawn_interval 올리거나 enemy_hp 낮출 것(처치 회전 개선)")
 	else:
-		lines.append("✓ 압박 적정 — 피격 %.1f (목표 %.1f~%.1f), 위험상황 %.1f회" % [
-			hits, hits_lo, hits_hi, avg["near_death"]
+		lines.append("✓ 압박 적정 — 동시 적 %.1f (목표 %.1f~%.1f)" % [alive, alive_lo, alive_hi])
+	# 피격은 참고값. 포화되면 그렇다고 명시해 조정 근거로 쓰지 않게 한다.
+	if hits >= float(GameManager.MAX_LIVES):
+		lines.append("  피격 %.1f — ⚠ 목숨(%d)에서 포화, 난이도 판별에 쓰지 말 것 | 위험상황 %.1f회" % [
+			hits, GameManager.MAX_LIVES, avg["near_death"]
 		])
+	else:
+		lines.append("  피격 %.1f (참고) | 위험상황 %.1f회" % [hits, avg["near_death"]])
 
 	# --- 2) 사망률 ---
 	if death_rate < dr_lo:

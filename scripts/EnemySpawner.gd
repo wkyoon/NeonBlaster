@@ -20,28 +20,36 @@ signal enemy_killed(enemy_type: int, points: int)
 func _get_diff_mult() -> Dictionary:
 	match WordManager.current_difficulty:
 		WordManager.Difficulty.EASY:
-			# EASY 도 방심하면 죽어야 한다("너무 쉬우면 이탈한다"가 이 게임의 전제).
-			# 원본은 사망률 0%·동시 적 0.9마리로 자극이 전혀 없었다.
+			# EASY 는 **랭크 0 = 신규 플레이어가 처음 만나는 판**이다. 여기서 잘한다고 느껴야
+			# NORMAL/HARD 를 열고 싶어진다(난이도 해금은 RewardManager.DIFFICULTY_RANK).
+			# 목표 사망률 0~15%.
 			#
-			# 튜닝 기록 (전부 15게임·오차 0.15·fixed-fps 측정):
-			#  · 적 속도 상향(0.85→1.05)은 **실패**. 적이 화면을 빨리 지나가 잔존이 줄어
-			#    밀도가 2.7→2.3으로 떨어지면서 위협 증가분이 상쇄됐다. 그래서 0.85 로 되돌렸다.
-			#  · 체력 0.6→0.9 는 성공. 잔존 시간이 늘어 위협과 밀도를 동시에 올린다.
-			#    ⚠️ 다만 이 값(0.9)은 NORMAL(0.7)보다 높아 "EASY 적이 더 단단한" 역전 상태다.
-			#  · 적 탄속은 **계단형 응답**이라 미세 조정에 못 쓴다:
-			#      0.80 → 사망률 13% / 0.85 → 13% / 0.90 → 53% / 1.00 → 53%
-			#    AI 회피 모델이 특정 탄속에서 갑자기 못 피하는 것으로 보인다. 0.85 로 고정.
-			#  · 최종 미세 조정은 밀도로 했다: 1.05(13%) → 0.98(**47%**).
-			#    47%는 목표 상한 45%를 2%p 넘지만 15게임 해상도가 6.7%p(한 게임)라 경계값이다.
-			return {"spawn_interval": 0.62, "enemy_hp": 0.5, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.85}
+			# ⚠️ 예전 값(spawn 0.62 / hp 0.5)은 **"EASY 도 방심하면 죽어야 한다(목표 45%)"**
+			#    시절의 튜닝이다. 이후 "잘하는 것처럼 느끼게" 방향으로 바뀌며 목표가 0~15% 로
+			#    내려갔는데 배수는 그대로여서 실측 사망률이 40% 였다.
+			# ⚠️ hp 0.5 는 NORMAL(0.45)보다 **높아 역전**이었다. EASY 적이 더 단단해
+			#    처치시간 1.6초(NORMAL 1.4초)로 잔존이 늘고 동시 적 수까지 EASY 가 더 많았다.
+			#
+			# 튜닝 기록 (전부 오차 0.15·fixed-fps·해금 랭크 측정):
+			#  · 적 속도 상향(0.85→1.05)은 실패. 적이 화면을 빨리 지나가 잔존이 줄어
+			#    밀도가 떨어지면서 위협 증가분이 상쇄됐다. 0.85 유지.
+			#  · 적 탄속은 계단형 응답이라 미세 조정에 못 쓴다(0.85→13% / 0.90→53%).
+			# 실측(10게임·오차0.15·랭크0): 동시 적 3.1 / 사망률 0% / 생존 100% / 4.6단어분
+			return {"spawn_interval": 0.85, "enemy_hp": 0.38, "enemy_speed": 0.85, "wave_duration": 1.25, "bullet_speed": 0.80}
 		WordManager.Difficulty.NORMAL:
-			# NORMAL 사망률이 40%로 목표(45~75%) 하한에 미달하고 EASY(20%)와 간격이 좁았다.
-			# 밀도만 올려 분리를 확보한다.
-			return {"spawn_interval": 0.52, "enemy_hp": 0.45, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.1}
+			# NORMAL 은 랭크 1(영구 화력 +6%)에서 열린다. 목표 사망률 10~35%.
+			# 압박(동시 적)은 이미 목표 안이었고 사망률만 60% 로 과다했다 →
+			# 밀도는 두고 **치사율**(적 탄속)만 낮춘다. 그 뒤 밀도로 미세 조정했는데
+			# 밀도 응답이 매우 가파르다: spawn_interval 0.58→0% / 0.53→43% / 0.48→80%.
+			# 0.56 이 목표 구간 한가운데다.
+			# 실측(10게임·오차0.15·랭크1): 동시 적 3.7 / 사망률 20% / 생존 92% / 6.6단어분
+			return {"spawn_interval": 0.56, "enemy_hp": 0.45, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 0.90}
 		WordManager.Difficulty.HARD:
-			# HARD 는 밀도가 아니라 속도·체력·탄속으로 어려워야 한다.
-			# 배수 0.65(간격 0.715s)는 동시 적 4.9마리를 만들어 16초 만에 죽고 단어를 0개 완성했다.
-			return {"spawn_interval": 0.52, "enemy_hp": 0.6, "enemy_speed": 1.25, "wave_duration": 0.8, "bullet_speed": 1.2}
+			# HARD 는 랭크 2(영구 화력 +12%)에서 열린다. 목표 사망률 35~70%.
+			# 밀도가 아니라 속도·체력으로 어려워야 한다. 실측 100% 였으므로
+			# 탄속과 적 속도를 함께 내려 치사율만 낮춘다(압박은 목표 안이었다).
+			# 실측(10게임·오차0.15·랭크2): 동시 적 4.4 / 사망률 50% / 생존 83% / 7.0단어분
+			return {"spawn_interval": 0.52, "enemy_hp": 0.6, "enemy_speed": 1.15, "wave_duration": 0.8, "bullet_speed": 1.0}
 	return {"spawn_interval": 1.0, "enemy_hp": 1.0, "enemy_speed": 1.0, "wave_duration": 1.0, "bullet_speed": 1.0}
 
 var _enemy_scene: PackedScene = preload("res://scenes/Enemy.tscn")

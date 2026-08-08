@@ -286,7 +286,15 @@ func get_next_goal() -> Dictionary:
 	return {}
 
 
+## 벤치마크는 이걸 false 로 둔다. 켜져 있으면 측정할 때마다 수집 상태가 쌓여
+## 다음 실행의 단어 풀(심화 단어 해금 포함)이 달라져 **같은 설정인데 결과가 달라진다**.
+## 실측: 같은 배수·같은 시드로 NORMAL 사망률이 20% → 50% 로 튀었다.
+var persist_enabled: bool = true
+
+
 func _save_collection() -> void:
+	if not persist_enabled:
+		return
 	var cfg := ConfigFile.new()
 	cfg.set_value("collection", "words", _collected.keys())
 	cfg.save(COLLECTION_PATH)
