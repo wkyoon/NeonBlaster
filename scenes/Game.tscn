@@ -33,7 +33,7 @@ position = Vector2(360, 960)
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("3_spawner")
 initial_spawn_interval = 1.1
-min_spawn_interval = 0.3
+min_spawn_interval = 0.16
 difficulty_scale = 0.91
 wave_duration = 11.0
 

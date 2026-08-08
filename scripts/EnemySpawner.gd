@@ -8,7 +8,7 @@ signal enemy_killed(enemy_type: int, points: int)
 ## ⚠️ 이 네 값은 Game.tscn 의 EnemySpawner 노드가 **덮어쓴다**.
 ## 여기만 고치면 게임에 반영되지 않는다 — 반드시 Game.tscn 값도 같이 수정할 것.
 @export var initial_spawn_interval: float = 1.1
-@export var min_spawn_interval: float = 0.3
+@export var min_spawn_interval: float = 0.16
 ## ⚠️ 더 이상 쓰지 않는다. 난이도 램프는 DifficultyDirector 가 경과 시간으로 만든다.
 ## (Game.tscn 이 이 @export 를 덮어쓰고 있으므로 선언은 남겨 둔다.)
 @export var difficulty_scale: float = 0.91

@@ -34,27 +34,27 @@ const MAX_BONUS_MINUTES := 20
 ## CALM(초반) → INTENSE(목표 시간) → LETHAL(초과 구간, 확실히 죽는다)
 ## ⚠️ CALM/INTENSE 는 예전 EASY/NORMAL 실측값이다(사망률 0% / 20%, 10게임·오차 0.15).
 const CALM := {
-	"spawn_interval": 0.95, "enemy_hp": 0.35, "enemy_speed": 0.80,
-	"wave_duration": 1.25, "bullet_speed": 0.75,
+	"spawn_interval": 0.65, "enemy_hp": 0.35, "enemy_speed": 0.68,
+	"wave_duration": 1.25, "bullet_speed": 0.55,
 }
 const INTENSE := {
-	"spawn_interval": 0.56, "enemy_hp": 0.45, "enemy_speed": 1.0,
-	"wave_duration": 1.0, "bullet_speed": 0.90,
+	"spawn_interval": 0.34, "enemy_hp": 0.45, "enemy_speed": 0.75,
+	"wave_duration": 1.0, "bullet_speed": 0.65,
 }
 ## 목표 시간을 넘겼을 때 도달하는 지점. 여기까지 오면 버티기 어렵다 —
 ## 판에 끝을 보장하는 장치라서 의도적으로 가혹하게 잡는다.
 const LETHAL := {
-	"spawn_interval": 0.34, "enemy_hp": 0.60, "enemy_speed": 1.30,
-	"wave_duration": 0.7, "bullet_speed": 1.20,
+	"spawn_interval": 0.18, "enemy_hp": 0.60, "enemy_speed": 1.05,
+	"wave_duration": 0.7, "bullet_speed": 0.95,
 }
 
 ## 시작 직후 잔잔한 구간. 목표 시간의 `CALM_RATIO` 만큼 두되 `CALM_MAX` 를 넘지 않는다.
 ## ⚠️ 순수 비율(0.35)만 쓰면 목표 30분에서 잔잔한 구간이 10분을 넘어 오래 한 사람일수록
 ##    초반이 지루하다(실측 동시 적 2.0 → 1.5 → 1.3).
-## ⚠️ 반대로 짧은 절대값(20초)만 쓰면 판이 너무 빨리 조여들어 목표를 못 채운다
-##    (실측 411초 / 목표 600초). 비율에 **상한**을 거는 것이 둘 다 만족한다.
+## ⚠️ 210초로 잡았더니 10분 판의 첫 3.5분이 강도 0 이라 **밋밋했다**(실측 동시 적 1.4).
+##    시간은 잔잔한 도입부가 아니라 러시 사이의 **골짜기**와 낮은 치사율로 번다.
 const CALM_RATIO := 0.35
-const CALM_MAX := 210.0
+const CALM_MAX := 45.0
 ## 밀도(화면이 얼마나 북적이는가)와 치사율(얼마나 위험한가)은 **다른 속도로** 오른다.
 ##
 ## 왜 나눴나: 둘을 같은 곡선으로 올리면 긴 판에서 중반이 길어진 만큼 피격이 누적돼
@@ -63,11 +63,22 @@ const CALM_MAX := 210.0
 ## 그래서 **밀도는 초반에 빨리 올리고(스펙터클), 치사율은 뒤에 몰아준다(끝맺음)**.
 ## 이 게임의 목적이 "잘하는 것처럼 느끼게" 하는 것이므로 화려함과 위험은 붙어 있을 이유가 없다.
 const DENSITY_SHAPE := 0.5   # 작을수록 일찍 북적인다
-const LETHAL_SHAPE := 2.2    # 클수록 위험이 늦게 온다
+const LETHAL_SHAPE := 3.0    # 클수록 위험이 늦게 온다
 ## 밀도 쪽 노브와 치사율 쪽 노브.
 const DENSITY_KEYS: Array[String] = ["spawn_interval", "enemy_hp", "wave_duration"]
 ## 목표 시간을 이 배수만큼 넘기면 LETHAL 에 도달한다.
 const LETHAL_AT := 1.25
+
+## ---- 러시 리듬 ----
+## 강도를 평탄하게 올리기만 하면 **밋밋하다**. 실측: 30분 판 내내 동시 적 0.8~3.0,
+## 평균 1.6 — 클라이맥스도 리듬도 없었다.
+## 슈팅 게임의 기본 재미는 "밀려온다 → 쓸어낸다 → 숨 돌린다"의 반복이다.
+## 예전에는 웨이브마다 조여드는 계단이 그 역할을 했는데, 웨이브 램프를 없애며 리듬까지 사라졌다.
+##
+## ⚠️ 러시는 **밀도에만** 얹는다. 치사율까지 같이 흔들면 죽는 타이밍이 운에 좌우된다.
+const RUSH_PERIOD := 30.0
+## 러시 최고조에서 밀도 진행도를 이만큼 밀어올린다.
+const RUSH_STRENGTH := 0.55
 
 ## 하루 플레이로 쌓인 보너스 분수(0 ~ MAX_BONUS_MINUTES).
 var bonus_minutes: int = 0
@@ -127,17 +138,30 @@ func get_intensity() -> float:
 ## 현재 강도에 해당하는 스포너 배수. EnemySpawner 가 적을 만들 때마다 읽는다.
 func get_multipliers() -> Dictionary:
 	var p := get_intensity()
+	var base := clampf(p, 0.0, 1.0)
+	# 밀도는 초반에 빨리 오르고(스펙터클), 치사율은 뒤에 몰린다(끝맺음).
+	var t_density := pow(base, DENSITY_SHAPE) if p <= 1.0 else p
+	var t_lethal := pow(base, LETHAL_SHAPE) if p <= 1.0 else p
+	# 러시가 밀도를 주기적으로 밀어올린다. 골짜기에서 숨을 돌리고 마루에서 쏟아진다.
+	t_density = minf(t_density + _rush_factor() * RUSH_STRENGTH, LETHAL_AT)
+
 	var out := {}
 	for key in CALM:
-		var shape: float = DENSITY_SHAPE if key in DENSITY_KEYS else LETHAL_SHAPE
-		var t := pow(clampf(p, 0.0, 1.0), shape)
-		if p <= 1.0:
-			out[key] = lerpf(float(CALM[key]), float(INTENSE[key]), t)
-		else:
-			# 목표 시간 초과 — LETHAL 로 계속 올라간다. 판을 끝내는 장치다.
-			var over := clampf((p - 1.0) / maxf(0.01, LETHAL_AT - 1.0), 0.0, 1.0)
-			out[key] = lerpf(float(INTENSE[key]), float(LETHAL[key]), over)
+		out[key] = _blend(key, t_density if key in DENSITY_KEYS else t_lethal)
 	return out
+
+
+## 0(골짜기) ~ 1(마루) 로 오가는 러시 계수.
+func _rush_factor() -> float:
+	return (1.0 - cos(TAU * _elapsed / RUSH_PERIOD)) * 0.5
+
+
+## 진행도 t 를 CALM → INTENSE → LETHAL 구간에 대응시킨다.
+func _blend(key: String, t: float) -> float:
+	if t <= 1.0:
+		return lerpf(float(CALM[key]), float(INTENSE[key]), maxf(t, 0.0))
+	var over := clampf((t - 1.0) / maxf(0.01, LETHAL_AT - 1.0), 0.0, 1.0)
+	return lerpf(float(INTENSE[key]), float(LETHAL[key]), over)
 
 
 ## 표시용 단계(1~5). 점수 기록에만 쓴다 — 플레이 중에 띄우면 결국 난이도를 의식하게 된다.

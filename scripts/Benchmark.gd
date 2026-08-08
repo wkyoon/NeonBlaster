@@ -57,10 +57,12 @@ const TARGET_AI_ERROR := 0.15
 ##    판정의 핵심은 "목표 생존 시간(10분 + 하루당 1분)쯤에 판이 끝나는가" 다.
 ##    판에 끝이 있어야 틈새 시간 게임이 된다 — 예전 EASY 는 사망률 0% 라 영영 안 끝났다.
 ##    사망률은 전 구간 90% 이상이어야 한다(끝이 보장돼야 하므로).
+##    ⚠️ 동시 적 하한(3.5)은 **재미의 최저선**이다. 예전 밴드(1.5)는 화면에 적이
+##       한두 마리뿐인 상태를 통과시켰고, 실제로 "밋밋하다"는 결과로 돌아왔다.
 const DIFFICULTY_TARGETS := {
-	"EASY":   { "alive": [1.5, 4.5], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
-	"NORMAL": { "alive": [1.5, 5.0], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
-	"HARD":   { "alive": [1.5, 5.5], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
+	"EASY":   { "alive": [3.5, 8.0], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
+	"NORMAL": { "alive": [3.5, 8.0], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
+	"HARD":   { "alive": [3.5, 8.0], "death_rate": [0.90, 1.00], "survival_ratio": 0.0 },
 }
 
 var _game_scene: Node2D = null
