@@ -405,6 +405,16 @@ func _create_enemy_panel(data: Dictionary, enemy_key: String) -> PanelContainer:
 			StoryArt.animate_float(enemy, 4.0, 1.2)
 		"TANK":
 			StoryArt.animate_rotation(enemy, 6.0)
+		# 아래 넷은 **그 유닛의 특징이 곧 움직임**이 되게 고른다.
+		# 글로 읽기 전에 그림만 봐도 무엇이 위험한지 짐작되어야 한다.
+		"DASHER":
+			StoryArt.animate_float(enemy, 12.0, 0.5)   # 빠르게 흔들린다
+		"BOMBER":
+			StoryArt.animate_pulse(enemy, 0.88, 1.12, 0.6)  # 터지기 직전의 점멸
+		"SPLITTER":
+			StoryArt.animate_rotation(enemy, 10.0)     # 느리게 굴러온다
+		"SHIELDER":
+			StoryArt.animate_pulse(enemy, 0.96, 1.06, 2.0)  # 재생하는 보호막
 
 	# --- 텍스트 정보 (우측) ---
 	var text_vbox := VBoxContainer.new()

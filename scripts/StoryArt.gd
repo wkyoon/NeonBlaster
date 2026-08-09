@@ -97,6 +97,14 @@ static func draw_void_enemy(parent: Node2D, enemy_key: String, scale_factor: flo
 			_draw_void_shooter(node)
 		"TANK":
 			_draw_void_tank(node)
+		"DASHER":
+			_draw_void_dasher(node)
+		"BOMBER":
+			_draw_void_bomber(node)
+		"SPLITTER":
+			_draw_void_splitter(node)
+		"SHIELDER":
+			_draw_void_shielder(node)
 		_:
 			_draw_void_chaser(node)
 
@@ -198,6 +206,158 @@ static func _draw_void_tank(node: Node2D) -> void:
 		node.add_child(eye)
 
 	_add_light(node, Color(0.8, 0.3, 1.0), 3.0, 3.5)
+
+
+## ⚠️ 아래 네 종은 **실제 게임의 모양·색과 맞춰야 한다**(`Enemy._configure_type`).
+##    설명 화면에서 본 것과 판에서 만나는 것이 다르면 소개가 오히려 방해가 된다.
+##    별/청록, 원/주홍, 팔각/초록, 사각/파랑 — 이 대응을 바꾸려면 양쪽을 같이 바꿀 것.
+
+static func _draw_void_dasher(node: Node2D) -> void:
+	# 돌진자: 별 모양 + 잔상. 게임에서는 지그재그로 파고든다.
+	var star := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i in 10:
+		var a := TAU * i / 10.0 - PI / 2
+		var r: float = 55.0 if i % 2 == 0 else 22.0
+		pts.append(Vector2(cos(a), sin(a)) * r)
+	star.polygon = pts
+	star.color = Color(0.15, 0.85, 0.9)
+	node.add_child(star)
+
+	var core := Polygon2D.new()
+	core.polygon = _circle_polygon(16, 16)
+	core.color = Color(0.0, 0.1, 0.12)
+	node.add_child(core)
+
+	# 속도를 드러내는 잔상 두 줄
+	for sx in [-1, 1]:
+		var trail := Polygon2D.new()
+		trail.polygon = PackedVector2Array([
+			Vector2(sx * 14, 20), Vector2(sx * 22, 20), Vector2(sx * 16, 62), Vector2(sx * 8, 62)
+		])
+		trail.color = Color(0.2, 1.0, 1.0, 0.45)
+		node.add_child(trail)
+
+	var eye := Polygon2D.new()
+	eye.polygon = _circle_polygon(8, 6)
+	eye.color = Color(0.5, 1.0, 1.0)
+	eye.position = Vector2(0, -6)
+	node.add_child(eye)
+
+	_add_light(node, Color(0.2, 1.0, 1.0), 3.0, 3.0)
+
+
+static func _draw_void_bomber(node: Node2D) -> void:
+	# 자폭병: 둥근 폭탄 + 도화선. 가까워지면 깜빡이다 12방향으로 터진다.
+	var body := Polygon2D.new()
+	body.polygon = _circle_polygon(24, 48)
+	body.color = Color(0.9, 0.35, 0.08)
+	node.add_child(body)
+
+	var core := Polygon2D.new()
+	core.polygon = _circle_polygon(20, 26)
+	core.color = Color(0.15, 0.03, 0.0)
+	node.add_child(core)
+
+	# 터질 방향을 암시하는 가시
+	for i in 12:
+		var a := TAU * i / 12.0
+		var spike := Polygon2D.new()
+		var dir := Vector2(cos(a), sin(a))
+		var perp := Vector2(-dir.y, dir.x)
+		spike.polygon = PackedVector2Array([
+			dir * 48 + perp * 5, dir * 48 - perp * 5, dir * 64
+		])
+		spike.color = Color(1.0, 0.55, 0.15, 0.75)
+		node.add_child(spike)
+
+	# 도화선 불꽃
+	var fuse := Polygon2D.new()
+	fuse.polygon = _circle_polygon(10, 9)
+	fuse.color = Color(1.0, 0.9, 0.4)
+	fuse.position = Vector2(0, -58)
+	node.add_child(fuse)
+
+	_add_light(node, Color(1.0, 0.45, 0.1), 3.2, 3.2)
+
+
+static func _draw_void_splitter(node: Node2D) -> void:
+	# 분열체: 팔각형 + 갈라짐 선. 죽으면 작은 셋으로 나뉜다.
+	var body := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i in 8:
+		var a := TAU * i / 8.0 - PI / 8
+		pts.append(Vector2(cos(a), sin(a)) * 52)
+	body.polygon = pts
+	node.add_child(body)
+	body.color = Color(0.25, 0.8, 0.3)
+
+	# 갈라질 자리를 미리 보여주는 어두운 균열
+	for i in 3:
+		var a := TAU * i / 3.0 - PI / 2
+		var dir := Vector2(cos(a), sin(a))
+		var perp := Vector2(-dir.y, dir.x)
+		var crack := Polygon2D.new()
+		crack.polygon = PackedVector2Array([
+			perp * 4, dir * 52 + perp * 9, dir * 52 - perp * 9, -perp * 4
+		])
+		crack.color = Color(0.03, 0.12, 0.04)
+		node.add_child(crack)
+
+	# 나뉘어 나올 세 개의 씨앗
+	for i in 3:
+		var a := TAU * i / 3.0 + PI / 6
+		var seed_dot := Polygon2D.new()
+		seed_dot.polygon = _circle_polygon(12, 11)
+		seed_dot.color = Color(0.5, 1.0, 0.5)
+		seed_dot.position = Vector2(cos(a), sin(a)) * 24
+		node.add_child(seed_dot)
+
+	_add_light(node, Color(0.3, 1.0, 0.3), 2.8, 3.0)
+
+
+static func _draw_void_shielder(node: Node2D) -> void:
+	# 방벽병: 사각형 + 육각 보호막. 체력을 재생하고 8방향 탄막을 뿌린다.
+	var shield := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i in 6:
+		var a := TAU * i / 6.0 - PI / 2
+		pts.append(Vector2(cos(a), sin(a)) * 60)
+	shield.polygon = pts
+	shield.color = Color(0.25, 0.45, 0.95, 0.35)
+	node.add_child(shield)
+
+	var body := Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-38, -38), Vector2(38, -38), Vector2(38, 38), Vector2(-38, 38)
+	])
+	body.color = Color(0.25, 0.45, 0.95)
+	node.add_child(body)
+
+	var core := Polygon2D.new()
+	core.polygon = _circle_polygon(20, 20)
+	core.color = Color(0.02, 0.05, 0.15)
+	node.add_child(core)
+
+	# 8방향 탄막을 암시하는 포구
+	for i in 8:
+		var a := TAU * i / 8.0
+		var port := Polygon2D.new()
+		port.polygon = _circle_polygon(8, 5)
+		port.color = Color(0.6, 0.8, 1.0)
+		port.position = Vector2(cos(a), sin(a)) * 44
+		node.add_child(port)
+
+	# 재생을 뜻하는 십자
+	for r in [Rect2(-4, -14, 8, 28), Rect2(-14, -4, 28, 8)]:
+		var bar := Polygon2D.new()
+		bar.polygon = PackedVector2Array([
+			r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)
+		])
+		bar.color = Color(0.7, 0.95, 1.0)
+		node.add_child(bar)
+
+	_add_light(node, Color(0.3, 0.5, 1.0), 3.0, 3.4)
 
 
 # ============================================================

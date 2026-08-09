@@ -90,14 +90,22 @@ Defeating them yields precious power-ups!"""
 	{
 		"wave": 8,
 		"title": "제4장: 보이드의 분노", "title_en": "Chapter 4: Wrath of the Void",
-		"ko": """적들의 공격이 점점 거세진다.
-보이드가 분노하기 시작한 것이다.
+		"ko": """보이드가 남은 네 병과를 모두 풀어놓는다.
+
+지그재그로 파고드는 '돌진자(Dasher)',
+품에서 터지는 '자폭병(Bomber)',
+부수면 셋이 되는 '분열체(Splitter)',
+스스로 상처를 메우는 '방벽병(Shielder)'.
 
 하지만 두려워하지 마라.
 파워업을 모아 레이저, 번개, 시간 감속 등
 강력한 루미나의 기술을 사용할 수 있다!""",
-		"en": """The enemy assault grows fiercer.
-The Void has begun to rage.
+		"en": """The Void unleashes its four remaining branches.
+
+The zigzagging 'Dasher',
+the 'Bomber' that bursts in your face,
+the 'Splitter' that becomes three when broken,
+the 'Shielder' that mends its own wounds.
 
 But do not fear.
 Collect power-ups to wield mighty Lumina arts -
@@ -151,19 +159,27 @@ boosting score up to 5x."""
 빛의 언어를 삼키고, 우주를 영원한 침묵으로
 만들려는 존재들이다.
 
-세 가지 병과로 구성된다:
+일곱 가지 병과로 구성된다:
 • 추적자 (Chaser) - 빠르고 약한 정찰대
 • 포격수 (Shooter) - 원거리 공격 담당
-• 중갑병 (Tank) - 느리지만 강한 방어력""",
+• 중갑병 (Tank) - 느리지만 강한 방어력
+• 돌진자 (Dasher) - 지그재그로 파고드는 급습대
+• 자폭병 (Bomber) - 접근해 열두 방향으로 터진다
+• 분열체 (Splitter) - 부수면 셋으로 갈라진다
+• 방벽병 (Shielder) - 스스로 체력을 되돌린다""",
 		"en": """A force from the abyss of darkness.
 
 They devour the Words of Light and seek to
 condemn the universe to eternal silence.
 
-Three military branches:
+Seven military branches:
 • Chaser - fast, weak scouts
 • Shooter - ranged attackers
-• Tank - slow, heavily armored"""
+• Tank - slow, heavily armored
+• Dasher - zigzagging raiders
+• Bomber - closes in and bursts twelve ways
+• Splitter - breaks into three
+• Shielder - regenerates its own health"""
 	}
 }
 
@@ -212,6 +228,74 @@ Slow but very durable -
 requires many word-bullets to destroy.
 
 Yields high score and power-up rewards."""
+	},
+	"DASHER": {
+		"name": "돌진자",
+		"name_en": "Void Dasher",
+		"ko": """지그재그로 파고드는 보이드의 급습 유닛.
+
+보이드에서 가장 빠르며, 직선으로 오지 않아
+조준선을 흘리며 품으로 파고든다.
+
+대신 장갑이 가장 얇다 — 한 발이면 사라진다.""",
+		"en": """A Void raider that weaves in a zigzag.
+
+The fastest of the Void; it never comes straight,
+slipping past your line of fire.
+
+But its armor is the thinnest - one hit ends it."""
+	},
+	"BOMBER": {
+		"name": "자폭병",
+		"name_en": "Void Bomber",
+		"ko": """제 몸을 폭탄으로 쓰는 보이드 결사대.
+
+일직선으로 달려들다 가까워지면 점멸하기 시작하고,
+잠시 뒤 열두 방향으로 어둠의 탄환을 터뜨린다.
+
+깜빡이기 시작하면 이미 늦다 — 다가오기 전에 끊어라.""",
+		"en": """A Void zealot that uses its own body as a bomb.
+
+It charges in a straight line, starts blinking when close,
+then bursts into twelve dark bullets.
+
+Once it blinks it is already too late - cut it down early."""
+	},
+	"SPLITTER": {
+		"name": "분열체",
+		"name_en": "Void Splitter",
+		"ko": """하나를 죽이면 셋이 되는 보이드의 증식체.
+
+느리게 다가오지만, 부수는 순간 작은 셋으로 갈라진다.
+갈라진 것들은 더 이상 나뉘지 않는다.
+
+화면이 한산할 때 처리해 두는 편이 낫다 —
+몰릴 때 부수면 그 자리에서 숫자가 불어난다.""",
+		"en": """A Void breeder: kill one and three take its place.
+
+It closes in slowly, but splits into three smaller
+units the moment it breaks. Those do not split again.
+
+Clear it while the screen is quiet - breaking it in
+a crowd multiplies the crowd."""
+	},
+	"SHIELDER": {
+		"name": "방벽병",
+		"name_en": "Void Shielder",
+		"ko": """스스로 상처를 메우는 보이드의 방벽.
+
+가장 두꺼운 장갑에 더해 이 초마다 체력을 되돌리고,
+여덟 방향으로 원형 탄막을 뿌린다.
+
+화력이 재생을 넘지 못하면 영영 쓰러지지 않는다 —
+연사를 올리고 한 번에 몰아쳐라.""",
+		"en": """A Void bulwark that mends its own wounds.
+
+On top of the thickest armor it regenerates every
+two seconds and sprays bullets in eight directions.
+
+If your damage cannot outpace its healing it will
+never fall - raise your fire rate and burst it down."""
 	}
 }
 

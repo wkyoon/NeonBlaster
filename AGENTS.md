@@ -769,3 +769,31 @@ cd server && npm run build && npm run test:e2e                   # 수신 서버
    ⚠️ 동의 화면(`MainMenu._create_consent_panel`)에 이 주소가 **글자로** 적혀 있다.
    주소를 바꾸면 그 텍스트도 같이 바꿀 것 — 안 맞으면 고지 자체가 무효다.
 4. Play Console **데이터 보안 양식**을 위 표대로 신고(앱 활동·기기 ID 수집, 선택적, 미공유).
+
+### 스토리 / 설명 화면
+
+정의는 [`StoryData`](scripts/StoryData.gd) 한 곳(챕터·세력·적·파워업·용어), 그림은
+[`StoryArt`](scripts/StoryArt.gd) 의 절차적 `_draw`, 화면 구성은 [`StoryPage`](scripts/StoryPage.gd).
+
+⚠️ **적 소개는 게임이 실제로 스폰하는 종류와 반드시 같아야 한다.**
+`EnemySpawner._pick_enemy_type` 은 7종을 내보내는데 `ENEMY_LORE` 에는 3종만 있었다
+(CHASER/SHOOTER/TANK). 판에서 만나는 적의 절반 이상이 설명에 없으면 설명이 오히려 혼란을 준다.
+
+⚠️ **`StoryArt.draw_void_enemy` 의 match 는 모르는 키를 조용히 CHASER 로 떨어뜨린다.**
+그래서 `ENEMY_LORE` 에만 항목을 추가하면 패널 수는 늘어나는데 **그림이 전부 삼각형으로 같아진다.**
+새 적을 추가할 때는 세 곳을 함께 고칠 것:
+1. `StoryData.ENEMY_LORE` — 설명
+2. `StoryArt.draw_void_enemy` 의 match + `_draw_void_*` 함수 — 그림
+3. `StoryPage._create_enemy_panel` 의 match — 애니메이션
+4. `StoryData.FACTIONS.VOID` 의 병과 목록 — 개수와 이름
+
+⚠️ 설명 화면의 모양·색은 **실제 게임과 맞춰야 한다**(`Enemy._configure_type`).
+삼각/분홍·마름모/주황·육각/보라·별/청록·원/주홍·팔각/초록·사각/파랑.
+소개에서 본 것과 판에서 만나는 것이 다르면 소개가 방해가 된다.
+
+```bash
+godot --headless --path . --script tools/story_enemy_check.gd
+```
+소개 종류가 스폰 종류와 같은지, 종류마다 **다른 그림**이 나오는지(폴리곤 수·정점 수·색 지문),
+세력 소개의 병과 수가 맞는지 확인한다.
+⚠️ 지문에 색을 넣지 않으면 오탐이 난다 — TANK 와 SPLITTER 가 우연히 둘 다 폴리곤 7개·정점 56개다.
