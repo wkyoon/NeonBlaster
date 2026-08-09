@@ -56,6 +56,7 @@ NeonBlaster/
 | `GameManager` | 게임 상태머신(`GameState`), 점수/생명/콤보, `auto_play` 플래그, `ai_dodge_error` |
 | `SceneManager` | 씬 전환 + 페이드 |
 | `AdsManager` | AdMob 전면·보상형 광고 (**배너 없음**, 플러그인 미설치 시 stub 모드) |
+| `PurchaseManager` | 인앱 결제(광고 제거). 플러그인 미설치 시 stub 모드 |
 | `AudioManager` | 절차적 SFX 합성 + 절차적 BGM(`_generate_bgm`) + TTS |
 | `EffectsManager` | 화면 흔들림/플래시 이펙트 |
 | `WordManager` | 단어 진행, 타겟 글자, 난이도(`Difficulty` enum) |
@@ -130,6 +131,8 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 ### 환경 의존성
 - Godot 4.7.x — `/Applications/Godot.app`
 - Android SDK — `~/Library/Android/sdk` (env: `ANDROID_HOME`)
+- ⚠️ `export_presets.cfg` 의 `target_sdk=36` — Google Play 는 2026-08-31 부터 API 36 이상만 받는다.
+  낮추면 업로드가 거부된다. 올린 뒤에는 Android 15/16 동작 변경(엣지-투-엣지 등) 실기기 확인 필요.
 - Java JDK 17
 - Android Studio — `/Applications/Android Studio.app`
 
@@ -461,6 +464,36 @@ godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
 - 현재 **drag-to-follow(직접 추적)** 방식. `Player._unhandled_input` + `Player._apply_movement`.
 - 속도 튜닝: `Player.gd`의 `@export var max_speed`(기본 700), `acceleration`, `friction`.
 - 가상 조이스틱(`Joystick.gd`)은 비활성화됨(`set_process_input(false)`) — 노드는 호환성 유지.
+
+### 인앱 결제 (PurchaseManager)
+
+파는 것은 **광고 제거** 하나뿐이다(`PRODUCT_REMOVE_ADS = "remove_ads"`, 일회성 관리형 상품).
+`ads_removed` 한 값이 게임 전체의 광고 표시를 결정한다:
+- `AdsManager.show_interstitial_if_ready()` → 즉시 false
+- `AdsManager.show_rewarded_if_ready()` → 광고 없이 보상만 즉시 지급
+  (상품을 산 사람이 부활하려고 광고를 봐야 한다면 산 의미가 없다)
+
+⚠️ **플러그인 클래스를 식별자로 쓰지 마라.** `BillingClient` 를 코드에 그대로 적으면
+플러그인이 없는 환경에서 **이 스크립트가 컴파일에 실패하고 오토로드가 통째로 죽는다**
+(HUD 에서 이미 같은 사고를 겪었다). `ClassDB.class_exists` / `ClassDB.instantiate` 로
+**이름 문자열**을 통해서만 접근한다. 신호도 `has_signal` 로 확인 후 연결한다.
+
+⚠️ **로컬 저장(user://)은 캐시일 뿐 근거가 아니다.** 진짜 소유 여부는 앱을 켤 때마다
+Play 에 질의해 받는다(`_query_purchases`). 로컬 파일은 오프라인용이다.
+
+⚠️ 일회성 상품은 **acknowledge 하지 않으면 3일 뒤 자동 환불된다**(`_acknowledge`).
+
+⚠️ 복원 수단(`RESTORE PURCHASES`, 보상 패널 안)은 스토어 정책상 반드시 있어야 한다.
+
+**설치 (직접 해야 하는 부분)**
+1. [godot-google-play-billing](https://github.com/godot-sdk-integrations/godot-google-play-billing)
+   최신 릴리스 → `addons/GodotGooglePlayBilling/` 에 복사
+2. `Project → Project Settings → Plugins` 에서 활성화
+3. `Project → Export → Android` 에서 플러그인 체크
+4. Play Console `수익 창출 → 인앱 상품` 에 **`remove_ads`** 등록 (ID 가 정확히 일치해야 한다)
+5. 결제 테스트는 **내부 테스트 트랙에 업로드된 앱**에서만 된다. 라이선스 테스터 계정 등록 필요.
+
+플러그인이 없으면 자동 stub 모드 — 데스크톱에서 구매 흐름과 UI 를 그대로 확인할 수 있다.
 
 ### AdMob (배너 없음)
 

@@ -18,6 +18,7 @@ var _tts_btn: Button
 var _reward_strip: Button = null
 var _reward_panel: Control = null
 var _skin_panel: Control = null
+var _remove_ads_btn: Button = null
 
 
 func _ready() -> void:
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_create_audio_toggles()
 	_create_auto_play_toggle()
 	_create_bottom_buttons()
+	_create_remove_ads_button()
 	_create_reward_strip()
 	_create_reward_panel()
 	_create_skin_panel()
@@ -387,6 +389,20 @@ func _create_reward_panel() -> void:
 	close_btn.pressed.connect(_hide_reward_panel)
 	footer.add_child(close_btn)
 
+	# 구매 복원. 기기를 바꾸거나 재설치한 사람이 쓸 곳이 반드시 있어야 한다
+	# (스토어 정책상으로도 복원 수단 제공이 요구된다).
+	var restore_btn := Button.new()
+	restore_btn.text = "RESTORE PURCHASES"
+	restore_btn.custom_minimum_size = Vector2(454, 44)
+	restore_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	restore_btn.add_theme_font_size_override("font_size", 16)
+	restore_btn.add_theme_color_override("font_color", Color(0.6, 0.7, 0.85))
+	restore_btn.focus_mode = Control.FOCUS_NONE
+	restore_btn.pressed.connect(func():
+		AudioManager.play_sfx("button")
+		PurchaseManager.restore_purchases())
+	content.add_child(restore_btn)
+
 
 func _show_reward_panel() -> void:
 	AudioManager.play_sfx("button")
@@ -493,6 +509,49 @@ func _on_claim(kind: String, days: int) -> void:
 	# 랭크가 올랐으면 난이도 잠금이 바로 풀려야 한다 —
 	# 메뉴를 나갔다 와야 반영되면 보상을 받은 순간의 보람이 사라진다.
 	_rebuild_difficulty_selector()
+
+
+## 광고 제거 구매 버튼. 이미 샀으면 자리를 비워 둔다 —
+## 산 사람에게 계속 상품을 보여 주는 것만큼 나쁜 UX 가 없다.
+func _create_remove_ads_button() -> void:
+	if PurchaseManager.ads_removed:
+		return
+	var btn := Button.new()
+	btn.name = "RemoveAdsButton"
+	btn.text = "🚫 REMOVE ADS"
+	btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	btn.position = Vector2(14, 118)
+	btn.custom_minimum_size = Vector2(160, 38)
+	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.pressed.connect(_on_remove_ads)
+	add_child(btn)
+	_remove_ads_btn = btn
+	PurchaseManager.purchase_state_changed.connect(_on_purchase_state)
+	PurchaseManager.purchase_failed.connect(_on_purchase_failed)
+
+
+func _on_remove_ads() -> void:
+	AudioManager.play_sfx("button")
+	if _remove_ads_btn:
+		# 스토어 응답이 올 때까지 중복 요청을 막는다.
+		_remove_ads_btn.disabled = true
+		_remove_ads_btn.text = "..."
+	PurchaseManager.buy_remove_ads()
+
+
+func _on_purchase_state(removed: bool) -> void:
+	if removed and _remove_ads_btn:
+		_remove_ads_btn.queue_free()
+		_remove_ads_btn = null
+
+
+func _on_purchase_failed(reason: String) -> void:
+	if _remove_ads_btn:
+		_remove_ads_btn.disabled = false
+		_remove_ads_btn.text = "🚫 REMOVE ADS"
+	push_warning("[Purchase] 실패: %s" % reason)
 
 
 ## 기체 선택 화면. 해금한 스킨을 **큰 미리보기로 보여주고** 그 자리에서 갈아끼운다.

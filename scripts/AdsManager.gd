@@ -114,7 +114,10 @@ func request_interstitial() -> void:
 	_admob.load_interstitial(INTERSTITIAL_ID)
 
 
+## ⚠️ 광고 제거를 구매했으면 전면 광고를 띄우지 않는다. 이 분기가 상품의 실체다.
 func show_interstitial_if_ready() -> bool:
+	if PurchaseManager.ads_removed:
+		return false
 	var now := Time.get_ticks_msec() / 1000.0
 	if now - _last_interstitial_time < INTERSTITIAL_MIN_INTERVAL:
 		return false
@@ -151,7 +154,12 @@ func request_rewarded() -> void:
 	_admob.load_rewarded(REWARDED_ID)
 
 
+## 광고 제거 구매자는 광고를 보지 않고 보상을 바로 받는다 —
+## 상품을 산 사람이 부활하려고 광고를 봐야 한다면 산 의미가 없다.
 func show_rewarded_if_ready(on_earned: Callable) -> bool:
+	if PurchaseManager.ads_removed:
+		on_earned.call()
+		return true
 	if not _rewarded_ready:
 		request_rewarded()
 		return false
