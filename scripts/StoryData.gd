@@ -253,13 +253,19 @@ But its armor is the thinnest - one hit ends it."""
 일직선으로 달려들다 가까워지면 점멸하기 시작하고,
 잠시 뒤 열두 방향으로 어둠의 탄환을 터뜨린다.
 
-깜빡이기 시작하면 이미 늦다 — 다가오기 전에 끊어라.""",
+격추해도 조용히 사라지지 않는다 —
+부서지는 자리에서 다섯 갈래로 터진다.
+
+품에 들어오기 전에, 멀리서 끊어라.""",
 		"en": """A Void zealot that uses its own body as a bomb.
 
 It charges in a straight line, starts blinking when close,
 then bursts into twelve dark bullets.
 
-Once it blinks it is already too late - cut it down early."""
+Shooting it down does not silence it - it bursts
+into five shards where it breaks.
+
+Cut it down far away, before it reaches you."""
 	},
 	"SPLITTER": {
 		"name": "분열체",
@@ -284,15 +290,15 @@ a crowd multiplies the crowd."""
 		"name_en": "Void Shielder",
 		"ko": """스스로 상처를 메우는 보이드의 방벽.
 
-가장 두꺼운 장갑에 더해 이 초마다 체력을 되돌리고,
+가장 두꺼운 장갑에 더해 끊임없이 상처를 메우고,
 여덟 방향으로 원형 탄막을 뿌린다.
 
 화력이 재생을 넘지 못하면 영영 쓰러지지 않는다 —
 연사를 올리고 한 번에 몰아쳐라.""",
 		"en": """A Void bulwark that mends its own wounds.
 
-On top of the thickest armor it regenerates every
-two seconds and sprays bullets in eight directions.
+On top of the thickest armor it mends itself
+without pause and sprays bullets in eight directions.
 
 If your damage cannot outpace its healing it will
 never fall - raise your fire rate and burst it down."""

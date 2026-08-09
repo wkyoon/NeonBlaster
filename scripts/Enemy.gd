@@ -7,6 +7,13 @@ signal enemy_destroyed(points: int)
 
 enum EnemyType { CHASER, SHOOTER, TANK, DASHER, BOMBER, SPLITTER, SHIELDER }
 
+## SHIELDER 체력 재생 주기. ⚠️ **이 적의 수명보다 짧아야 한다** —
+##    같거나 길면 대부분 한 번도 재생하지 못하고 죽어 정체성이 사라진다(실측 10%).
+const REGEN_INTERVAL := 0.8
+## BOMBER 가 **격추될 때** 뿌리는 탄 수. 접근 자폭(12발)보다 적게 둔다 —
+## 자폭병이 전체 스폰의 14% 라 격추 폭발까지 12발이면 탄막이 판을 뒤덮는다.
+const BOMB_DEATH_BULLETS := 5
+
 @export var enemy_type: EnemyType = EnemyType.CHASER
 @export var max_health: int = 1
 @export var move_speed: float = 120.0
@@ -29,6 +36,7 @@ var _is_entering: bool = true
 var _zigzag_phase: float = 0.0        # DASHER 지그재그 위상
 var _bomb_triggered: bool = false     # BOMBER 자폭 시작 여부
 var _regen_timer: float = 0.0         # SHIELDER 체력 재생 타이머
+var _bomb_exploded: bool = false      # BOMBER 탄막을 이미 뿌렸는지(이중 폭발 방지)
 var _is_child: bool = false           # SPLITTER 분열된 자식 여부 (자식은 분열 안 함)
 
 @onready var _sprite: Polygon2D = $Sprite
@@ -250,7 +258,10 @@ func _behave(delta: float) -> void:
 
 		EnemyType.DASHER:
 			# 지그재그 패턴으로 빠르게 돌진
-			_zigzag_phase += delta * 8.0
+			# ⚠️ 주기가 곧 정체성이다. 예전 8.0 은 한 주기가 0.785초인데 이 적의 **수명 중앙값이
+			#    0.67초**라 절반 이상이 한 번도 꺾지 못하고 죽었다(실측 특수발동 41% / 2주기 3%).
+			#    지그재그가 안 보이면 CHASER 와 구분되지 않는다. 20.0 = 주기 0.31초.
+			_zigzag_phase += delta * 20.0
 			var dash_dir := to_player.normalized()
 			var perp := Vector2(-dash_dir.y, dash_dir.x)
 			var zigzag := perp * sin(_zigzag_phase) * move_speed * 0.8
@@ -259,6 +270,10 @@ func _behave(delta: float) -> void:
 
 		EnemyType.BOMBER:
 			# 플레이어를 향해 직선 돌진, 가까이 오면 자폭
+			# ⚠️ **접근 자폭은 실측 발동률이 0% 였다.** 탄 사거리가 화면의 60% 라
+			#    자폭병은 플레이어에게 닿기 한참 전에 죽는다 — 트리거 거리(150)의 다섯 배다.
+			#    이 적의 정체성이 통째로 발현되지 않았다는 뜻이라, `die()` 에서 **격추될 때도**
+			#    터지게 했다(작은 탄막). 접근 자폭은 그대로 두되 사실상 예비 경로다.
 			velocity = to_player.normalized() * move_speed
 			_sprite.rotation += delta * 3.0
 			# 가까워지면 깜빡임 시작
@@ -287,7 +302,10 @@ func _behave(delta: float) -> void:
 				health = mini(health + 1, max_health)
 				if _health_bar:
 					_health_bar.value = health
-				_regen_timer = 2.0  # 2초마다 1 회복
+				# ⚠️ 예전 2.0 초는 이 적의 **수명 중앙값 2.0 초**와 같아서 실측 재생률이 10% 였다.
+				#    한 번도 회복하지 못하고 죽으면 "재생하는 적"이라는 정체성이 없는 것과 같다.
+				_regen_timer = REGEN_INTERVAL
+				_flash_regen()
 			# 일정 거리 유지하면 원형 총탄 발사
 			_fire_timer -= delta
 			if _fire_timer <= 0:
@@ -319,6 +337,16 @@ func _fire_spread() -> void:
 		get_tree().current_scene.add_child(bullet)
 
 
+## 재생을 **눈에 보이게** 한다. 숫자만 오르고 화면에 아무 일도 없으면
+## "재생하는 적" 이라는 성질을 플레이어가 알 방법이 없다.
+func _flash_regen() -> void:
+	if _sprite == null:
+		return
+	var tween := create_tween()
+	tween.tween_property(_sprite, "scale", Vector2(1.25, 1.25), 0.08)
+	tween.tween_property(_sprite, "scale", Vector2.ONE, 0.16)
+
+
 func _fire_circle() -> void:
 	AudioManager.play_sfx("enemy_shoot")
 	# SHIELDER: 8방향 원형 탄막
@@ -333,9 +361,11 @@ func _fire_circle() -> void:
 		get_tree().current_scene.add_child(bullet)
 
 
-func _explode_bomb() -> void:
-	# BOMBER: 12방향 폭발 탄막
-	var count := 12
+## `count` 방향으로 탄막을 뿌린다. 접근 자폭은 12발, 격추 폭발은 그보다 적다.
+func _explode_bomb(count: int = 12) -> void:
+	if _bomb_exploded:
+		return
+	_bomb_exploded = true
 	for i in count:
 		var bullet := _bullet_scene.instantiate()
 		bullet.global_position = global_position
@@ -370,6 +400,11 @@ func die() -> void:
 	# (die() is called inside physics collision callback)
 	if enemy_type == EnemyType.SPLITTER and not _is_child:
 		_split_into_children.call_deferred()
+	# ⚠️ 자폭병은 **격추돼도 터진다.** 접근 자폭만 두면 실측 발동률이 0% 라
+	#    (탄 사거리가 트리거 거리의 다섯 배다) 이 적이 사실상 존재하지 않았다.
+	#    가까이 붙은 자폭병을 쏘면 그 자리에서 터지므로 "언제 쏠지" 라는 판단이 생긴다.
+	if enemy_type == EnemyType.BOMBER:
+		_explode_bomb.call_deferred(BOMB_DEATH_BULLETS)
 	# Register kill with combo system and get multiplied points
 	var points := GameManager.register_kill(score_value)
 	enemy_destroyed.emit(points)
