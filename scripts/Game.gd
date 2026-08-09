@@ -62,9 +62,6 @@ func _ready() -> void:
 	AdsManager.request_interstitial()
 	AdsManager.request_rewarded()
 
-	# Load banner
-	AdsManager.load_banner()
-	AdsManager.show_banner()
 
 
 func _on_player_died() -> void:
@@ -90,7 +87,6 @@ func _show_game_over() -> void:
 
 
 func _on_restart() -> void:
-	AdsManager.hide_banner()
 	SceneManager.goto_game()
 
 
@@ -144,7 +140,6 @@ func _on_resume() -> void:
 
 
 func _on_quit_to_menu() -> void:
-	AdsManager.hide_banner()
 	GameManager.go_to_menu()
 	get_tree().paused = false
 	SceneManager.goto_menu()
@@ -165,18 +160,19 @@ func _on_theme_mastered(_theme_id: String, name_en: String) -> void:
 	if GameManager.lives < GameManager.MAX_LIVES:
 		GameManager.lives += 1
 	AudioManager.play_sfx("powerup")
-	_show_banner("★ %s COMPLETE!  +%d" % [name_en, THEME_MASTER_BONUS])
+	_show_notice("★ %s COMPLETE!  +%d" % [name_en, THEME_MASTER_BONUS])
 
 
 ## 오늘 10분 플레이 달성 — 플레이를 끊지 않고 그 자리에서 알려준다.
 ## 보상 자체는 메뉴에서 받는다(판 중간에 목숨이 늘어나면 밸런스가 흔들린다).
 func _on_daily_goal_reached() -> void:
 	AudioManager.play_sfx("powerup")
-	_show_banner("🎁 DAILY GOAL! CLAIM IN MENU")
+	_show_notice("🎁 DAILY GOAL! CLAIM IN MENU")
 
 
-## 화면 위쪽에서 떠올랐다 사라지는 배너. 단어를 가리지 않게 위쪽에만 머문다.
-func _show_banner(text: String) -> void:
+## 화면 위쪽에서 떠올랐다 사라지는 알림 문구.
+## (광고 배너와 무관하다 — 예전에 이름이 _show_banner 라 혼동됐다.) 단어를 가리지 않게 위쪽에만 머문다.
+func _show_notice(text: String) -> void:
 	var layer := get_node_or_null("UI")
 	if layer == null:
 		return

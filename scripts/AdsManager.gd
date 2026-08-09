@@ -1,12 +1,16 @@
 extends Node
 ## AdsManager (Autoload)
-## AdMob integration for Banner, Interstitial, and Rewarded ads.
+## AdMob integration for Interstitial and Rewarded ads.
+##
+## ⚠️ **배너 광고는 없다. 다시 넣지 마라.**
+##    조작이 드래그 추적이라 손가락이 화면 하단을 지나는데, 배너는 Godot 뷰 위에 얹히는
+##    네이티브 뷰라 그 터치를 가로챈다. 기하: 기체가 화면 84% 아래로만 내려가도
+##    손가락(기체 y + touch_lift 140)이 배너 영역(하단 70px)에 들어간다 — 회피 중 흔한 위치다.
+##    결과는 **조작 끊김 + 오클릭**이었다. 수익은 전면·보상형과 인앱 결제로 낸다.
 ## Uses Poing Studios Godot AdMob plugin when available (Android export).
 ## Falls back to safe stubs in the editor/desktop for testing.
 ## In stub mode, draws on-screen DUMMY ad placeholders for layout testing.
 
-signal banner_loaded()
-signal banner_destroyed()
 signal interstitial_loaded()
 signal interstitial_closed()
 signal interstitial_failed_to_load()
@@ -18,7 +22,6 @@ signal rewarded_failed_to_load()
 # AdMob test App ID (replace with real ID at release)
 const ADMOB_APP_ID := "ca-app-pub-3940256099942544~3347511713"
 # Test ad unit IDs (replace with real IDs at release)
-const BANNER_ID := "ca-app-pub-3940256099942544/6300978111"
 const INTERSTITIAL_ID := "ca-app-pub-3940256099942544/1033173712"
 const REWARDED_ID := "ca-app-pub-3940256099942544/5224354917"
 
@@ -39,10 +42,8 @@ var _rewarded_callback: Callable = Callable()
 
 # Dummy ad overlay nodes (stub mode only)
 var _dummy_layer: CanvasLayer = null
-var _dummy_banner: Panel = null
 var _dummy_interstitial: Panel = null
 var _dummy_rewarded: Panel = null
-var _dummy_banner_visible: bool = false
 
 
 func _ready() -> void:
@@ -78,10 +79,6 @@ func _connect_plugin_signals() -> void:
 	if not _is_plugin_available or _admob == null:
 		return
 
-	if _admob.has_signal("banner_loaded"):
-		_admob.banner_loaded.connect(_on_banner_loaded)
-	if _admob.has_signal("banner_destroyed"):
-		_admob.banner_destroyed.connect(_on_banner_destroyed)
 	if _admob.has_signal("interstitial_loaded"):
 		_admob.interstitial_loaded.connect(_on_interstitial_loaded)
 	if _admob.has_signal("interstitial_closed"):
@@ -102,38 +99,6 @@ func _connect_plugin_signals() -> void:
 
 
 # ---------------- Banner ----------------
-
-func load_banner() -> void:
-	if _is_plugin_available and _admob:
-		_admob.load_banner(BANNER_ID, "BANNER", "BOTTOM")
-	else:
-		# Stub: simulate banner load in editor
-		_show_dummy_banner()
-		banner_loaded.emit()
-
-
-func show_banner() -> void:
-	if _is_plugin_available and _admob:
-		_admob.show_banner()
-	else:
-		_show_dummy_banner()
-		banner_loaded.emit()
-
-
-func hide_banner() -> void:
-	if _is_plugin_available and _admob:
-		_admob.hide_banner()
-	else:
-		_hide_dummy_banner()
-		banner_destroyed.emit()
-
-
-func destroy_banner() -> void:
-	if _is_plugin_available and _admob:
-		_admob.destroy_banner()
-	else:
-		_hide_dummy_banner()
-		banner_destroyed.emit()
 
 
 # ---------------- Interstitial ----------------
@@ -211,13 +176,6 @@ func show_rewarded_if_ready(on_earned: Callable) -> bool:
 
 # ---------------- Signal Handlers ----------------
 
-func _on_banner_loaded() -> void:
-	banner_loaded.emit()
-
-
-func _on_banner_destroyed() -> void:
-	banner_destroyed.emit()
-
 
 func _on_interstitial_loaded() -> void:
 	_interstitial_ready = true
@@ -289,37 +247,6 @@ func _make_ad_stylebox(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.corner_radius_bottom_left = 8
 	sb.corner_radius_bottom_right = 8
 	return sb
-
-
-func _show_dummy_banner() -> void:
-	if _dummy_layer == null:
-		_create_dummy_overlay()
-	if _dummy_banner != null:
-		_dummy_banner.visible = true
-		_dummy_banner_visible = true
-		return
-	_dummy_banner = Panel.new()
-	_dummy_banner.name = "DummyBanner"
-	var vp := get_viewport().get_visible_rect().size
-	_dummy_banner.position = Vector2(vp.x / 2 - 160, vp.y - 70)
-	_dummy_banner.size = Vector2(320, 50)
-	_dummy_banner.add_theme_stylebox_override("panel", _make_ad_stylebox(Color(0.05, 0.05, 0.12, 0.95), Color(1.0, 0.8, 0.2)))
-	var lbl := Label.new()
-	lbl.text = "📢 BANNER AD (Dummy 320×50)"
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 13)
-	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_dummy_banner.add_child(lbl)
-	_dummy_layer.add_child(_dummy_banner)
-	_dummy_banner_visible = true
-
-
-func _hide_dummy_banner() -> void:
-	if _dummy_banner != null:
-		_dummy_banner.visible = false
-	_dummy_banner_visible = false
 
 
 func _show_dummy_fullscreen(title: String, subtitle: String, bg: Color, tag: String) -> void:

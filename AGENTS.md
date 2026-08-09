@@ -55,7 +55,7 @@ NeonBlaster/
 |--------|------|
 | `GameManager` | 게임 상태머신(`GameState`), 점수/생명/콤보, `auto_play` 플래그, `ai_dodge_error` |
 | `SceneManager` | 씬 전환 + 페이드 |
-| `AdsManager` | AdMob 광고 (플러그인 미설치 시 stub 모드 자동 동작) |
+| `AdsManager` | AdMob 전면·보상형 광고 (**배너 없음**, 플러그인 미설치 시 stub 모드) |
 | `AudioManager` | 절차적 SFX 합성 + 절차적 BGM(`_generate_bgm`) + TTS |
 | `EffectsManager` | 화면 흔들림/플래시 이펙트 |
 | `WordManager` | 단어 진행, 타겟 글자, 난이도(`Difficulty` enum) |
@@ -446,26 +446,18 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 - 속도 튜닝: `Player.gd`의 `@export var max_speed`(기본 700), `acceleration`, `friction`.
 - 가상 조이스틱(`Joystick.gd`)은 비활성화됨(`set_process_input(false)`) — 노드는 호환성 유지.
 
-### AdMob
-- `scripts/AdsManager.gd`의 `ADMOB_APP_ID`/`BANNER_ID` 등을 실제 ID로 교체.
-- 플러그인 미설치 시 자동 stub 모드(더미 오버레이). 데스크톱 테스트에 방해 안 됨.
+### AdMob (배너 없음)
 
-## 8. 금지 / 주의 사항
+⚠️ **배너 광고는 쓰지 않는다. 다시 넣지 마라.**
+조작이 드래그 추적이라 손가락이 화면 하단을 지나는데, 배너는 Godot 뷰 위에 얹히는
+**네이티브 뷰라 그 터치를 가로챈다.** 기하로 확인: 기체가 화면 84% 아래로만 내려가도
+손가락(기체 y + `touch_lift` 140)이 배너 영역(하단 70px)에 들어간다 — 회피 중 흔한 위치다.
+결과는 "안 보인다"가 아니라 **조작 끊김 + 오클릭**(AdMob 무효 트래픽 위험)이었다.
 
-- ❌ `android/build/src/` 하위 네이티브 파일(AndroidManifest.xml, Java/Kotlin) 직접 편집 → Godot가 덮어씀.
-- ❌ `720`/`1280` 하드코딩 → `expand` 모드에서 기기별로 깨짐.
-- ❌ untyped 다차원 배열 리터럴 `[[...],[...]]` → GDScript 강타입 추론 Parse Error.
-- ❌ Godot 3.x API 사용.
-- ⚠️ `.godot/`, `android/`, `export/` 는 `.gitignore` 됨 — 커밋하지 말 것.
-- ⚠️ `website/` 는 게임과 무관한 홍보 페이지 — 게임 로직 작업 시 무시.
-- ⚠️ keystore 비밀번호 등 시크릿이 README/설정에 노출될 수 있음 — 커밋 전 확인.
+남아 있는 수익 수단:
+- **전면 광고** — 게임오버 시, `INTERSTITIAL_MIN_INTERVAL`(120초) 캡
+- **보상형 광고** — 부활 선택 시. 플레이어가 자발적으로 보므로 단가가 가장 높다
+- **인앱 결제 / 구독** — 미구현. 아래 참조
 
-## 9. 작업 흐름 권장 (AI 에이전트용)
-
-1. **변경 전**: 관련 파일을 먼저 읽고 컨벤션(탭, typed, 한국어 주석)을 파악한다.
-2. **코드 수정**: 작은 단위로. typed GDScript 준수. 화면 크기는 동적.
-3. **컴파일 검증**: `godot --headless --quit --path .` 로 Parse Error 확인 (반드시).
-4. **런타임 검증**: 가능하면 `godot` 으로 데스크톱 실행 또는 `./tools/run_balance.sh`.
-5. **Android 반영 필요 시**: Godot 에디터 GUI로 export 안내 (함정 1·2). 에이전트가 직접 GUI export는 못 하므로 사용자에게 단계를 안내.
-6. **커밋**: `.godot/`·`android/`·`export/` 제외. 한국어 커밋 메시지 OK.
-
+`scripts/AdsManager.gd`의 `INTERSTITIAL_ID`/`REWARDED_ID`를 실제 ID로 교체할 것.
+플러그인 미설치 시 자동 stub 모드(더미 오버레이) — 데스크톱 테스트에 방해 안 됨.
