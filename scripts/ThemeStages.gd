@@ -15,6 +15,9 @@ class_name ThemeStages
 ##      3개뿐이라 탈것(JET/ROCKET/SPACESHIP)과 과학(LASER)을 섞어 놨었다 — 주제와 단어가 어긋났다.
 ##   2. 테마마다 **같은 개수**(현재 8개). 예전에는 ANIMAL 13 / MACHINE 7 로 편중돼 있었다.
 ##   3. 스테이지 순서는 **평균 글자수 오름차순** — 진행할수록 조금씩 어려워진다.
+##   4. ⚠️ `words`/`advanced` 배열은 **글자 수 오름차순으로 정렬**해 둘 것.
+##      WordManager 가 이 배열 순서 그대로 단어를 낸다(쉬운 것 → 어려운 것).
+##      정렬이 깨지면 어려운 단어가 먼저 나온다. `tools/check_word_order.py` 로 확인.
 ##      예전 순서는 4.6 → 3.9 → 3.4 → 4.9 → 4.9 → 5.9 로 중간에 쉬워졌다.
 ##
 ## 새 테마를 추가할 때:
@@ -38,7 +41,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["EYE", "ARM", "LEG", "EAR", "NOSE", "HAND", "FOOT", "HEAD"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["FINGER", "ELBOW", "STOMACH", "SHOULDER"],
+		"advanced": ["ELBOW", "FINGER", "STOMACH", "SHOULDER"],
 		"bg": Color(0.11, 0.05, 0.07),
 		"accent": Color(1.0, 0.35, 0.45),
 		"particle": Color(1.0, 0.55, 0.6),

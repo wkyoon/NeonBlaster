@@ -33,13 +33,11 @@ enum Difficulty { EASY, NORMAL, HARD }
 const ALPHABET := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # --- 단어 학습 가중치 설정 (튜닝 포인트) ---
-const ASSOCIATION_BONUS := 2.5   # 같은 카테고리 연관성 가산점 (테마 후보가 없어 전체에서 뽑을 때만 작용)
-const REPETITION_BONUS := 1.8    # 최근 학습 단어 반복 강화 가산점
-const REPETITION_GAP_MAX := 4    # 이 간격(선택 횟수) 이내에서 반복 강화 적용
-const REPETITION_GAP_MIN := 3    # 이 간격보다 가까우면 반복 강화 안 함 (바로 또 나오는 느낌 방지)
-const NOVELTY_BONUS := 1.2       # 새 단어(첫 노출) 우대 가산점
-const MASTERY_THRESHOLD := 4     # 이 횟수 이상 노출 시 숙달로 간주
-const MASTERY_PENALTY := 0.3     # 숙달 단어 가중치 감소 비율(곱)
+
+## 몇 번째 단어마다 복습을 끼워 넣을지. 3이면 "새 단어 2개 → 복습 1개".
+const REVIEW_EVERY := 3
+## 이 횟수 이상 노출되면 숙달로 본다(도감 통계 표시용).
+const MASTERY_THRESHOLD := 4
 
 
 ## 적 밸런스용 난이도. 단어 구성과는 무관하다.
@@ -50,6 +48,7 @@ var _filled_indices: Array[int] = []
 # Autoload이므로 게임 재시작에도 유지되어 여러 판에 걸친 학습이 누적됩니다.
 var _word_stats: Dictionary = {}
 # 단어 선택 카운터 (간격 반복 계산용). 세션 전체에 걸쳐 단조 증가.
+var _word_counter: int = 0
 var _selection_counter: int = 0
 
 # --- 테마 스테이지 진행 상태 ---
@@ -115,46 +114,24 @@ func set_stage(index: int) -> void:
 	stage_changed.emit(stage_index, get_stage())
 
 
-## 가중치 기반으로 현재 테마 안에서 새 단어를 선택합니다.
-## 가중치는 (1) 간격 반복 강화, (2) 새 단어 우대, (3) 숙달 단어 감소,
-## (4) 연속 중복 회피, (5) 이번 스테이지에서 이미 완성한 단어 회피를 결합합니다.
+## 다음 단어를 고른다. **이 게임의 본체는 단어 학습이고 슈팅은 심심하지 않게 하는 장치**라서,
+## 단어가 나오는 순서 자체가 학습 설계다.
+##
+## 규칙:
+##   1. 한 테마 안에서 **쉬운 것부터 어려운 순으로** 나온다
+##      (`ThemeStages` 의 words 배열이 글자 수 오름차순으로 정렬돼 있다).
+##   2. 이미 수집한 단어는 건너뛴다 → 다시 그 테마에 오면 그 다음 난이도부터 이어진다.
+##   3. `REVIEW_EVERY` 번째마다 **가장 오래 안 본 수집 완료 단어**를 복습으로 끼워 넣는다.
+##      한 번 보고 끝이면 눈으로 익히는 게임이 성립하지 않는다.
+##
+## ⚠️ 예전에는 가중치 룰렛(무작위)으로 뽑았다. 배열은 쉬운 순으로 정렬해 두었는데
+##    뽑기가 무작위라 **그 순서가 게임에 전혀 반영되지 않았다** — 어려운 단어가 첫 판에 나왔다.
 func start_new_word() -> String:
-	var current_category: String = _get_category(current_word)
-
-	# 현재 테마의 단어 중, 이번 스테이지에서 아직 완성하지 않은 것들이 후보다.
-	var all_words: Array = get_word_list()
-	var words: Array = []
-	for w in all_words:
-		if not _stage_done.has(w):
-			words.append(w)
-	# 후보가 없으면(테마 단어 수 < 목표 수 등) 테마 전체로 폴백해 항상 진행 가능하게 한다.
-	if words.is_empty():
-		words = all_words
-	if words.is_empty():
+	var chosen := _pick_next_word()
+	if chosen == "":
 		return current_word
 
-	# 각 단어의 가중치를 계산
-	var weights: Array[float] = []
-	weights.resize(words.size())
-	var total_weight := 0.0
-	for i in words.size():
-		var w: String = words[i]
-		var weight := _compute_weight(w, current_category)
-		weights[i] = weight
-		total_weight += weight
-
-	# 가중치 룰렛 선택
-	var chosen: String = words[0]
-	if total_weight > 0.0:
-		var roll := randf() * total_weight
-		var cumulative := 0.0
-		for i in words.size():
-			cumulative += weights[i]
-			if roll <= cumulative:
-				chosen = words[i]
-				break
-
-	# 노출 기록 및 상태 설정
+	_word_counter += 1
 	_record_exposure(chosen)
 	current_word = chosen
 	_filled_indices.clear()
@@ -163,39 +140,48 @@ func start_new_word() -> String:
 	return current_word
 
 
-## 단일 단어의 선택 가중치를 계산합니다.
-func _compute_weight(word: String, current_category: String) -> float:
-	# 직전 단어와 같으면 연속 중복 방지
-	if word == current_word and current_word != "":
-		return 0.0
+## 규칙에 따라 다음 단어를 결정한다.
+func _pick_next_word() -> String:
+	var fresh := _unlearned_in_order()
+	var review := _review_in_order()
 
-	var stats: Dictionary = _get_or_init_stats(word)
-	var exposure: int = int(stats.get("exposure", 0))
-	var last_seen: int = int(stats.get("last_seen", -999))
+	# 새 단어 (REVIEW_EVERY - 1)개마다 복습 1개.
+	var want_review: bool = (_word_counter + 1) % REVIEW_EVERY == 0
+	if want_review and not review.is_empty():
+		return review[0]
+	if not fresh.is_empty():
+		return fresh[0]
+	if not review.is_empty():
+		return review[0]
 
-	var weight := 1.0
-	var category := _get_category(word)
+	# 폴백 — 이번 스테이지에서 이미 다 돌았다면 테마 전체에서 직전 단어만 피해 고른다.
+	var all_words: Array = get_word_list()
+	for w in all_words:
+		if w != current_word:
+			return w
+	return all_words[0] if not all_words.is_empty() else ""
 
-	# 1) 연관성: 현재 카테고리와 같으면 가산
-	if category != "" and category == current_category:
-		weight += ASSOCIATION_BONUS
 
-	# 2) 간격 반복 강화: 최근 1~(MASTERY-1)회 노출된 단어가
-	#    적절한 간격(REPETITION_GAP_MAX 이내)이면 가산
-	if exposure >= 1 and exposure < MASTERY_THRESHOLD:
-		var gap := _selection_counter - last_seen
-		if gap >= REPETITION_GAP_MIN and gap <= REPETITION_GAP_MAX:
-			weight += REPETITION_BONUS
+## 아직 수집하지 않은 단어를 **쉬운 순서 그대로** 돌려준다.
+## `get_word_list()` 가 기본 8개(글자 수 오름차순) + 풀린 심화 1개를 그 순서로 준다.
+func _unlearned_in_order() -> Array:
+	var out: Array = []
+	for w in get_word_list():
+		if not is_collected(w) and not _stage_done.has(w):
+			out.append(w)
+	return out
 
-	# 3) 새 단어(첫 노출) 우대
-	if exposure == 0:
-		weight += NOVELTY_BONUS
 
-	# 4) 숙달 단어는 가중치 감소
-	if exposure >= MASTERY_THRESHOLD:
-		weight *= MASTERY_PENALTY
-
-	return weight
+## 이미 수집한 단어 중 **가장 오래 안 본 것부터**. 복습용.
+func _review_in_order() -> Array:
+	var out: Array = []
+	for w in get_word_list():
+		if is_collected(w) and not _stage_done.has(w):
+			out.append(w)
+	out.sort_custom(func(a, b):
+		return int(_get_or_init_stats(a).get("last_seen", -999)) \
+			< int(_get_or_init_stats(b).get("last_seen", -999)))
+	return out
 
 
 ## 단어의 카테고리를 WordDictionary에서 조회합니다. (없으면 빈 문자열)
