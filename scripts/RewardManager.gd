@@ -42,9 +42,19 @@ const MAX_PENDING_SCORE_MULT := 1.2
 ## 랭크는 두 가지를 준다:
 ##   1. 영구 화력 `RANK_POWER_STEP` — 판마다 사라지지 않는 기본기
 ##   2. 기체 스킨 해금(ShipSkins)
-## ⚠️ 랭크는 `_claimed` 의 "streak:*" 개수로 **파생**시킨다. 따로 저장하면 어긋날 수 있다.
+## ⚠️ 랭크는 **누적 플레이 시간**으로 정해진다(예전에는 연속 접속 일수였다).
+##    연속 기록은 하루만 걸러도 초기화돼서, 30일을 모은 사람이 하루 못 하면 전부 잃었다.
+##    틈새 시간에 하는 게임에서 그건 벌이다 — 못 하는 날이 있는 게 정상이다.
+##    누적은 줄어들지 않으므로 "언젠가는 닿는다"가 성립한다.
+## ⚠️ 대신 **하루에 인정되는 시간에 상한**(`DAILY_CREDIT_CAP`)을 둔다.
+##    상한이 없으면 하루에 몰아서 전부 열 수 있어 "매일 조금씩"이라는 전제가 무너진다.
 const RANK_POWER_STEP := 0.06
 const MAX_RANK := 4
+## 하루에 누적으로 인정되는 최대 플레이 시간(초). 30분.
+const DAILY_CREDIT_CAP := 1800.0
+## 랭크별 누적 플레이 시간(초). 0 / 30분 / 2시간 / 5시간 / 10시간.
+## 하루 10~15분씩 하면 최고 랭크까지 40~60일 — 오래 가는 목표다.
+const RANK_SECONDS: Array[float] = [0.0, 1800.0, 7200.0, 18000.0, 36000.0]
 ## ⚠️ 예전에는 랭크로 NORMAL/HARD 를 해금했다. 없앴다 —
 ##    해금할수록 더 자주 죽는 판이 열려 보상이 벌처럼 느껴졌다(실측 사망률 0% → 50%).
 ##    난이도는 DifficultyDirector 가 맞추고, 랭크는 기체 스킨과 화력만 담당한다.
@@ -55,6 +65,8 @@ var today_seconds: float = 0.0
 ## 연속 접속 일수와 마지막으로 플레이한 날짜.
 var streak_days: int = 0
 var last_played: String = ""
+## 누적 플레이 시간(초). 하루 DAILY_CREDIT_CAP 까지만 쌓인다. 절대 줄어들지 않는다.
+var total_seconds: float = 0.0
 ## 이미 수령한 보상. "daily:2026-08-08", "streak:7" 형태로 저장한다.
 var _claimed: Dictionary = {}
 ## 다음 판에 적용될 보류 중인 버프.
@@ -79,6 +91,7 @@ func _ready() -> void:
 	# 수집으로 열리는 기체는 앱을 켤 때와 단어를 모을 때마다 확인한다.
 	WordManager.word_collected.connect(func(_w, got, _goal): check_collection_ships(got))
 	check_collection_ships(WordManager.get_collection_progress().x)
+	check_rank_ships()
 
 
 func _process(delta: float) -> void:
@@ -87,6 +100,12 @@ func _process(delta: float) -> void:
 		return
 	_roll_over_day()
 	today_seconds += delta
+	# ⚠️ 하루 상한까지만 누적에 반영한다. 오늘 30분을 넘겨 플레이해도 누적은 더 안 늘어난다.
+	if today_seconds <= DAILY_CREDIT_CAP:
+		var before_rank := get_rank()
+		total_seconds += delta
+		if get_rank() > before_rank:
+			check_rank_ships()
 	if not _daily_emitted and today_seconds >= DAILY_GOAL_SECONDS:
 		_daily_emitted = true
 		_save()
@@ -175,11 +194,8 @@ func claim(kind: String, days: int = 0) -> bool:
 					pending_score_mult = maxf(pending_score_mult, 1.1)
 				30:
 					pending_score_mult = maxf(pending_score_mult, 1.2)
-			# 마일스톤마다 기체 스킨을 해금하고 바로 장착한다 —
-			# 받은 즉시 타이틀 화면의 기체가 바뀌어 보상이 눈에 보인다.
-			var skin: Dictionary = ShipSkins.by_streak(days)
-			if not skin.is_empty():
-				unlock_skin(String(skin["id"]), true)
+			# ⚠️ 기체 해금은 여기서 하지 않는다 — 이제 **누적 플레이 랭크**가 담당한다
+			#    (check_rank_ships). 연속 기록은 하루만 걸러도 초기화되므로 기체를 걸기엔 가혹하다.
 	# 여러 보상을 한꺼번에 수령하면(30일까지 안 열어본 경우) 버프가 누적된다.
 	# 가장 센 단일 보상(30일)을 천장으로 잡는다 — 정상 흐름에서는 닿지 않는다.
 	pending_power = minf(pending_power, MAX_PENDING_POWER)
@@ -211,15 +227,28 @@ func _key(kind: String, days: int) -> String:
 var bench_rank_override: int = -1
 
 
-## 지금까지 받은 연속 접속 보상 수(0~4). 영구.
+## 누적 플레이 시간으로 정해지는 랭크(0~4). 줄어들지 않는다.
 func get_rank() -> int:
 	if bench_rank_override >= 0:
 		return clampi(bench_rank_override, 0, MAX_RANK)
-	var n := 0
-	for m in STREAK_MILESTONES:
-		if is_claimed("streak", m):
-			n += 1
-	return mini(n, MAX_RANK)
+	var r := 0
+	for i in RANK_SECONDS.size():
+		if total_seconds >= RANK_SECONDS[i]:
+			r = i
+	return mini(r, MAX_RANK)
+
+
+## 다음 랭크까지 남은 시간(초). 최고 랭크면 0.
+func seconds_to_next_rank() -> float:
+	var r := get_rank()
+	if r >= MAX_RANK:
+		return 0.0
+	return maxf(RANK_SECONDS[r + 1] - total_seconds, 0.0)
+
+
+## 오늘 누적에 더 반영될 수 있는 시간(초). 상한을 다 쓰면 0.
+func credit_left_today() -> float:
+	return maxf(DAILY_CREDIT_CAP - today_seconds, 0.0)
 
 
 ## 랭크가 주는 영구 화력. 판이 끝나도 사라지지 않는다.
@@ -228,6 +257,14 @@ func get_rank_power() -> float:
 
 
 # ---------------- 기체 스킨 ----------------
+
+## 랭크로 열리는 기체를 확인한다(색 변주 계열).
+## ⚠️ 수집 해금과 마찬가지로 **자동 장착하지 않는다** — 플레이 도중 기체가 갑자기 바뀌면 놀란다.
+func check_rank_ships() -> void:
+	for skin in ShipSkins.by_rank(get_rank()):
+		var id := String(skin["id"])
+		if not unlocked_skins.has(id):
+			unlock_skin(id, false)
 
 ## 수집 개수로 열리는 기체를 확인한다.
 ## ⚠️ 여기서는 **자동 장착하지 않는다.** 플레이 도중에 기체가 갑자기 바뀌면 놀란다 —
@@ -279,6 +316,7 @@ func _save() -> void:
 	cfg.set_value("reward", "today", today)
 	cfg.set_value("reward", "today_seconds", today_seconds)
 	cfg.set_value("reward", "streak_days", streak_days)
+	cfg.set_value("reward", "total_seconds", total_seconds)
 	cfg.set_value("reward", "last_played", last_played)
 	cfg.set_value("reward", "claimed", _claimed.keys())
 	cfg.set_value("reward", "pending_power", pending_power)
@@ -296,6 +334,7 @@ func _load() -> void:
 	today = cfg.get_value("reward", "today", "")
 	today_seconds = cfg.get_value("reward", "today_seconds", 0.0)
 	streak_days = cfg.get_value("reward", "streak_days", 0)
+	total_seconds = cfg.get_value("reward", "total_seconds", 0.0)
 	last_played = cfg.get_value("reward", "last_played", "")
 	_claimed.clear()
 	for k in cfg.get_value("reward", "claimed", []):

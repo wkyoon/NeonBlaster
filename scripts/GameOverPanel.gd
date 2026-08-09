@@ -68,16 +68,14 @@ func _update_nudge() -> void:
 	if left > 0.0:
 		_nudge.text = "▸ %d:%02d MORE TODAY → POWER +5%%" % [int(left) / 60, int(left) % 60]
 		return
-	# 오늘 몫은 끝났다 — 다음 연속 마일스톤까지 며칠 남았는지 보여준다.
-	for m in RewardManager.STREAK_MILESTONES:
-		if RewardManager.streak_days < m:
-			var days: int = m - RewardManager.streak_days
-			# 다음에 받을 기체 이름을 박아 준다 — "며칠 남음"보다 물건이 보이는 쪽이 세다.
-			var skin := ShipSkins.by_streak(m)
-			var what: String = String(skin["name_en"]) if not skin.is_empty() else "%d-DAY" % m
-			_nudge.text = "🔥 %d DAY%s TO THE %s SHIP" % [
-				days, "" if days == 1 else "S", what]
-			return
+	# 오늘 몫은 끝났다 — 다음 기체까지 얼마나 남았는지 보여준다.
+	# ⚠️ 기체는 연속 접속이 아니라 **누적 플레이 시간**으로 열린다.
+	var left_rank := RewardManager.seconds_to_next_rank()
+	if left_rank > 0.0:
+		var nxt := ShipSkins.at_rank(RewardManager.get_rank() + 1)
+		var nm: String = String(nxt["name_en"]) if not nxt.is_empty() else "NEXT"
+		_nudge.text = "🚀 %d MIN MORE → %s SHIP" % [int(left_rank / 60.0), nm]
+		return
 	_nudge.text = "🔥 %d DAY STREAK — KEEP IT UP" % RewardManager.streak_days
 
 

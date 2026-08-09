@@ -448,27 +448,45 @@ func _rebuild_reward_rows() -> void:
 	_add_reward_row(rows, "daily", 0, "TODAY 10 MIN", "POWER +5% (THIS RUN)",
 		RewardManager.today_seconds >= RewardManager.DAILY_GOAL_SECONDS,
 		"%d:%02d / 10:00" % [mins, secs])
-	for m in RewardManager.STREAK_MILESTONES:
-		_add_reward_row(rows, "streak", m, "%d DAY STREAK" % m, _streak_effect_text(m),
-			RewardManager.streak_days >= m,
-			"%d MORE DAY%s" % [m - RewardManager.streak_days,
-				"" if m - RewardManager.streak_days == 1 else "S"])
+	# 연속 접속 마일스톤 수령은 없앴다 — 기체는 이제 **누적 플레이 랭크**로 열린다.
+	# 대신 그 진행을 보여준다(자동 해금이라 수령 버튼이 없다).
+	_add_rank_row(rows)
 
 
-## 보상 문구. 해금되는 기체 이름을 앞에 둔다 — 눈에 보이는 보상이 주인공이다.
-func _streak_effect_text(days: int) -> String:
-	var skin := ShipSkins.by_streak(days)
-	var ship: String = "🚀 %s" % skin["name_en"] if not skin.is_empty() else ""
-	match days:
-		3:
-			return "%s · RANK 1 · UNLOCK NORMAL" % ship
-		7:
-			return "%s · RANK 2 · UNLOCK HARD" % ship
-		15:
-			return "%s · RANK 3 · SCORE x1.1" % ship
-		30:
-			return "%s · RANK 4 · SCORE x1.2" % ship
-	return ship
+## 누적 플레이 랭크 진행. 수령 버튼이 없는 안내 줄이다.
+func _add_rank_row(parent: VBoxContainer) -> void:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size = Vector2(510, 88)
+	parent.add_child(row)
+	var info := Label.new()
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(510, 88)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	info.add_theme_font_size_override("font_size", 18)
+	info.add_theme_color_override("font_color", Color(0.75, 0.85, 1.0))
+	var rank := RewardManager.get_rank()
+	var total := int(RewardManager.total_seconds / 60.0)
+	if rank >= RewardManager.MAX_RANK:
+		info.text = "RANK %d/%d — %d MIN PLAYED\n   ALL SHIPS UNLOCKED" % [
+			rank, RewardManager.MAX_RANK, total]
+	else:
+		var left := int(RewardManager.seconds_to_next_rank() / 60.0)
+		var nxt := ShipSkins.at_rank(rank + 1)
+		info.text = "RANK %d/%d — %d MIN PLAYED\n   %d MIN MORE → %s SHIP" % [
+			rank, RewardManager.MAX_RANK, total, left,
+			String(nxt["name_en"]) if not nxt.is_empty() else "NEXT"]
+	row.add_child(info)
+
+	var cap := Label.new()
+	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cap.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cap.custom_minimum_size = Vector2(148, 88)
+	cap.add_theme_font_size_override("font_size", 14)
+	cap.add_theme_color_override("font_color", Color(0.6, 0.68, 0.8))
+	# 하루 상한을 알려 준다 — 안 보이면 "왜 안 늘지?" 가 된다.
+	cap.text = "TODAY\n%d/30 MIN" % int(minf(RewardManager.today_seconds, RewardManager.DAILY_CREDIT_CAP) / 60.0)
+	row.add_child(cap)
 
 
 func _add_reward_row(parent: VBoxContainer, kind: String, days: int, name_text: String,
@@ -646,7 +664,8 @@ func _rebuild_skin_list() -> void:
 			elif skin.has("product"):
 				btn.text = "🔒 %s — STORE" % skin["name_en"]
 			else:
-				btn.text = "🔒 %s — %d DAY STREAK" % [skin["name_en"], int(skin["streak"])]
+				var need: float = RewardManager.RANK_SECONDS[clampi(int(skin["rank"]), 0, RewardManager.MAX_RANK)]
+				btn.text = "🔒 %s — %d MIN PLAYED" % [skin["name_en"], int(need / 60.0)]
 			btn.disabled = true
 		elif RewardManager.equipped_skin == id:
 			# disabled 로 두면 색 오버라이드가 회색으로 덮여 어떤 기체인지 안 읽힌다.

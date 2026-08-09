@@ -15,96 +15,96 @@ const DEFAULT_ID := "aurora"
 ## body/glow/engine = 기체 폴리곤 · PointLight2D · 분사 파티클 색.
 ## aura = 기체 주위 링 연출 강도(0 없음 / 1 단일 링 / 2 이중 링 + 궤도 스파크).
 ## hue = 시간에 따라 색상환을 도는 스킨(PRISM).
-## streak = 이 스킨을 해금하는 연속 접속 일수(0 = 기본 제공, -1 = 출석으로는 못 얻음).
+## rank = 이 스킨을 해금하는 **누적 플레이 랭크**(0 = 기본 제공, -1 = 랭크로는 못 얻음).
 ## hull = 기체 실루엣. 없으면 기본 실루엣(DEFAULT_HULL)을 쓴다.
 ## product = 이 기체를 여는 상품 ID(StoreItems).
 ## collect = 이 기체를 여는 **도감 수집 개수**. 이 게임의 본체는 학습이므로
 ##           단어를 모으는 것 자체가 기체로 보상돼야 한다.
 ##
 ## 기체를 얻는 축은 셋이고 서로 겹치지 않는다:
-##   출석(streak) → 색 변주 / **수집(collect) → 형태 변주(무료)** / 결제(product) → 형태 변주
+##   플레이시간(rank) → 색 변주 / **수집(collect) → 형태 변주(무료)** / 결제(product) → 형태 변주
 ##
 ## ⚠️ **출석 보상과 결제 상품은 계열을 나눈다.**
 ##    출석은 같은 실루엣의 **색 변주**, 결제는 **형태 변주**다.
 ##    같은 축으로 주면 결제가 출석 보상의 값어치를 깎는다.
 const SKINS: Array[Dictionary] = [
 	{
-		"id": "aurora", "name_en": "AURORA", "streak": 0, "aura": 0, "hue": false,
+		"id": "aurora", "name_en": "AURORA", "rank": 0, "aura": 0, "hue": false,
 		"body": Color(0.36, 1.15, 1.3), "glow": Color(0.3, 0.9, 1.0),
 		"engine": Color(0.3, 0.9, 1.0, 0.8),
 	},
 	{
-		"id": "solar", "name_en": "SOLAR", "streak": 3, "aura": 1, "hue": false,
+		"id": "solar", "name_en": "SOLAR", "rank": 1, "aura": 1, "hue": false,
 		"body": Color(1.35, 1.0, 0.3), "glow": Color(1.0, 0.78, 0.25),
 		"engine": Color(1.0, 0.72, 0.2, 0.85),
 	},
 	{
-		"id": "plasma", "name_en": "PLASMA", "streak": 7, "aura": 1, "hue": false,
+		"id": "plasma", "name_en": "PLASMA", "rank": 2, "aura": 1, "hue": false,
 		"body": Color(1.3, 0.45, 1.25), "glow": Color(1.0, 0.35, 1.0),
 		"engine": Color(1.0, 0.4, 1.0, 0.85),
 	},
 	{
-		"id": "prism", "name_en": "PRISM", "streak": 15, "aura": 2, "hue": true,
+		"id": "prism", "name_en": "PRISM", "rank": 3, "aura": 2, "hue": true,
 		"body": Color(1.2, 1.2, 1.2), "glow": Color(1.0, 1.0, 1.0),
 		"engine": Color(1.0, 1.0, 1.0, 0.85),
 	},
 	{
-		"id": "nova", "name_en": "NOVA", "streak": 30, "aura": 2, "hue": false,
+		"id": "nova", "name_en": "NOVA", "rank": 4, "aura": 2, "hue": false,
 		"body": Color(1.45, 1.25, 0.75), "glow": Color(1.0, 0.9, 0.5),
 		"engine": Color(1.0, 0.9, 0.55, 0.9),
 	},
 	# ---- 수집 기체: 단어를 모으면 열린다(무료). 학습이 곧 보상이다 ----
 	{
-		"id": "wing", "name_en": "WING", "streak": -1, "aura": 0, "hue": false,
+		"id": "wing", "name_en": "WING", "rank": -1, "aura": 0, "hue": false,
 		"hull": "wing", "collect": 25,
 		"body": Color(0.9, 1.2, 0.7), "glow": Color(0.7, 1.0, 0.5),
 		"engine": Color(0.7, 1.0, 0.5, 0.8),
 	},
 	{
-		"id": "delta", "name_en": "DELTA", "streak": -1, "aura": 0, "hue": false,
+		"id": "delta", "name_en": "DELTA", "rank": -1, "aura": 0, "hue": false,
 		"hull": "delta", "collect": 75,
 		"body": Color(0.7, 1.0, 1.25), "glow": Color(0.5, 0.85, 1.0),
 		"engine": Color(0.5, 0.85, 1.0, 0.8),
 	},
 	{
-		"id": "fork", "name_en": "FORK", "streak": -1, "aura": 1, "hue": false,
+		"id": "fork", "name_en": "FORK", "rank": -1, "aura": 1, "hue": false,
 		"hull": "fork", "collect": 150,
 		"body": Color(1.25, 0.9, 0.7), "glow": Color(1.0, 0.7, 0.45),
 		"engine": Color(1.0, 0.7, 0.45, 0.85),
 	},
 	{
-		"id": "star", "name_en": "STAR", "streak": -1, "aura": 2, "hue": false,
+		"id": "star", "name_en": "STAR", "rank": -1, "aura": 2, "hue": false,
 		"hull": "star", "collect": 300,
 		"body": Color(1.35, 1.2, 0.6), "glow": Color(1.0, 0.9, 0.4),
 		"engine": Color(1.0, 0.9, 0.4, 0.9),
 	},
 	# ---- 결제 기체: 형태가 다르다(출석 보상은 색만 다르다) ----
 	{
-		"id": "dart", "name_en": "DART", "streak": -1, "aura": 1, "hue": false,
+		"id": "dart", "name_en": "DART", "rank": -1, "aura": 1, "hue": false,
 		"hull": "dart", "product": "ship_dart",
 		"body": Color(0.55, 1.3, 1.0), "glow": Color(0.4, 1.0, 0.85),
 		"engine": Color(0.4, 1.0, 0.85, 0.85),
 	},
 	{
-		"id": "aegis", "name_en": "AEGIS", "streak": -1, "aura": 1, "hue": false,
+		"id": "aegis", "name_en": "AEGIS", "rank": -1, "aura": 1, "hue": false,
 		"hull": "aegis", "product": "ship_aegis",
 		"body": Color(1.15, 0.85, 1.35), "glow": Color(0.85, 0.6, 1.0),
 		"engine": Color(0.85, 0.6, 1.0, 0.85),
 	},
 	{
-		"id": "beetle", "name_en": "BEETLE", "streak": -1, "aura": 2, "hue": false,
+		"id": "beetle", "name_en": "BEETLE", "rank": -1, "aura": 2, "hue": false,
 		"hull": "beetle", "product": "ship_beetle",
 		"body": Color(1.3, 1.0, 0.55), "glow": Color(1.0, 0.75, 0.35),
 		"engine": Color(1.0, 0.75, 0.35, 0.85),
 	},
 	{
-		"id": "raptor", "name_en": "RAPTOR", "streak": -1, "aura": 2, "hue": false,
+		"id": "raptor", "name_en": "RAPTOR", "rank": -1, "aura": 2, "hue": false,
 		"hull": "raptor", "product": "ship_raptor",
 		"body": Color(1.35, 0.6, 0.6), "glow": Color(1.0, 0.4, 0.4),
 		"engine": Color(1.0, 0.4, 0.4, 0.85),
 	},
 	{
-		"id": "halo", "name_en": "HALO", "streak": -1, "aura": 2, "hue": true,
+		"id": "halo", "name_en": "HALO", "rank": -1, "aura": 2, "hue": true,
 		"hull": "halo", "product": "ship_halo",
 		"body": Color(1.2, 1.2, 1.2), "glow": Color(1.0, 1.0, 1.0),
 		"engine": Color(1.0, 1.0, 1.0, 0.85),
@@ -196,10 +196,20 @@ static func by_collect_threshold(count: int) -> Array[Dictionary]:
 	return out
 
 
-## 해당 연속 접속 일수에서 해금되는 스킨. 없으면 빈 사전.
-static func by_streak(days: int) -> Dictionary:
+## 이 랭크까지 열리는 스킨들.
+static func by_rank(rank: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
 	for s in SKINS:
-		if int(s["streak"]) == days:
+		var r := int(s.get("rank", -1))
+		if r >= 0 and r <= rank:
+			out.append(s)
+	return out
+
+
+## 정확히 이 랭크에서 열리는 스킨. 없으면 빈 사전.
+static func at_rank(rank: int) -> Dictionary:
+	for s in SKINS:
+		if int(s.get("rank", -1)) == rank:
 			return s
 	return {}
 
