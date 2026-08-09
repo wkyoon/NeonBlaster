@@ -485,15 +485,19 @@ Play 에 질의해 받는다(`_query_purchases`). 로컬 파일은 오프라인�
 
 ⚠️ 복원 수단(`RESTORE PURCHASES`, 보상 패널 안)은 스토어 정책상 반드시 있어야 한다.
 
-**설치 (직접 해야 하는 부분)**
-1. [godot-google-play-billing](https://github.com/godot-sdk-integrations/godot-google-play-billing)
-   최신 릴리스 → `addons/GodotGooglePlayBilling/` 에 복사
-2. `Project → Project Settings → Plugins` 에서 활성화
-3. `Project → Export → Android` 에서 플러그인 체크
-4. Play Console `수익 창출 → 인앱 상품` 에 **`remove_ads`** 등록 (ID 가 정확히 일치해야 한다)
-5. 결제 테스트는 **내부 테스트 트랙에 업로드된 앱**에서만 된다. 라이선스 테스터 계정 등록 필요.
+**플러그인은 이미 설치돼 있다** — `addons/GodotGooglePlayBilling/` (3.3.0, 커밋됨).
+`project.godot` 의 `[editor_plugins]` 에서 활성화도 되어 있다.
+⚠️ 이 플러그인은 **export 프리셋에 체크박스가 없다.** `export_plugin.gd` 가 `EditorExportPlugin` 으로
+AAR 과 gradle 의존성(`com.android.billingclient:billing-ktx:9.1.0`)을 자동 주입한다.
 
-플러그인이 없으면 자동 stub 모드 — 데스크톱에서 구매 흐름과 UI 를 그대로 확인할 수 있다.
+⚠️ **stub 판정은 애드온 설치 여부가 아니라 안드로이드 싱글톤 유무로 한다**(`ANDROID_SINGLETON`).
+`BillingClient` 는 싱글톤이 없으면 모든 메서드를 조용히 무시해서, 데스크톱에서는 구매를 눌러도
+연결 신호조차 오지 않는다. 애드온 존재만 보고 판정하면 데스크톱 테스트가 통째로 막힌다.
+
+**남은 것 (Google 계정이 필요해 직접 해야 하는 부분)**
+1. Play Console `수익 창출 → 인앱 상품` 에 **`remove_ads`** 등록 (ID 가 정확히 일치해야 한다)
+2. 앱을 **내부 테스트 트랙**에 업로드 — 결제는 스토어에 등록된 앱에서만 테스트된다
+3. 라이선스 테스터 계정 등록 — 실제 결제 없이 테스트
 
 ### AdMob (배너 없음)
 
