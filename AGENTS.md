@@ -55,7 +55,6 @@ NeonBlaster/
 |--------|------|
 | `GameManager` | 게임 상태머신(`GameState`), 점수/생명/콤보, `auto_play` 플래그, `ai_dodge_error` |
 | `SceneManager` | 씬 전환 + 페이드 |
-| `AdsManager` | AdMob 전면·보상형 광고 (**배너 없음**, 플러그인 미설치 시 stub 모드) |
 | `PurchaseManager` | 인앱 결제(광고 제거). 플러그인 미설치 시 stub 모드 |
 | `AudioManager` | 절차적 SFX 합성 + 절차적 BGM(`_generate_bgm`) + TTS |
 | `EffectsManager` | 화면 흔들림/플래시 이펙트 |
@@ -499,34 +498,15 @@ AAR 과 gradle 의존성(`com.android.billingclient:billing-ktx:9.1.0`)을 자�
 2. 앱을 **내부 테스트 트랙**에 업로드 — 결제는 스토어에 등록된 앱에서만 테스트된다
 3. 라이선스 테스터 계정 등록 — 실제 결제 없이 테스트
 
-### AdMob (배너 없음)
+### 광고 없음
 
-**플러그인은 이미 설치돼 있다** — `addons/AdmobPlugin/` + `addons/GMPShared/` (AdmobPlugin 7.0, 커밋됨).
-`project.godot` 의 `[editor_plugins]` 에서 활성화도 되어 있다. export 체크박스는 없다(자동 주입).
+⚠️ **이 게임에는 광고가 없다. 배너도, 전면도, 보상형도 없다. 다시 넣지 마라.**
+수익은 인앱 결제로만 낸다.
 
-⚠️ **`Admob` / `LoadAdRequest` 를 식별자로 쓰지 마라.** 애드온을 지운 환경에서 AdsManager 가
-컴파일에 실패해 오토로드가 통째로 죽는다. 경로(`ADMOB_SCRIPT`)로 로드해서 쓴다.
-⚠️ stub 판정은 **안드로이드 싱글톤(`AdmobPlugin`) 유무**로 한다. 애드온 존재만 보면
-데스크톱에서 광고 호출이 오류 로그만 남기고 조용히 무시된다.
-⚠️ 광고 단위 ID 는 `Admob` 노드의 `@export` 속성으로 넘긴다
-(`android_real_application_id` / `android_real_interstitial_id` / `android_real_rewarded_id`).
-⚠️ 신호 인자 개수가 제각각이라(`AdInfo`, `ResponseInfo`, `RewardItem` …) 그대로 연결하면 터진다 —
-`_bind()` 가 인자를 버리는 래퍼로 감싼다.
+경위:
+- 배너는 조작과 충돌해서 먼저 제거했다(드래그 손가락이 네이티브 뷰에 가려 터치를 뺏긴다).
+- 그 뒤 전면·보상형까지 전부 뺐다. 틈새 시간에 하는 학습 게임이라 광고가 흐름을 끊는다.
+- `AdsManager` 와 `addons/AdmobPlugin` 은 삭제됐다.
 
-**남은 것 (직접)**: `ADMOB_APP_ID` / `INTERSTITIAL_ID` / `REWARDED_ID` 를 실제 ID 로 교체.
-지금은 Google 공식 **테스트 ID** 라 그대로 두면 수익이 나지 않는다.
+부활은 **판당 1회 무료**다(`GameManager.max_revives`). 예전에는 보상형 광고 시청 조건이었다.
 
-
-⚠️ **배너 광고는 쓰지 않는다. 다시 넣지 마라.**
-조작이 드래그 추적이라 손가락이 화면 하단을 지나는데, 배너는 Godot 뷰 위에 얹히는
-**네이티브 뷰라 그 터치를 가로챈다.** 기하로 확인: 기체가 화면 84% 아래로만 내려가도
-손가락(기체 y + `touch_lift` 140)이 배너 영역(하단 70px)에 들어간다 — 회피 중 흔한 위치다.
-결과는 "안 보인다"가 아니라 **조작 끊김 + 오클릭**(AdMob 무효 트래픽 위험)이었다.
-
-남아 있는 수익 수단:
-- **전면 광고** — 게임오버 시, `INTERSTITIAL_MIN_INTERVAL`(120초) 캡
-- **보상형 광고** — 부활 선택 시. 플레이어가 자발적으로 보므로 단가가 가장 높다
-- **인앱 결제 / 구독** — 미구현. 아래 참조
-
-`scripts/AdsManager.gd`의 `INTERSTITIAL_ID`/`REWARDED_ID`를 실제 ID로 교체할 것.
-플러그인 미설치 시 자동 stub 모드(더미 오버레이) — 데스크톱 테스트에 방해 안 됨.

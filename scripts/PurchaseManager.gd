@@ -2,7 +2,7 @@ extends Node
 ## PurchaseManager (Autoload)
 ## Google Play 인앱 결제. 지금 파는 것은 **광고 제거** 하나뿐이다.
 ##
-## 플러그인이 없으면(데스크톱·에디터) 자동으로 stub 모드로 돈다 — AdsManager 와 같은 방식이라
+## 플러그인이 없으면(데스크톱·에디터) 자동으로 stub 모드로 돈다 — AdMob 플러그인 때와 같은 방식이라
 ## 플러그인 설치를 기다리지 않고 결제 흐름과 UI 를 완성할 수 있다.
 ##
 ## ⚠️ **`BillingClient` 를 식별자로 직접 쓰면 안 된다.** 플러그인의 `class_name` 이라

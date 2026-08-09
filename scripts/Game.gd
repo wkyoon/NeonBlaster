@@ -59,8 +59,6 @@ func _ready() -> void:
 		_word_reveal.reveal_finished.connect(_start_next_word)
 
 	# Preload ads
-	AdsManager.request_interstitial()
-	AdsManager.request_rewarded()
 
 
 
@@ -83,18 +81,16 @@ func _show_game_over() -> void:
 	var can_revive := GameManager.can_revive()
 	_game_over_panel.show_panel(GameManager.score, GameManager.high_score, can_revive)
 	# Show interstitial ad (frequency-capped)
-	AdsManager.show_interstitial_if_ready()
 
 
 func _on_restart() -> void:
 	SceneManager.goto_game()
 
 
+## 부활. 광고를 걷어냈으므로 조건 없이 한 번 살려 준다
+## (`GameManager.max_revives` 가 판당 1회로 제한한다).
 func _on_revive() -> void:
-	var success := AdsManager.show_rewarded_if_ready(_on_revive_rewarded)
-	if not success:
-		# Ad not ready - grant revive anyway (or wait)
-		_on_revive_rewarded(1)
+	_on_revive_rewarded(1)
 
 
 func _on_revive_rewarded(_amount: int) -> void:

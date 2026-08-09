@@ -1,5 +1,6 @@
 extends Control
-## GameOverPanel - shows on game over with score, revive (rewarded ad), and restart.
+## GameOverPanel - shows on game over with score, revive, and restart.
+## ⚠️ 광고는 없다. 부활은 판당 1회 무료다(GameManager.max_revives).
 
 signal restart_requested
 signal revive_requested
@@ -35,7 +36,7 @@ func show_panel(score: int, high_score: int, can_revive: bool) -> void:
 	_update_nudge()
 	_revive_button.visible = can_revive
 	if can_revive:
-		_revive_button.text = "▶ WATCH AD & REVIVE"
+		_revive_button.text = "♥ REVIVE ONCE"
 	_revive_button.disabled = false
 	visible = true
 	_animate_in()
