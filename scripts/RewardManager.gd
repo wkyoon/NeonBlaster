@@ -22,6 +22,8 @@ signal daily_goal_reached()
 ## DifficultyDirector 가 목표 생존 시간을 늘리거나 되돌리는 데 쓴다.
 signal day_advanced(days_missed: int)
 signal skin_unlocked(skin_id: String)
+## 훈장을 새로 땄을 때. 게임 화면이 배너로 알린다.
+signal badge_earned(badge_id: String)
 signal streak_milestone_reached(days: int)
 signal reward_claimed(kind: String, days: int)
 
@@ -76,6 +78,8 @@ var _claimed: Dictionary = {}
 var pending_power: float = 0.0
 var pending_score_mult: float = 1.0
 
+## 딴 훈장 id 집합. 성능에는 영향이 없고 기록으로만 남는다.
+var badges: Dictionary = {}
 ## 해금한 기체 스킨(영구)과 현재 장착 중인 스킨.
 var unlocked_skins: Dictionary = {ShipSkins.DEFAULT_ID: true}
 var equipped_skin: String = ShipSkins.DEFAULT_ID
@@ -92,6 +96,7 @@ func _ready() -> void:
 	WordManager.word_collected.connect(func(_w, got, _goal): check_collection_ships(got))
 	check_collection_ships(WordManager.get_collection_progress().x)
 	check_rank_ships()
+	check_badges()
 
 
 func _process(delta: float) -> void:
@@ -256,6 +261,27 @@ func get_rank_power() -> float:
 	return get_rank() * RANK_POWER_STEP
 
 
+# ---------------- 훈장 ----------------
+
+func has_badge(id: String) -> bool:
+	return badges.has(id)
+
+
+func badge_count() -> int:
+	return badges.size()
+
+
+## 지금 상태로 딸 수 있는 훈장을 확인한다.
+## `run_words`/`survived` 는 방금 끝난 판의 결과다(판 밖에서는 생략).
+## ⚠️ 훈장은 성능에 영향이 없다 — 순수하게 기록이다.
+func check_badges(run_words: int = 0, survived: bool = false) -> void:
+	for id in Achievements.earned_now(run_words, survived):
+		if not badges.has(id):
+			badges[id] = true
+			_save()
+			badge_earned.emit(id)
+
+
 # ---------------- 기체 스킨 ----------------
 
 ## 랭크로 열리는 기체를 확인한다(색 변주 계열).
@@ -324,6 +350,7 @@ func _save() -> void:
 	cfg.set_value("reward", "unlocked_skins", unlocked_skins.keys())
 	cfg.set_value("reward", "equipped_skin", equipped_skin)
 	cfg.set_value("reward", "equipped_reveal", equipped_reveal)
+	cfg.set_value("reward", "badges", badges.keys())
 	cfg.save(SAVE_PATH)
 
 
@@ -346,6 +373,9 @@ func _load() -> void:
 		unlocked_skins[String(k)] = true
 	equipped_skin = cfg.get_value("reward", "equipped_skin", ShipSkins.DEFAULT_ID)
 	equipped_reveal = cfg.get_value("reward", "equipped_reveal", "default")
+	badges.clear()
+	for b in cfg.get_value("reward", "badges", []):
+		badges[String(b)] = true
 	if not unlocked_skins.has(equipped_skin):
 		equipped_skin = ShipSkins.DEFAULT_ID
 	_daily_emitted = today_seconds >= DAILY_GOAL_SECONDS

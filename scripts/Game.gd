@@ -22,6 +22,8 @@ var _word_reveal: Control
 
 ## 이번 판의 경과 시간. 난이도 자동 조절이 "제대로 한 판이었는지" 판단하는 데 쓴다.
 var _run_seconds: float = 0.0
+## 이번 판에서 완성한 단어 수. 훈장 조건에 쓴다.
+var _run_words: int = 0
 
 
 func _ready() -> void:
@@ -44,6 +46,7 @@ func _ready() -> void:
 
 	# Start game
 	DifficultyDirector.reset_run()
+	_run_words = 0
 	GameManager.start_game()
 	_spawner.start()
 	_player.revive()
@@ -55,6 +58,7 @@ func _ready() -> void:
 	WordManager.word_collected.connect(_on_word_collected)
 	WordManager.theme_mastered.connect(_on_theme_mastered)
 	RewardManager.daily_goal_reached.connect(_on_daily_goal_reached)
+	RewardManager.badge_earned.connect(_on_badge_earned)
 	if _word_reveal:
 		_word_reveal.reveal_finished.connect(_start_next_word)
 
@@ -67,6 +71,7 @@ func _on_player_died() -> void:
 		return
 	_is_game_over = true
 	_spawner.stop()
+	RewardManager.check_badges(_run_words, _run_seconds >= DifficultyDirector.get_target_seconds())
 	# Disconnect word completion handler
 	if WordManager.word_completed.is_connected(_on_word_completed):
 		WordManager.word_completed.disconnect(_on_word_completed)
@@ -161,6 +166,16 @@ func _on_theme_mastered(_theme_id: String, name_en: String) -> void:
 
 ## 오늘 10분 플레이 달성 — 플레이를 끊지 않고 그 자리에서 알려준다.
 ## 보상 자체는 메뉴에서 받는다(판 중간에 목숨이 늘어나면 밸런스가 흔들린다).
+## 훈장을 딴 순간. ⚠️ 화면에 늘어놓지 않고 **딴 순간에만** 알린다 —
+## 이 게임의 각인 대상은 단어라, 훈장이 화면을 차지하면 단어가 안 보인다.
+func _on_badge_earned(badge_id: String) -> void:
+	var b := Achievements.get_badge(badge_id)
+	if b.is_empty():
+		return
+	AudioManager.play_sfx("powerup")
+	_show_notice("🏅 %s" % b["name"])
+
+
 func _on_daily_goal_reached() -> void:
 	AudioManager.play_sfx("powerup")
 	_show_notice("🎁 DAILY GOAL! CLAIM IN MENU")
@@ -198,6 +213,8 @@ func _on_word_completed(word: String) -> void:
 	GameManager.add_score(bonus)
 	# 단어 완성은 콤보를 크게 밀어준다 — 학습과 액션을 묶는 핵심 연결이다.
 	# 돌파한 단계 수만큼 연출을 세게 한다(단계 돌파 자체의 연출은 HUD 가 combo_level_up 으로 처리).
+	_run_words += 1
+	RewardManager.check_badges(_run_words, _run_seconds >= DifficultyDirector.get_target_seconds())
 	var _levels_gained := GameManager.register_word_bonus()
 	# 축하 연출은 **단어 자체**에 몰아준다(HUD._on_word_completed).
 	# 화면 전체 플래시와 카메라 셰이크는 정작 단어를 가리고 읽기 어렵게 만들어서

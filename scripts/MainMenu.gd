@@ -18,6 +18,7 @@ var _tts_btn: Button
 var _reward_strip: Button = null
 var _reward_panel: Control = null
 var _skin_panel: Control = null
+var _badge_panel: Control = null
 
 
 func _ready() -> void:
@@ -32,6 +33,7 @@ func _ready() -> void:
 	_create_bottom_buttons()
 	_create_reward_strip()
 	_create_reward_panel()
+	_create_badge_panel()
 	_create_skin_panel()
 	_refresh_reward_strip()
 
@@ -387,6 +389,15 @@ func _create_reward_panel() -> void:
 	footer.add_theme_constant_override("separation", 14)
 	content.add_child(footer)
 
+	var badge_btn := Button.new()
+	badge_btn.text = "🏅 BADGES"
+	badge_btn.custom_minimum_size = Vector2(220, 58)
+	badge_btn.add_theme_font_size_override("font_size", 24)
+	badge_btn.add_theme_color_override("font_color", Color(1.0, 0.82, 0.35))
+	badge_btn.focus_mode = Control.FOCUS_NONE
+	badge_btn.pressed.connect(_show_badge_panel)
+	footer.add_child(badge_btn)
+
 	var ship_btn := Button.new()
 	ship_btn.text = "🚀 SHIPS"
 	ship_btn.custom_minimum_size = Vector2(220, 58)
@@ -550,6 +561,115 @@ func _on_claim(kind: String, days: int) -> void:
 func _on_store() -> void:
 	AudioManager.play_sfx("button")
 	SceneManager.goto_store()
+
+
+## 훈장 진열 화면.
+## ⚠️ 플레이 중에는 훈장을 화면에 늘어놓지 않는다 — 각인 대상은 단어다.
+##    딴 순간에만 배너로 알리고(Game._on_badge_earned), 모아 보는 건 여기서 한다.
+func _create_badge_panel() -> void:
+	_badge_panel = Control.new()
+	_badge_panel.name = "BadgePanel"
+	_badge_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_badge_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_badge_panel.visible = false
+	add_child(_badge_panel)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.985)
+	_badge_panel.add_child(dimmer)
+
+	var panel := Panel.new()
+	panel.name = "Panel"
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-290, -420)
+	panel.size = Vector2(580, 840)
+	_badge_panel.add_child(panel)
+
+	var title := Label.new()
+	title.name = "Title"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.position = Vector2(35, 26)
+	title.size = Vector2(510, 46)
+	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_color_override("font_color", Color(1.0, 0.82, 0.35))
+	panel.add_child(title)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "ListScroll"
+	scroll.position = Vector2(35, 86)
+	scroll.size = Vector2(510, 656)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+
+	var list := VBoxContainer.new()
+	list.name = "List"
+	list.custom_minimum_size = Vector2(510, 0)
+	list.add_theme_constant_override("separation", 8)
+	scroll.add_child(list)
+
+	var close_btn := Button.new()
+	close_btn.text = "CLOSE"
+	close_btn.position = Vector2(180, 752)
+	close_btn.size = Vector2(220, 58)
+	close_btn.add_theme_font_size_override("font_size", 24)
+	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.pressed.connect(_hide_badge_panel)
+	panel.add_child(close_btn)
+
+
+func _show_badge_panel() -> void:
+	AudioManager.play_sfx("button")
+	_rebuild_badges()
+	_badge_panel.visible = true
+	_badge_panel.move_to_front()
+
+
+func _hide_badge_panel() -> void:
+	AudioManager.play_sfx("button")
+	_badge_panel.visible = false
+
+
+func _rebuild_badges() -> void:
+	var panel := _badge_panel.get_node("Panel")
+	panel.get_node("Title").text = "🏅 BADGES  %d/%d" % [
+		RewardManager.badge_count(), Achievements.BADGES.size()]
+	var list: VBoxContainer = panel.get_node("ListScroll/List")
+	for c in list.get_children():
+		c.queue_free()
+	for b in Achievements.BADGES:
+		list.add_child(_make_badge_row(b))
+
+
+func _make_badge_row(b: Dictionary) -> Control:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size = Vector2(510, 84)
+	row.add_theme_constant_override("separation", 14)
+
+	# 훈장 그림. 잠긴 것도 형태는 보여준다 — 무엇이 남았는지 알아야 모을 마음이 생긴다.
+	var got := RewardManager.has_badge(String(b["id"]))
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(76, 84)
+	row.add_child(holder)
+	var icon := BadgeIcon.new()
+	icon.position = Vector2(38, 34)
+	icon.setup(int(b["tier"]), not got, 24.0)
+	holder.add_child(icon)
+
+	var info := Label.new()
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(400, 84)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	info.add_theme_font_size_override("font_size", 17)
+	if got:
+		info.text = "%s\n   %s" % [b["name"], b["desc"]]
+		info.add_theme_color_override("font_color", Achievements.tier_color(int(b["tier"])))
+	else:
+		info.text = "%s\n   %s" % [b["name"], Achievements.progress_text(String(b["id"]))]
+		info.add_theme_color_override("font_color", Color(0.5, 0.55, 0.63))
+	row.add_child(info)
+	return row
 
 
 ## 기체 선택 화면. 해금한 스킨을 **큰 미리보기로 보여주고** 그 자리에서 갈아끼운다.
