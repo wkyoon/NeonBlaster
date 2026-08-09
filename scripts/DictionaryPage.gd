@@ -6,6 +6,8 @@ var _bg: ColorRect
 var _title_label: Label
 var _back_btn: Button
 var _category_container: HBoxContainer
+## 탭이 26개라 화면을 넘는다 — 가로 스크롤 안에 담는다.
+var _category_scroll: ScrollContainer
 var _category_desc: Label
 var _scroll: ScrollContainer
 var _grid: GridContainer
@@ -67,12 +69,22 @@ func _create_back_button() -> void:
 func _create_category_filter() -> void:
 	_category_container = HBoxContainer.new()
 	_category_container.name = "CategoryFilter"
-	_category_container.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_category_container.position = Vector2(-330, 100)
-	_category_container.size = Vector2(660, 44)
+	# ⚠️ 테마가 25개로 늘면서 탭 줄이 폭 2239px 이 됐다(화면 720px의 3배).
+	#    20개 넘는 테마가 화면 밖이라 **누를 수조차 없었다.**
+	#    가로 스크롤 안에 넣어 전부 닿게 한다.
+	_category_scroll = ScrollContainer.new()
+	_category_scroll.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	# ⚠️ 헤더는 겹치기 쉬운 구간이다. 세로 띠를 명확히 나눠 둔다:
+	#    제목 30~90 / 수집 진행 96~126 / 테마 탭 132~180 / 테마 설명 186~222 / 카드 230~
+	#    (예전에는 진행 라벨과 탭이 둘 다 y100 이라 겹쳐 있었다.)
+	_category_scroll.position = Vector2(-350, 132)
+	_category_scroll.size = Vector2(700, 48)
+	_category_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(_category_scroll)
+
 	_category_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	_category_container.add_theme_constant_override("separation", 6)
-	add_child(_category_container)
+	_category_scroll.add_child(_category_container)
 
 	# ⚠️ 사전의 17개 카테고리가 아니라 **테마 6개**로 탭을 만든다.
 	# 도감이 테마 단어만 보여주므로, 사전 카테고리로 탭을 만들면 WEAPON·VEHICLE 처럼
@@ -102,8 +114,8 @@ func _create_category_filter() -> void:
 func _create_category_desc_label() -> void:
 	_category_desc = Label.new()
 	_category_desc.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_category_desc.position = Vector2(-310, 148)
-	_category_desc.size = Vector2(620, 70)
+	_category_desc.position = Vector2(-310, 186)
+	_category_desc.size = Vector2(620, 36)
 	_category_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_category_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_category_desc.add_theme_font_size_override("font_size", 15)
@@ -124,10 +136,9 @@ func _refresh_progress() -> void:
 		_progress_label.add_theme_font_size_override("font_size", 20)
 		_progress_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
 		_progress_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
-		# 제목(30~90)과 카테고리 설명(148~218) 사이의 빈 구간에 놓는다.
-		# 132 로 뒀을 때는 설명과 겹쳤다 — 런타임 사각형을 재서 잡은 값이다.
-		_progress_label.offset_top = 100.0
-		_progress_label.offset_bottom = 132.0
+		# 제목과 테마 탭 사이. 위 헤더 구간표 참조.
+		_progress_label.offset_top = 96.0
+		_progress_label.offset_bottom = 126.0
 		add_child(_progress_label)
 	_progress_label.text = "📖  %d / %d  COLLECTED" % [p.x, p.y]
 
@@ -142,7 +153,17 @@ func _on_category_selected(cat: String, btn: Button) -> void:
 	_populate_grid()
 
 
+## 선택한 탭이 화면 밖에 있으면 그 자리로 스크롤한다.
+## 스크롤 막대가 안 보이는 기기도 있어서, 눌린 탭이 안 보이면 고장으로 느껴진다.
+func _scroll_to_tab(btn: Control) -> void:
+	if _category_scroll == null or btn == null:
+		return
+	var target: float = btn.position.x + btn.size.x * 0.5 - _category_scroll.size.x * 0.5
+	_category_scroll.scroll_horizontal = int(maxf(target, 0.0))
+
+
 func _highlight_category(selected: Button) -> void:
+	_scroll_to_tab(selected)
 	for child in _category_container.get_children():
 		child.modulate = Color(0.5, 0.5, 0.5)
 	selected.modulate = Color.WHITE
