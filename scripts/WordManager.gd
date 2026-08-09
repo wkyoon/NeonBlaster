@@ -202,6 +202,8 @@ func _get_or_init_stats(word: String) -> Dictionary:
 
 
 ## 단어 노출을 기록합니다. (start_new_word에서 선택 시 호출)
+## ⚠️ 여기서 저장하지 않는다. 단어를 고를 때마다 디스크를 치면 낭비다 —
+##    단어를 완성했을 때(_on_word_finished → _save_collection) 함께 저장된다.
 func _record_exposure(word: String) -> void:
 	_selection_counter += 1
 	var stats: Dictionary = _get_or_init_stats(word)
@@ -286,6 +288,18 @@ func _save_collection() -> void:
 		return
 	var cfg := ConfigFile.new()
 	cfg.set_value("collection", "words", _collected.keys())
+	# 학습 통계도 함께 남긴다. 예전에는 노출 횟수·마지막 본 시점이 **앱을 끄면 사라져서**
+	# 복습 순서가 세션마다 초기화됐고, 도감에 "몇 번 봤는지"를 보여줄 수도 없었다.
+	# ⚠️ `_selection_counter` 도 같이 저장해야 한다 — `last_seen` 이 이 값과 비교되는
+	#    상대 시각이라, 카운터만 0으로 돌아가면 저장된 last_seen 이 미래값이 되어 순서가 뒤집힌다.
+	var exposure := {}
+	var seen := {}
+	for w in _word_stats:
+		exposure[w] = int(_word_stats[w].get("exposure", 0))
+		seen[w] = int(_word_stats[w].get("last_seen", -999))
+	cfg.set_value("stats", "exposure", exposure)
+	cfg.set_value("stats", "last_seen", seen)
+	cfg.set_value("stats", "counter", _selection_counter)
 	cfg.save(COLLECTION_PATH)
 
 
@@ -296,6 +310,15 @@ func _load_collection() -> void:
 	_collected.clear()
 	for w in cfg.get_value("collection", "words", []):
 		_collected[String(w)] = true
+	_word_stats.clear()
+	var exposure: Dictionary = cfg.get_value("stats", "exposure", {})
+	var seen: Dictionary = cfg.get_value("stats", "last_seen", {})
+	for w in exposure:
+		_word_stats[String(w)] = {
+			"exposure": int(exposure[w]),
+			"last_seen": int(seen.get(w, -999)),
+		}
+	_selection_counter = int(cfg.get_value("stats", "counter", 0))
 
 
 ## 단어의 학습 통계(복사본)를 반환합니다. (HUD/디버그용)
@@ -313,6 +336,8 @@ func reset_learning() -> void:
 	_word_stats.clear()
 	_selection_counter = 0
 	_stage_done.clear()
+	_stage_plan.clear()
+	_save_collection()
 
 
 ## Returns the word with unfilled letters as underscores.
@@ -375,9 +400,9 @@ func _on_word_finished(word: String) -> void:
 		_stage_done.append(word)
 
 	# 도감 수집 — 처음 완성한 단어면 기록하고 알린다.
-	if not _collected.has(word):
+	var first_time := not _collected.has(word)
+	if first_time:
 		_collected[word] = true
-		_save_collection()
 		var p := get_collection_progress()
 		word_collected.emit(word, p.x, p.y)
 		# 이 단어로 테마가 완성됐는지 — 48개는 멀지만 8개는 손에 잡히는 목표다.
@@ -386,6 +411,9 @@ func _on_word_finished(word: String) -> void:
 		if tid != "" and is_theme_mastered(tid):
 			theme_mastered.emit(tid, String(st.get("name_en", tid)))
 
+	# ⚠️ 저장은 **완성할 때마다** 한다. 예전에는 처음 수집할 때만 저장해서
+	#    이미 모은 단어의 복습 횟수(exposure)가 전혀 남지 않았다.
+	_save_collection()
 	word_completed.emit(word)
 
 	if _stage_done.size() >= ThemeStages.WORDS_PER_STAGE:

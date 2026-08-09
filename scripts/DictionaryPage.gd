@@ -376,7 +376,12 @@ func _show_detail(word: String) -> void:
 	_detail_icon.text = WordDictionary.get_emoji(word)
 	var desc := WordDictionary.get_description(word)
 	_detail_word.text = word
-	_detail_category.text = "[" + desc["category"] + "]"
+	# 몇 번 봤는지 함께 보여준다 — 학습 통계를 저장하기 전에는 띄울 수가 없던 정보다.
+	var seen := int(WordManager.get_word_stats(word).get("exposure", 0))
+	if seen > 0:
+		_detail_category.text = "[%s]   ● %d회 봄" % [desc["category"], seen]
+	else:
+		_detail_category.text = "[" + desc["category"] + "]"
 	_detail_phrase.text = WordDictionary.get_phrase(word)
 	_detail_desc_en.text = desc["en"]
 	_detail_panel.visible = true
