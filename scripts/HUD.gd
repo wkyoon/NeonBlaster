@@ -7,6 +7,13 @@ extends CanvasLayer
 
 ## 현재 콤보 배수 단계. 단어 스타일(색·글로우·크기)을 여기서 파생시킨다.
 var _combo_level: int = 0
+## 훈장 줄. 목숨 줄 오른쪽에 딴 훈장을 늘어놓는다.
+const BADGE_STRIP_X := 34.0
+const BADGE_STRIP_Y := 126.0
+const BADGE_RADIUS := 11.0
+const BADGE_STEP := 30.0
+
+var _badge_strip: Node2D = null
 var _word_slots: WordSlots
 var _word_tween: Tween
 
@@ -24,6 +31,7 @@ func _ready() -> void:
 	_on_score_changed(GameManager.score)
 	_on_lives_changed(GameManager.lives)
 	_create_word_slots()
+	_create_badge_strip()
 	# 완성 리빌이 슬롯과 **같은 자리**에 뜨므로, 리빌 동안에는 슬롯을 감춘다.
 	# 그래야 "채워지던 글자가 그대로 커진다"로 보인다.
 	WordManager.word_completed.connect(func(_w): _set_slots_visible(false))
@@ -169,6 +177,44 @@ func _on_combo_level_up(level: int, _multiplier: float) -> void:
 
 
 # ---------------- Word Display ----------------
+
+## 딴 훈장을 플레이 중에도 보여준다. 모은 걸 자랑할 데가 있어야 한다.
+##
+## ⚠️ **지표 전용 띠**를 따로 둔다(y 112~150, 전폭). 목숨 옆에 끼워 넣지 않는다.
+##    `stretch/aspect = expand` 라 폭은 720 고정이고 **높이만 기기 비율만큼 늘어난다**
+##    (실측: 9:16 → 1280, 실기기 1:2.14 → 1544). 세로 여유가 있으니 띠를 낼 값어치가 있다.
+##
+## 위아래 요소와의 간격(설계 해상도 기준):
+##    점수 y 20~70 / WAVE y 24~56 / 오디오 토글 y 10~56 / 목숨 y 74~100
+##    **훈장 띠 y 112~150** / 단어 y = 화면높이 x 0.33 (1280 에서 422, 1544 에서 509)
+##    → 단어와 270px 이상 떨어진다. 각인 대상인 단어를 가리지 않는다.
+##    → 손가락이 닿는 하단 25% 밖이라 가려지지도 않는다.
+## ⚠️ 훈장이 늘어도 띠가 화면을 넘지 않아야 한다 — 14개 x 간격 30 = 420px 로 폭 680 안에 든다.
+func _create_badge_strip() -> void:
+	_badge_strip = Node2D.new()
+	_badge_strip.name = "BadgeStrip"
+	_badge_strip.position = Vector2(BADGE_STRIP_X, BADGE_STRIP_Y)
+	$UI.add_child(_badge_strip)
+	RewardManager.badge_earned.connect(func(_id): _refresh_badges())
+	_refresh_badges()
+
+
+## 딴 훈장만 그린다. 잠긴 것은 플레이 중에 보여 줄 이유가 없다(메뉴에서 본다).
+func _refresh_badges() -> void:
+	if _badge_strip == null:
+		return
+	for c in _badge_strip.get_children():
+		c.queue_free()
+	var i := 0
+	for b in Achievements.BADGES:
+		if not RewardManager.has_badge(String(b["id"])):
+			continue
+		var icon := BadgeIcon.new()
+		icon.position = Vector2(i * BADGE_STEP, 0)
+		icon.setup(int(b["tier"]), false, BADGE_RADIUS)
+		_badge_strip.add_child(icon)
+		i += 1
+
 
 ## 리빌과 자리가 겹치므로 표시를 껐다 켠다.
 func _set_slots_visible(v: bool) -> void:
