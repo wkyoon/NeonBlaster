@@ -33,6 +33,16 @@ const ITEMS: Array[Dictionary] = [
 		"desc_en": "Spread wings. Something alive.",
 	},
 	{
+		"id": "ship_raptor", "kind": Kind.SHIP, "ref": "raptor",
+		"name": "RAPTOR", "desc": "날개 끝이 위로 꺾인 기체. 맹금의 인상.",
+		"desc_en": "Wingtips swept upward. A bird of prey.",
+	},
+	{
+		"id": "ship_halo", "kind": Kind.SHIP, "ref": "halo",
+		"name": "HALO", "desc": "고리가 벌어지고 색이 도는 기체.",
+		"desc_en": "Open rings, shifting colors.",
+	},
+	{
 		"id": "reveal_ink", "kind": Kind.REVEAL, "ref": "ink",
 		"name": "INK", "desc": "단어가 먹물처럼 번지며 나타납니다.",
 		"desc_en": "Words bloom like ink on paper.",

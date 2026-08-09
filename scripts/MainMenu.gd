@@ -581,12 +581,20 @@ func _create_skin_panel() -> void:
 	pname.add_theme_font_size_override("font_size", 26)
 	panel.add_child(pname)
 
+	# ⚠️ 기체가 14종이라 목록이 972px 이 된다 — 패널(840)을 넘쳐 아래가 잘린다(실측).
+	#    스크롤 안에 넣는다. 기체를 더 늘려도 여기는 안 건드려도 된다.
+	var list_scroll := ScrollContainer.new()
+	list_scroll.name = "ListScroll"
+	list_scroll.position = Vector2(35, 318)
+	list_scroll.size = Vector2(510, 424)
+	list_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(list_scroll)
+
 	var list := VBoxContainer.new()
 	list.name = "List"
-	list.position = Vector2(35, 318)
-	list.size = Vector2(510, 440)
+	list.custom_minimum_size = Vector2(510, 0)
 	list.add_theme_constant_override("separation", 8)
-	panel.add_child(list)
+	list_scroll.add_child(list)
 
 	var close_btn := Button.new()
 	close_btn.text = "CLOSE"
@@ -619,7 +627,7 @@ func _rebuild_skin_list() -> void:
 	pname.text = String(eq["name_en"])
 	pname.add_theme_color_override("font_color", eq["body"])
 
-	var list: VBoxContainer = panel.get_node("List")
+	var list: VBoxContainer = panel.get_node("ListScroll/List")
 	for child in list.get_children():
 		child.queue_free()
 
@@ -631,7 +639,14 @@ func _rebuild_skin_list() -> void:
 		btn.focus_mode = Control.FOCUS_NONE
 		if not RewardManager.is_skin_unlocked(id):
 			# 잠긴 기체도 이름과 조건을 보여준다 — 목표가 보여야 계속 온다.
-			btn.text = "🔒 %s — %d DAY STREAK" % [skin["name_en"], int(skin["streak"])]
+			# 조건이 셋(출석/수집/결제)이라 각각 다르게 안내한다.
+			if skin.has("collect"):
+				var got: int = WordManager.get_collection_progress().x
+				btn.text = "🔒 %s — %d/%d WORDS" % [skin["name_en"], got, int(skin["collect"])]
+			elif skin.has("product"):
+				btn.text = "🔒 %s — STORE" % skin["name_en"]
+			else:
+				btn.text = "🔒 %s — %d DAY STREAK" % [skin["name_en"], int(skin["streak"])]
 			btn.disabled = true
 		elif RewardManager.equipped_skin == id:
 			# disabled 로 두면 색 오버라이드가 회색으로 덮여 어떤 기체인지 안 읽힌다.

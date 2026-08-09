@@ -38,6 +38,10 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg")
+
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
@@ -58,7 +62,3 @@ renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 viewport/hdr_2d=true
 environment/defaults/default_clear_color=Color(0.04, 0.03, 0.09, 1)
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg")

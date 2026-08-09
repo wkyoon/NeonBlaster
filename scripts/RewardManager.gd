@@ -76,6 +76,9 @@ var _daily_emitted: bool = false
 func _ready() -> void:
 	_load()
 	_roll_over_day()
+	# 수집으로 열리는 기체는 앱을 켤 때와 단어를 모을 때마다 확인한다.
+	WordManager.word_collected.connect(func(_w, got, _goal): check_collection_ships(got))
+	check_collection_ships(WordManager.get_collection_progress().x)
 
 
 func _process(delta: float) -> void:
@@ -225,6 +228,16 @@ func get_rank_power() -> float:
 
 
 # ---------------- 기체 스킨 ----------------
+
+## 수집 개수로 열리는 기체를 확인한다.
+## ⚠️ 여기서는 **자동 장착하지 않는다.** 플레이 도중에 기체가 갑자기 바뀌면 놀란다 —
+##    출석 보상(수령 버튼을 직접 누른다)이나 구매(직접 산다)와 달리 수집은 저절로 일어난다.
+##    대신 skin_unlocked 신호로 알리고, 갈아입기는 기체 선택 화면에서 하게 둔다.
+func check_collection_ships(collected: int) -> void:
+	for skin in ShipSkins.by_collect_threshold(collected):
+		var id := String(skin["id"])
+		if not unlocked_skins.has(id):
+			unlock_skin(id, false)
 
 func is_skin_unlocked(id: String) -> bool:
 	return unlocked_skins.has(id)
