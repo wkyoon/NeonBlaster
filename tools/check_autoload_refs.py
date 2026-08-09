@@ -76,7 +76,9 @@ def main() -> int:
             for name in autoloads:
                 if name in own:
                     continue  # 자기 자신은 지역 스코프로 접근하므로 검사 대상이 아니다
-                for m in re.finditer(re.escape(name) + r"\.(\w+)", line):
+                # ⚠️ 앞에 단어 문자가 붙은 것은 다른 이름이다.
+                #    (\b 로는 안 걸린다 — "RunTelemetry.gd" 안의 "Telemetry.gd" 를 잡았다)
+                for m in re.finditer(r"(?<![\w/])" + re.escape(name) + r"\.(\w+)", line):
                     if m.group(1) not in members[name]:
                         problems.append((path, lineno, name, m.group(1), line.strip()))
 

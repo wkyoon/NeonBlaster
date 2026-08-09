@@ -33,6 +33,7 @@ EffectsManager="*res://scripts/EffectsManager.gd"
 WordManager="*res://scripts/WordManager.gd"
 RewardManager="*res://scripts/RewardManager.gd"
 DifficultyDirector="*res://scripts/DifficultyDirector.gd"
+Telemetry="*res://scripts/Telemetry.gd"
 
 [display]
 

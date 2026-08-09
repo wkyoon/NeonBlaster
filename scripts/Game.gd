@@ -64,6 +64,14 @@ func _ready() -> void:
 	if _word_reveal:
 		_word_reveal.reveal_finished.connect(_start_next_word)
 
+	# 알파 밸런스 자료 수집. 동의하지 않았으면 Telemetry 가 조용히 버린다.
+	# ⚠️ 이름을 명시할 것 — 자동 이름(@Node@nn)이면 테스트에서 찾을 수 없다.
+	var telemetry := Node.new()
+	telemetry.name = "RunTelemetry"
+	telemetry.set_script(preload("res://scripts/RunTelemetry.gd"))
+	add_child(telemetry)
+	telemetry.start(_player, _spawner)
+
 	# Preload ads
 
 

@@ -707,3 +707,57 @@ stub 판정은 **안드로이드 싱글톤 유무**로 한다(애드온만 보�
 `MainMenu._create_bottom_buttons` 의 `SHOW_STORE = false` 로 **진입 버튼만 감춰** 두었다.
 `StoreItems` / `StorePage` / `scenes/Store.tscn` / `PurchaseManager` 는 그대로 살아 있으므로,
 다시 열 때는 이 분기만 되돌리면 된다.
+
+### 알파 테스트 자료 수집 (텔레메트리)
+
+밸런스 수치는 지금까지 **AI 자동 플레이로만** 잡혔다. `BENCH_AI_ERROR=0.15` 가 "평균적인 인간"
+이라는 가정은 검증된 적이 없다 — 알파 자료의 가장 큰 값어치는 이 상수를 실측으로 바꾸는 것이다.
+
+| 파일 | 역할 |
+|---|---|
+| [`Telemetry`](scripts/Telemetry.gd) (오토로드) | 동의·설치 식별자·`user://` 큐·전송 |
+| [`RunTelemetry`](scripts/RunTelemetry.gd) | 한 판의 지표 수집. `Game._ready` 가 붙인다 |
+| [`server/collect.php`](server/collect.php) | 수신부(PHP). 배포 방법은 [server/README.md](server/README.md) |
+| [`tools/telemetry_report.py`](tools/telemetry_report.py) | 집계·진단 |
+| [`website/privacy.html`](website/privacy.html) | 개인정보처리방침 (Play 필수) |
+
+```bash
+godot --headless --path . --script tools/telemetry_check.gd      # 큐·동의·상한
+godot --headless --path . --script tools/telemetry_run_check.gd  # 실제 Game.tscn 에서 판이 기록되는가
+python3 tools/telemetry_report.py export/telemetry/*.jsonl
+```
+
+⚠️ **`end_reason` 이 이 자료에서 가장 중요한 값이다.** AI 벤치마크는 사망률 100% 지만
+사람은 지하철에서 내리면서 그냥 끈다. 중도 이탈(`quit`) 판의 생존 시간을 사망 판과 같이
+평균 내면 "너무 어렵다" 로 잘못 읽힌다. `died`/`survived` 만 밸런스 판단에 쓴다
+(리포트가 자동으로 갈라서 제외 비율을 알려 준다).
+
+⚠️ **AI 플레이는 절대 섞이면 안 된다.** `Benchmark` 는 `Game.tscn` 을 그대로 띄우므로
+막지 않으면 벤치마크 수백 판이 알파 자료로 들어간다. `RunTelemetry.start()` 가
+`GameManager.auto_play` 를 보고 통째로 빠진다. 이게 빠지면 **AI 가 AI 를 기준으로
+자기를 보정하는 순환**이 된다.
+
+⚠️ **판이 끝나는 즉시 전송하면 유실된다.** 틈새 시간에 하는 게임이라 네트워크가 없는 경우가
+흔하고 앱이 백그라운드에서 죽는다. 큐에 쌓고 **다음 실행 때** 올린다. 서버가 2xx 로 답해야
+큐를 비우므로, 5xx 로 답하면 다음에 그대로 다시 올라온다(중복이 아니라 재시도다).
+
+⚠️ **표본이 적으면 아무것도 판단하지 마라.** 같은 조건 2게임에서 생존 26.2s vs 6.7s(4배)가
+관측된 게임이다. 리포트는 구간당 30판 미만이면 수치만 내고 판단을 보류한다.
+한 사람이 절반 넘게 차지하면 경고한다 — 그 사람의 실력이 곧 결론이 되기 때문이다.
+
+⚠️ **판이 끝나는 경로가 여러 개다**(사망 → 메뉴 / 사망 → 재시작 / 뒤로 가기 / 홈 버튼).
+개별 경로에 붙이지 말고 `_exit_tree` 와 `NOTIFICATION_APPLICATION_PAUSED` 두 곳에서만
+마감한다. 5초 미만 판은 잘못 눌러 들어온 것이라 버린다.
+
+⚠️ **개인을 식별할 수 있는 것은 담지 않는다.** 난수 `install_id` 만 쓰고 계정·연락처·광고ID(AAID)
+는 담지 않는다. **서버도 IP 를 저장하지 않는다** — 앱에서 안 모은다고 고지해 놓고 서버가 남기면
+그 고지가 거짓이 되고 Play 데이터 보안 양식과 어긋난다.
+
+⚠️ 스키마는 `Benchmark.gd` 의 지표 이름과 **일부러 똑같다**(`alive_avg`, `hits_taken`,
+`words_per_min` …). 이름이 갈라지면 알파 자료를 기존 밸런스 기준과 비교할 수 없다.
+
+**출시 전 직접 할 것**
+1. `server/collect.php` 를 `won-solution.com/api/nb/collect.php` 로 올리고 `data/.htaccess` 를 함께 둔다.
+2. `collect.php` 의 `TOKEN` 과 `Telemetry.TOKEN` 을 같은 값으로 바꾼다(둘 다 `CHANGE_ME_BEFORE_DEPLOY`).
+3. `privacy.html` 을 `won-solution.com/privacy.html` 로 올리고 Play Console 에 URL 등록.
+4. Play Console **데이터 보안 양식**을 위 표대로 신고(앱 활동·기기 ID 수집, 선택적, 미공유).

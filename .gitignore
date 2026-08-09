@@ -34,3 +34,5 @@ Thumbs.db
 # Benchmark generated outputs (regenerated each run)
 benchmark_log.txt
 benchmark_results.json
+# 텔레메트리 수신 서버가 만드는 수집 파일 (테스터 기록 — 레포에 들어가면 안 된다)
+server/data/

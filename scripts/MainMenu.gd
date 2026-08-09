@@ -19,6 +19,7 @@ var _reward_strip: Button = null
 var _reward_panel: Control = null
 var _skin_panel: Control = null
 var _badge_panel: Control = null
+var _consent_panel: Control = null
 
 
 func _ready() -> void:
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_create_badge_panel()
 	_create_skin_panel()
 	_refresh_reward_strip()
+	_maybe_ask_consent()
 
 
 ## Create difficulty selection buttons (Easy / Normal / Hard)
@@ -942,3 +944,103 @@ func _animate_title() -> void:
 	var tween := create_tween().set_loops()
 	tween.tween_property(_title, "modulate", Color(0.3, 0.9, 1.0, 1.0), 1.0)
 	tween.tween_property(_title, "modulate", Color(0.8, 0.3, 1.0, 1.0), 1.0)
+
+
+## 알파 테스트 자료 수집 동의. 처음 한 번만 묻는다.
+##
+## ⚠️ **거부해도 게임은 100% 그대로 동작해야 한다.** 수집을 기능의 조건으로 걸면 정책 위반이고,
+##    무엇보다 이 게임의 목적(학습)과 아무 상관이 없다.
+## ⚠️ 무엇을 보내는지 **구체적으로** 적을 것. "익명 정보" 같은 뭉뚱그린 문구는
+##    Play 데이터 보안 양식과 대조했을 때 설명이 안 된다.
+func _maybe_ask_consent() -> void:
+	if Telemetry.consent != Telemetry.CONSENT_UNSET:
+		return
+	_create_consent_panel()
+	_consent_panel.visible = true
+	_consent_panel.move_to_front()
+
+
+func _create_consent_panel() -> void:
+	_consent_panel = Control.new()
+	_consent_panel.name = "ConsentPanel"
+	_consent_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_consent_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_consent_panel.visible = false
+	add_child(_consent_panel)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.01, 0.01, 0.04, 0.985)
+	_consent_panel.add_child(dimmer)
+
+	var panel := Panel.new()
+	panel.name = "Panel"
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-300, -330)
+	panel.size = Vector2(600, 660)
+	_consent_panel.add_child(panel)
+
+	var title := Label.new()
+	title.name = "Title"
+	title.text = "🧪 테스트 참여 안내"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.position = Vector2(30, 28)
+	title.size = Vector2(540, 46)
+	title.add_theme_font_size_override("font_size", 34)
+	title.add_theme_color_override("font_color", Color(0.4, 1.0, 0.9))
+	panel.add_child(title)
+
+	var body := Label.new()
+	body.name = "Body"
+	body.position = Vector2(40, 96)
+	body.size = Vector2(520, 400)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 22)
+	body.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
+	body.text = """게임 난이도를 다듬기 위해 한 판이 끝날 때마다 아래 기록을 보냅니다.
+
+· 생존 시간과 종료 사유(사망 / 중단)
+· 화면의 적 수, 피격 횟수, 웨이브
+· 완성한 단어 수
+· 기기 모델과 화면 크기, 프레임 수
+
+계정, 이름, 연락처, 광고 ID(AAID)는 수집하지 않습니다. 앱을 지우면 기록도 함께 사라집니다.
+
+거부하셔도 게임의 모든 기능을 그대로 쓰실 수 있습니다."""
+	panel.add_child(body)
+
+	var link := Label.new()
+	link.name = "PolicyLink"
+	link.text = "개인정보처리방침 · won-solution.com/privacy.html"
+	link.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	link.position = Vector2(30, 506)
+	link.size = Vector2(540, 30)
+	link.add_theme_font_size_override("font_size", 18)
+	link.add_theme_color_override("font_color", Color(0.55, 0.6, 0.72))
+	panel.add_child(link)
+
+	var agree := Button.new()
+	agree.name = "AgreeButton"
+	agree.text = "보내기 동의"
+	agree.position = Vector2(310, 556)
+	agree.size = Vector2(250, 72)
+	agree.add_theme_font_size_override("font_size", 24)
+	agree.focus_mode = Control.FOCUS_NONE
+	agree.pressed.connect(_on_consent.bind(true))
+	panel.add_child(agree)
+
+	var deny := Button.new()
+	deny.name = "DenyButton"
+	deny.text = "보내지 않음"
+	deny.position = Vector2(40, 556)
+	deny.size = Vector2(250, 72)
+	deny.add_theme_font_size_override("font_size", 24)
+	deny.focus_mode = Control.FOCUS_NONE
+	deny.pressed.connect(_on_consent.bind(false))
+	panel.add_child(deny)
+
+
+func _on_consent(agreed: bool) -> void:
+	AudioManager.play_sfx("button")
+	Telemetry.set_consent(agreed)
+	_consent_panel.visible = false
