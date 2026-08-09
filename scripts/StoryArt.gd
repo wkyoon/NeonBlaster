@@ -106,7 +106,11 @@ static func draw_void_enemy(parent: Node2D, enemy_key: String, scale_factor: flo
 		"SHIELDER":
 			_draw_void_shielder(node)
 		_:
-			_draw_void_chaser(node)
+			# ⚠️ **CHASER 로 떨어뜨리지 마라.** 예전에는 그랬는데, 그러면 match 에서 빠진 적이
+			#    멀쩡한 삼각형으로 그려져 **빠진 사실 자체가 안 보였다**(적 4종이 그 상태였다).
+			#    어느 유닛도 아닌 회색 경고 표식을 그려서 화면만 봐도 바로 드러나게 한다.
+			push_warning("StoryArt: '%s' 의 그림이 없다. draw_void_enemy 의 match 에 추가할 것." % enemy_key)
+			_draw_void_unknown(node)
 
 	return node
 
@@ -206,6 +210,50 @@ static func _draw_void_tank(node: Node2D) -> void:
 		node.add_child(eye)
 
 	_add_light(node, Color(0.8, 0.3, 1.0), 3.0, 3.5)
+
+
+## 그림이 아직 없는 적. **일부러 어느 유닛과도 안 닮게** 그린다 —
+## 회색 팔각 테두리 + 노란 느낌표. 실제 7종에는 회색도 노란색도 없다.
+static func _draw_void_unknown(node: Node2D) -> void:
+	var ring := Polygon2D.new()
+	var outer := PackedVector2Array()
+	var inner := PackedVector2Array()
+	for i in 8:
+		var a := TAU * i / 8.0 - PI / 8
+		var dir := Vector2(cos(a), sin(a))
+		outer.append(dir * 55)
+		inner.append(dir * 42)
+	# 속이 빈 고리 = 아직 안 채워졌다는 뜻
+	var band := PackedVector2Array()
+	for i in 8:
+		band.append(outer[i])
+		band.append(outer[(i + 1) % 8])
+		band.append(inner[(i + 1) % 8])
+		band.append(inner[i])
+	ring.polygon = band
+	ring.polygons = [
+		PackedInt32Array([0, 1, 2, 3]), PackedInt32Array([4, 5, 6, 7]),
+		PackedInt32Array([8, 9, 10, 11]), PackedInt32Array([12, 13, 14, 15]),
+		PackedInt32Array([16, 17, 18, 19]), PackedInt32Array([20, 21, 22, 23]),
+		PackedInt32Array([24, 25, 26, 27]), PackedInt32Array([28, 29, 30, 31]),
+	]
+	ring.color = Color(0.45, 0.45, 0.5)
+	node.add_child(ring)
+
+	var bar := Polygon2D.new()
+	bar.polygon = PackedVector2Array([
+		Vector2(-7, -28), Vector2(7, -28), Vector2(5, 10), Vector2(-5, 10)
+	])
+	bar.color = Color(1.0, 0.85, 0.2)
+	node.add_child(bar)
+
+	var dot := Polygon2D.new()
+	dot.polygon = _circle_polygon(10, 7)
+	dot.color = Color(1.0, 0.85, 0.2)
+	dot.position = Vector2(0, 26)
+	node.add_child(dot)
+
+	_add_light(node, Color(1.0, 0.85, 0.2), 2.0, 2.5)
 
 
 ## ⚠️ 아래 네 종은 **실제 게임의 모양·색과 맞춰야 한다**(`Enemy._configure_type`).

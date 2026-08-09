@@ -37,22 +37,25 @@ func _process(delta: float) -> bool:
 	var probe := Node2D.new()
 	root.add_child(probe)
 	var seen := {}
+	# ⚠️ match 에서 빠진 적은 이제 "미정의" 표식으로 그려진다(예전에는 CHASER 로 떨어졌다).
+	#    표식은 고유한 모양이라 **중복 검사만으로는 안 걸린다** — 표식과 직접 비교해야 한다.
+	var placeholder := _signature(StoryArt.draw_void_enemy(probe, "__NO_SUCH_KEY__", 1.0))
 	for k in keys:
 		var art: Node2D = StoryArt.draw_void_enemy(probe, k, 1.0)
+		var sig := _signature(art)
 		var polys := 0
 		var verts := 0
-		# ⚠️ 개수만으로는 부족하다. TANK 와 SPLITTER 가 우연히 둘 다 폴리곤 7개·정점 56개라
-		#    오탐이 났다. 색까지 넣어야 실제로 다른 그림인지 구분된다.
-		var sig := ""
 		for c in art.get_children():
 			var p := c as Polygon2D
 			if p != null:
 				polys += 1
 				verts += p.polygon.size()
-				sig += "%d:%s|" % [p.polygon.size(), str(p.color)]
 		print("  %-9s 폴리곤 %2d개 정점 %3d개" % [k, polys, verts])
 		if polys == 0:
 			print("FAIL %s 가 아무것도 그리지 않는다" % k)
+			fails += 1
+		if sig == placeholder:
+			print("FAIL %s 가 '미정의' 표식으로 그려진다 — draw_void_enemy 의 match 에 없다" % k)
 			fails += 1
 		if seen.has(sig):
 			print("FAIL %s 가 %s 와 같은 그림이다 (match 에서 빠져 기본값으로 떨어졌다)" % [k, seen[sig]])
@@ -69,3 +72,14 @@ func _process(delta: float) -> bool:
 	print("결과: %s" % ("통과" if fails == 0 else "실패 %d건" % fails))
 	quit(0 if fails == 0 else 1)
 	return true
+
+
+## 그림 지문. ⚠️ 개수만으로는 부족하다 — TANK 와 SPLITTER 가 우연히 둘 다
+## 폴리곤 7개·정점 56개라 오탐이 났다. 색까지 넣어야 실제로 다른 그림인지 구분된다.
+func _signature(art: Node2D) -> String:
+	var sig := ""
+	for c in art.get_children():
+		var p := c as Polygon2D
+		if p != null:
+			sig += "%d:%s|" % [p.polygon.size(), str(p.color)]
+	return sig

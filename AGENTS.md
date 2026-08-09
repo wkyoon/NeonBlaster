@@ -779,8 +779,12 @@ cd server && npm run build && npm run test:e2e                   # 수신 서버
 `EnemySpawner._pick_enemy_type` 은 7종을 내보내는데 `ENEMY_LORE` 에는 3종만 있었다
 (CHASER/SHOOTER/TANK). 판에서 만나는 적의 절반 이상이 설명에 없으면 설명이 오히려 혼란을 준다.
 
-⚠️ **`StoryArt.draw_void_enemy` 의 match 는 모르는 키를 조용히 CHASER 로 떨어뜨린다.**
-그래서 `ENEMY_LORE` 에만 항목을 추가하면 패널 수는 늘어나는데 **그림이 전부 삼각형으로 같아진다.**
+⚠️ **`StoryArt.draw_void_enemy` 의 폴백을 실제 유닛으로 두지 마라.**
+예전에는 모르는 키를 조용히 CHASER 로 떨어뜨렸다. 그래서 `ENEMY_LORE` 에만 항목을 추가하면
+패널 수는 늘어나는데 **그림이 전부 멀쩡한 삼각형이라 빠진 사실 자체가 안 보였다**(적 4종이 그 상태였다).
+지금은 어느 유닛과도 안 닮은 **회색 팔각 고리 + 노란 느낌표**(`_draw_void_unknown`)를 그리고
+`push_warning` 을 남긴다 — 화면만 봐도 바로 드러난다. 실제 7종에는 회색도 노란색도 없다.
+
 새 적을 추가할 때는 세 곳을 함께 고칠 것:
 1. `StoryData.ENEMY_LORE` — 설명
 2. `StoryArt.draw_void_enemy` 의 match + `_draw_void_*` 함수 — 그림
@@ -795,5 +799,7 @@ cd server && npm run build && npm run test:e2e                   # 수신 서버
 godot --headless --path . --script tools/story_enemy_check.gd
 ```
 소개 종류가 스폰 종류와 같은지, 종류마다 **다른 그림**이 나오는지(폴리곤 수·정점 수·색 지문),
-세력 소개의 병과 수가 맞는지 확인한다.
+어느 하나가 **'미정의' 표식으로 그려지지 않는지**, 세력 소개의 병과 수가 맞는지 확인한다.
 ⚠️ 지문에 색을 넣지 않으면 오탐이 난다 — TANK 와 SPLITTER 가 우연히 둘 다 폴리곤 7개·정점 56개다.
+⚠️ 표식은 고유한 모양이라 **중복 검사만으로는 누락이 안 걸린다.** 표식 지문과 직접 비교해야 한다
+(SHIELDER 를 match 에서 빼서 실제로 잡히는지 확인했다).
