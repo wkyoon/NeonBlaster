@@ -17,11 +17,12 @@ extends Node
 ## ⚠️ 스키마는 `Benchmark.gd` 의 지표 이름과 **일부러 똑같이** 맞춰 두었다.
 ##    이름이 갈라지면 알파 자료를 기존 밸런스 리포트에 태울 수 없다.
 
-## ⚠️ 서버 배포 후 실제 주소로 확인할 것. 수신부 구현은 `server/collect.php`.
-const ENDPOINT := "https://won-solution.com/api/nb/collect.php"
+## ⚠️ 서버 배포 후 실제 주소로 확인할 것. 수신부는 NestJS — `server/` 참조.
+##    nginx 가 `/api/nb/` 를 Nest 의 `/` 로 넘기므로 경로는 `/api/nb/collect` 다.
+const ENDPOINT := "https://won-solution.com/api/nb/collect"
 
 ## ⚠️ 인증이 아니라 **잡음 차단**용이다. APK 를 뜯으면 나오므로 민감한 것을 걸지 말 것.
-##    `server/collect.php` 의 TOKEN 과 같은 값이어야 한다.
+##    서버의 `NB_TOKEN` 환경변수와 같은 값이어야 한다.
 const TOKEN := "CHANGE_ME_BEFORE_DEPLOY"
 
 const QUEUE_PATH := "user://telemetry_queue.jsonl"

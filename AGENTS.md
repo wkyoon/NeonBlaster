@@ -717,7 +717,7 @@ stub 판정은 **안드로이드 싱글톤 유무**로 한다(애드온만 보�
 |---|---|
 | [`Telemetry`](scripts/Telemetry.gd) (오토로드) | 동의·설치 식별자·`user://` 큐·전송 |
 | [`RunTelemetry`](scripts/RunTelemetry.gd) | 한 판의 지표 수집. `Game._ready` 가 붙인다 |
-| [`server/collect.php`](server/collect.php) | 수신부(PHP). 배포 방법은 [server/README.md](server/README.md) |
+| [`server/`](server/README.md) | 수신부(NestJS + TypeScript). 배포·테스트 방법은 그 README |
 | [`tools/telemetry_report.py`](tools/telemetry_report.py) | 집계·진단 |
 | [`website/privacy.html`](website/privacy.html) | 개인정보처리방침 (Play 필수) |
 
@@ -725,6 +725,7 @@ stub 판정은 **안드로이드 싱글톤 유무**로 한다(애드온만 보�
 godot --headless --path . --script tools/telemetry_check.gd      # 큐·동의·상한
 godot --headless --path . --script tools/telemetry_run_check.gd  # 실제 Game.tscn 에서 판이 기록되는가
 python3 tools/telemetry_report.py export/telemetry/*.jsonl
+cd server && npm run build && npm run test:e2e                   # 수신 서버
 ```
 
 ⚠️ **`end_reason` 이 이 자료에서 가장 중요한 값이다.** AI 벤치마크는 사망률 100% 지만
@@ -757,7 +758,8 @@ python3 tools/telemetry_report.py export/telemetry/*.jsonl
 `words_per_min` …). 이름이 갈라지면 알파 자료를 기존 밸런스 기준과 비교할 수 없다.
 
 **출시 전 직접 할 것**
-1. `server/collect.php` 를 `won-solution.com/api/nb/collect.php` 로 올리고 `data/.htaccess` 를 함께 둔다.
-2. `collect.php` 의 `TOKEN` 과 `Telemetry.TOKEN` 을 같은 값으로 바꾼다(둘 다 `CHANGE_ME_BEFORE_DEPLOY`).
+1. `server/` 를 서버에 올려 `npm ci && npm run build` 후 systemd 로 띄우고, nginx 가
+   `/api/nb/` 를 `127.0.0.1:3000/` 로 넘기게 한다(README 에 유닛 파일·nginx 설정 있음).
+2. 서버 `.env` 의 `NB_TOKEN` 과 `Telemetry.TOKEN` 을 같은 값으로 바꾼다(둘 다 `CHANGE_ME_BEFORE_DEPLOY`).
 3. `privacy.html` 을 `won-solution.com/privacy.html` 로 올리고 Play Console 에 URL 등록.
 4. Play Console **데이터 보안 양식**을 위 표대로 신고(앱 활동·기기 ID 수집, 선택적, 미공유).
