@@ -23,6 +23,7 @@ config/icon="res://assets/icons/icon.png"
 
 GameManager="*res://scripts/GameManager.gd"
 SceneManager="*res://scripts/SceneManager.gd"
+AdsManager="*res://scripts/AdsManager.gd"
 PurchaseManager="*res://scripts/PurchaseManager.gd"
 ShareManager="*res://scripts/ShareManager.gd"
 AudioManager="*res://scripts/AudioManager.gd"
@@ -41,7 +42,7 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/SharePlugin/plugin.cfg")
+enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/AdmobPlugin/plugin.cfg")
 
 [input_devices]
 

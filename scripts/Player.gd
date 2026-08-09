@@ -31,6 +31,11 @@ const BULLET_RANGE_RATIO := 0.60
 ## 이 상한이 없으면 멀리서 잡은 간격이 그대로 유지돼 기체가 화면 위에 갇힌다.
 const MAX_GRAB_LIFT := 110.0
 const MAX_GRAB_SIDE := 130.0
+## 화면 하단에서 조작을 받지 않는 높이(게임 유닛).
+## ⚠️ 여기에 AdMob 배너가 뜬다. 배너는 Godot 뷰 위에 얹히는 **네이티브 뷰**라 터치를 가로채므로,
+##    기체를 이 위로만 다니게 해서 손가락이 배너에 닿을 일이 없게 만든다.
+##    (배너 50dp = 480dpi 기기에서 약 140물리px = 약 93게임유닛. 여유를 두고 110.)
+const BOTTOM_RESERVE := 110.0
 
 var weapon_type: WeaponType = WeaponType.SINGLE
 ## 시작 화력. 1은 단발이라 화면을 못 덮는다. 2(2줄기)로 시작해 첫 순간부터 시원하게 터진다.
@@ -268,6 +273,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_is_touching = false
 	elif event is InputEventScreenDrag and _is_touching:
 		_target_pos = event.position + _touch_offset
+		# 손가락이 배너 자리까지 내려가도 기체는 그 위에 머문다.
+		_target_pos.y = minf(_target_pos.y, _screen_size.y - 30.0 - BOTTOM_RESERVE)
 
 
 func _apply_movement(delta: float) -> void:
@@ -305,7 +312,9 @@ func _apply_movement(delta: float) -> void:
 	# Clamp to screen
 	var margin := 30.0
 	global_position.x = clamp(global_position.x, margin, _screen_size.x - margin)
-	global_position.y = clamp(global_position.y, margin, _screen_size.y - margin)
+	# 아래쪽은 배너 자리를 비워 둔다(BOTTOM_RESERVE 주석 참조).
+	global_position.y = clamp(global_position.y, margin,
+		_screen_size.y - margin - BOTTOM_RESERVE)
 
 
 func _handle_fire() -> void:

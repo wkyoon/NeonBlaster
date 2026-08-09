@@ -166,6 +166,9 @@ func _create_bottom_buttons() -> void:
 	story_btn.pressed.connect(_on_story)
 	container.add_child(story_btn)
 
+	# ⚠️ 상점은 지금 노출하지 않는다. 코드와 화면(scenes/Store.tscn)은 그대로 두고
+	#    진입 버튼만 감춘다 — 다시 열 때 이 분기만 되돌리면 된다.
+	var SHOW_STORE := false
 	var store_btn := Button.new()
 	store_btn.name = "StoreButton"
 	store_btn.text = "🛒 STORE"
@@ -174,7 +177,10 @@ func _create_bottom_buttons() -> void:
 	store_btn.add_theme_color_override("font_color", Color(0.6, 1.0, 0.8))
 	store_btn.focus_mode = Control.FOCUS_NONE
 	store_btn.pressed.connect(_on_store)
-	container.add_child(store_btn)
+	if SHOW_STORE:
+		container.add_child(store_btn)
+	else:
+		store_btn.queue_free()
 
 	_create_sfx_lab_button()
 	_create_score_panel()

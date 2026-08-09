@@ -47,6 +47,8 @@ func _ready() -> void:
 	# Start game
 	DifficultyDirector.reset_run()
 	_run_words = 0
+	# 배너는 **플레이 중에만** 띄운다.
+	AdsManager.show_banner()
 	GameManager.start_game()
 	_spawner.start()
 	_player.revive()
@@ -71,6 +73,7 @@ func _on_player_died() -> void:
 		return
 	_is_game_over = true
 	_spawner.stop()
+	AdsManager.hide_banner()
 	RewardManager.check_badges(_run_words, _run_seconds >= DifficultyDirector.get_target_seconds())
 	# Disconnect word completion handler
 	if WordManager.word_completed.is_connected(_on_word_completed):
@@ -141,6 +144,7 @@ func _on_resume() -> void:
 
 
 func _on_quit_to_menu() -> void:
+	AdsManager.hide_banner()
 	GameManager.go_to_menu()
 	get_tree().paused = false
 	SceneManager.goto_menu()
