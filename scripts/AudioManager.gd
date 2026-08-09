@@ -476,9 +476,14 @@ const VOICE_EXTENSIONS: Array[String] = [".mp3", ".ogg", ".wav"]
 ##
 ## 2순위(폴백): 파일이 없으면 기존 TTS. 단어가 전부 대문자면 TTS 가 약어로 인식해
 ##   스펠링으로 읽으므로(실측: "BAT." 1.161초 vs "bat." 0.883초) 소문자로 변환해서 넘긴다.
-func speak_word(word: String) -> void:
+## 단어 문장을 읽어 준다. **재생 길이(초)를 돌려준다** — 0.0 이면 재생하지 않았다.
+##
+## ⚠️ 호출부는 이 값에 맞춰 화면 표시 시간을 잡아야 한다.
+##    예전에는 화면이 0.9초만 보이고 음성은 중앙값 1.91초라(81개 중 80개가 더 길었다)
+##    **단어가 사라진 뒤에도 문장이 계속 나왔다.** 눈으로 익히는 게임에서 치명적이다.
+func speak_word(word: String) -> float:
 	if not tts_enabled:
-		return
+		return 0.0
 
 	# .ogg 를 먼저 찾는다(용량이 훨씬 작다). 나중에 성우 녹음이 wav 로 들어와도 그대로 동작한다.
 	if _voice_player != null:
@@ -494,13 +499,13 @@ func speak_word(word: String) -> void:
 			_voice_player.stream = stream
 			_voice_player.volume_db = linear_to_db(_sfx_volume)
 			_voice_player.play()
-			return
+			return stream.get_length()
 
 	if not DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
-		return
+		return 0.0
 	var voice := _get_tts_voice()
 	if voice == "":
-		return
+		return 0.0
 	DisplayServer.tts_stop()
 	# 파일이 없는 단어(도감의 미수록 단어 등)는 문장 컨텍스트 + 소문자로 읽어준다.
 	var phrase := WordDictionary.get_phrase(word)
@@ -508,6 +513,8 @@ func speak_word(word: String) -> void:
 		phrase = "The word is " + word.to_lower() + "."
 	DisplayServer.tts_speak(phrase, voice, 100.0, 1.0, 0.9, false)
 	print("[AudioManager] TTS fallback: ", phrase)
+	# TTS 는 길이를 알 수 없다 — 문장 길이로 어림잡는다(영어 평균 발화 속도 기준).
+	return clampf(phrase.length() * 0.055, 1.2, 3.5)
 
 
 # ---------------- Persistence ----------------

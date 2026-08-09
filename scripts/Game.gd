@@ -6,7 +6,6 @@ extends Node2D
 const THEME_MASTER_BONUS := 2000
 
 ## 단어 완성 후 다음 단어가 시작되기까지의 시간(초). 리빌이 뜨고 사라지는 동안 플레이는 계속된다.
-const REVEAL_DURATION := 2.0
 
 @onready var _player: CharacterBody2D = $Player
 @onready var _spawner: Node2D = $EnemySpawner
@@ -53,6 +52,8 @@ func _ready() -> void:
 	WordManager.word_collected.connect(_on_word_collected)
 	WordManager.theme_mastered.connect(_on_theme_mastered)
 	RewardManager.daily_goal_reached.connect(_on_daily_goal_reached)
+	if _word_reveal:
+		_word_reveal.reveal_finished.connect(_start_next_word)
 
 	# Preload ads
 	AdsManager.request_interstitial()
@@ -209,12 +210,17 @@ func _on_word_completed(word: String) -> void:
 	EffectsManager.screen_flash(Color(0.2, 1.0, 0.5, 0.12), 0.25)
 	AudioManager.play_sfx("explosion")
 	# Show the word reveal overlay (icon + pronunciation)
-	if _word_reveal:
-		_word_reveal.reveal_word(word)
 	# ⚠️ 리빌 동안 게임을 **멈추지 않는다.** 멈추면 흐름이 끊기는 느낌이 든다.
 	# 대신 오버레이가 시야를 가리지 않도록 만들었다(WordReveal 의 배경 alpha 0.12).
 	# 자연스럽게 떴다가 사라지고, 그 사이 플레이는 계속된다.
-	get_tree().create_timer(REVEAL_DURATION).timeout.connect(_start_next_word)
+	#
+	# ⚠️ 다음 단어를 **고정 시간(예전 2.0초)으로 시작하면 안 된다.**
+	# 리빌 길이가 이제 음성 길이에 맞춰 1.75~3.35초로 변하므로 겹치거나 빈 시간이 생긴다.
+	# 리빌이 끝나는 순간(reveal_finished)에 맞춰 시작한다.
+	if _word_reveal:
+		_word_reveal.reveal_word(word)
+	else:
+		_start_next_word()
 
 
 func _start_next_word() -> void:

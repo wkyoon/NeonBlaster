@@ -5,7 +5,16 @@ extends Control
 ## 리빌이 놓이는 세로 기준점(화면 높이 비율).
 ## 0.5(정중앙)에서 0.38로 올렸다 — 플레이 중 기체가 화면 위쪽에 머무는 시간이 많아
 ## 정중앙에 띄우면 액션과 겹친다. 약간 위로 올려 시선 흐름과 맞춘다.
+## 리빌이 끝났을 때. 다음 단어 시작 타이밍을 여기에 맞춘다.
+signal reveal_finished
+
 const VERTICAL_ANCHOR := 0.38
+## 등장·퇴장에 쓰는 시간과, 온전히 보이는 시간의 하한/상한.
+## 하한은 음성이 없거나 아주 짧을 때도 읽을 수 있게, 상한은 판이 늘어지지 않게.
+const FADE_IN := 0.3
+const FADE_OUT := 0.45
+const MIN_HOLD := 1.0
+const MAX_HOLD := 2.6
 
 var _icon_container: Node2D
 var _word_label: Label
@@ -142,15 +151,21 @@ func reveal_word(word: String) -> void:
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
 	_tween = create_tween()
-	_tween.tween_property(self, "modulate:a", 1.0, 0.3)
+	_tween.tween_property(self, "modulate:a", 1.0, FADE_IN)
 	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	# Pulsing ring effect
 	_tween.parallel().tween_property(_ring, "scale", Vector2(1.3, 1.3), 0.6).set_ease(Tween.EASE_OUT)
-	_tween.tween_interval(0.9)
-	_tween.tween_property(self, "modulate:a", 0.0, 0.45)
-	_tween.tween_callback(_on_reveal_complete)
+	# ⚠️ 표시 시간을 **음성 길이에 맞춘다.**
+	#    고정 0.9초였을 때 음성(중앙값 1.91초)이 81개 중 80개나 더 길어서
+	#    단어가 사라진 뒤에도 문장이 계속 나왔다 — 눈으로 익히는 게임에서 치명적이다.
+	#    이 게임의 목적은 "완성된 단어를 눈으로 보게 하는 것"이라 이 시간이 곧 학습 시간이다.
 	_animate_icon(word)
-	AudioManager.speak_word(word)
+	var speech: float = AudioManager.speak_word(word)
+	# 페이드 인/아웃을 뺀 나머지가 "온전히 보이는" 시간이다.
+	var hold: float = clampf(speech - FADE_IN - FADE_OUT, MIN_HOLD, MAX_HOLD)
+	_tween.tween_interval(hold)
+	_tween.tween_property(self, "modulate:a", 0.0, FADE_OUT)
+	_tween.tween_callback(_on_reveal_complete)
 
 
 func _spawn_sparkles() -> void:
@@ -193,6 +208,7 @@ func _spawn_sparkles() -> void:
 
 func _on_reveal_complete() -> void:
 	visible = false
+	reveal_finished.emit()
 	scale = Vector2.ONE
 
 
