@@ -8,7 +8,7 @@ extends Node
 ## 실행: godot --headless --path . scenes/WordOrderCheck.tscn
 
 ## 검사할 단어 수. 6개 테마 × 여러 바퀴를 돌 만큼.
-const SAMPLE := 90
+const SAMPLE := 400
 
 
 func _ready() -> void:

@@ -301,11 +301,11 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 현재 학습 사이클 (실측 기반 계산):
 | 지표 | 값 |
 |---|---|
-| 전체 어휘 | 72개 (기본 48 + 심화 24) |
+| 전체 어휘 | **300개** (25테마 × 12 = 기본 8 + 심화 4) |
 | 단어 하나가 화면에 머무는 시간 | 1.91초 (온전히 보이는 시간 1.16초) |
-| 모든 단어를 한 번씩 보는 데 | 완성 107회 |
+| 모든 단어를 한 번씩 보는 데 | 완성 600회 |
 | 10분 세션 | 약 50~76개 완성 |
-| 전체 어휘 1회 순회 | 약 14~21분 (2세션) |
+| 전체 어휘 1회 순회 | **약 79~119분 (8~12세션)** |
 
 ### 단어 구성 = 주제(테마) 스테이지
 
@@ -319,7 +319,10 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 - ⚠️ **`Difficulty`(EASY/NORMAL/HARD)는 단어와 무관하다.** 적 밀도·속도·체력만 담당한다.
 - **테마 안에서는 배열 순서 그대로, 쉬운 것 → 어려운 것으로 나온다.**
   이미 수집한 단어는 건너뛰므로 그 테마에 다시 오면 다음 난이도부터 이어진다.
-  ⚠️ **복습은 스테이지의 첫 단어**로 넣는다. 끝에 붙이면 오름차순이 깨진다
+  ⚠️ **스테이지 단위로 미리 뽑아 정렬한다**(`WordManager._plan_stage`). 한 개씩 즉석에서 고르면
+  순서를 보장할 수 없다 — 테마를 다 모은 뒤에는 스테이지가 복습만으로 채워지는데 복습은
+  "가장 오래 안 본 순"이라 글자 수와 무관하다(실측 역전 8건: "EAR(3) SHOULDER(8) NOSE(4)").
+  ⚠️ 복습은 스테이지의 첫 자리에 넣는다. 끝에 붙이면 오름차순이 깨진다
   (실측 "EAR(3) NOSE(4) EYE(3)").
   ⚠️ **기본의 마지막 단어가 심화의 첫 단어보다 길면 안 된다** — 층 경계에서 난이도가 거꾸로 간다
   (실측 SPACE 기본 GALAXY(6) → 심화 ORBIT(5)).
@@ -340,7 +343,20 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
   심화까지 세면 완주가 12개가 되어 "자주 오는 성취"라는 설계가 깨진다.
   도감 총수(`get_collection_progress`)에만 심화를 더해 48 → 72 로 센다.
 
-**새 테마·단어 추가 시:**
+**⚠️ 단어 데이터는 손으로 고치지 말 것 — 생성기를 쓴다.**
+300개를 넘어가면 규칙(글자수 오름차순, 층 경계, 테마 간 중복 없음)을 손으로 지킬 수 없다.
+```bash
+# 1) tools/vocab_new.py 에 테마·단어 추가 (단어, 이모지, 한글, 영어, 예문)
+python3 tools/gen_vocab.py            # 미리보기
+python3 tools/gen_vocab.py --write    # WordDictionary.gd + ThemeStages.gd 반영
+./tools/gen_voice.sh                  # 새 단어 음성 생성
+godot --headless --import --path .
+python3 tools/check_word_order.py                       # 배열 정렬 + 층 경계
+godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
+```
+생성기가 스테이지를 **평균 글자수 오름차순으로 재배치**한다(현재 BODY 3.5 → MACHINE 5.4).
+
+**새 테마·단어 추가 시(수동 편집이 불가피할 때):**
 1. 단어를 [WordDictionary](scripts/WordDictionary.gd) 에 먼저 등록한다(카테고리·이모지·한/영 설명 — TTS·도감이 쓴다).
 2. 테마의 `words` 는 `WORDS_PER_STAGE` 개 이상이어야 스테이지를 완주할 수 있다.
 3. `motif` 는 [StarField](scripts/StarField.gd) 가 그릴 수 있는 `ThemeStages.Motif` 값이어야 한다.

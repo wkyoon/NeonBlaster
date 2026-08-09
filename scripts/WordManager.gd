@@ -48,6 +48,8 @@ var _filled_indices: Array[int] = []
 var _word_stats: Dictionary = {}
 # 단어 선택 카운터 (간격 반복 계산용). 세션 전체에 걸쳐 단조 증가.
 var _selection_counter: int = 0
+## 이번 스테이지에 낼 단어들(오름차순으로 미리 정렬). _plan_stage 참조.
+var _stage_plan: Array[String] = []
 
 # --- 테마 스테이지 진행 상태 ---
 ## 현재 테마 스테이지 인덱스 (ThemeStages.STAGES 기준).
@@ -109,6 +111,7 @@ func get_stage_progress() -> Vector2i:
 func set_stage(index: int) -> void:
 	stage_index = posmod(index, maxi(1, ThemeStages.count()))
 	_stage_done.clear()
+	_stage_plan.clear()
 	stage_changed.emit(stage_index, get_stage())
 
 
@@ -126,9 +129,11 @@ func set_stage(index: int) -> void:
 ## ⚠️ 예전에는 가중치 룰렛(무작위)으로 뽑았다. 배열은 쉬운 순으로 정렬해 두었는데
 ##    뽑기가 무작위라 **그 순서가 게임에 전혀 반영되지 않았다** — 어려운 단어가 첫 판에 나왔다.
 func start_new_word() -> String:
-	var chosen := _pick_next_word()
-	if chosen == "":
+	if _stage_plan.is_empty():
+		_stage_plan = _plan_stage()
+	if _stage_plan.is_empty():
 		return current_word
+	var chosen: String = _stage_plan.pop_front()
 
 	_record_exposure(chosen)
 	current_word = chosen
@@ -138,27 +143,26 @@ func start_new_word() -> String:
 	return current_word
 
 
-## 규칙에 따라 다음 단어를 결정한다.
-func _pick_next_word() -> String:
+## 이번 스테이지에 낼 단어들을 **미리 정해서 글자 수 오름차순으로 정렬**한다.
+##
+## ⚠️ 한 개씩 즉석에서 고르면 순서를 보장할 수 없다. 테마를 다 모은 뒤에는 스테이지가
+##    복습만으로 채워지는데, 복습은 "가장 오래 안 본 순"이라 글자 수와 무관하다 —
+##    실측에서 "EAR(3) SHOULDER(8) NOSE(4)" 같은 역전이 8건 나왔다.
+##    스테이지 단위로 뽑아 놓고 정렬하면 출처가 무엇이든 항상 오름차순이 된다.
+func _plan_stage() -> Array[String]:
 	var fresh := _unlearned_in_order()
 	var review := _review_in_order()
-
-	# 복습은 **스테이지의 첫 단어**로 넣는다.
-	# ⚠️ 끝에 붙이면 난이도 오름차순이 깨진다 — 실측 "EAR(3) NOSE(4) EYE(3)".
-	#    앞에 두면 "지난번 것 한 번 상기 → 새 단어를 쉬운 순으로" 가 되어 램프가 유지된다.
-	if _stage_done.is_empty() and not review.is_empty():
-		return review[0]
-	if not fresh.is_empty():
-		return fresh[0]
+	var out: Array[String] = []
+	# 테마에 다시 들어왔다면 첫 자리는 복습이다(지난번 것 한 번 상기).
 	if not review.is_empty():
-		return review[0]
-
-	# 폴백 — 이번 스테이지에서 이미 다 돌았다면 테마 전체에서 직전 단어만 피해 고른다.
-	var all_words: Array = get_word_list()
-	for w in all_words:
-		if w != current_word:
-			return w
-	return all_words[0] if not all_words.is_empty() else ""
+		out.append(review.pop_front())
+	while out.size() < ThemeStages.WORDS_PER_STAGE and not fresh.is_empty():
+		out.append(fresh.pop_front())
+	# 새 단어가 떨어지면 남은 자리도 복습으로 채운다.
+	while out.size() < ThemeStages.WORDS_PER_STAGE and not review.is_empty():
+		out.append(review.pop_front())
+	out.sort_custom(func(a: String, b: String) -> bool: return a.length() < b.length())
+	return out
 
 
 ## 아직 수집하지 않은 단어를 **쉬운 순서 그대로** 돌려준다.
