@@ -31,11 +31,32 @@ const BULLET_RANGE_RATIO := 0.60
 ## 이 상한이 없으면 멀리서 잡은 간격이 그대로 유지돼 기체가 화면 위에 갇힌다.
 const MAX_GRAB_LIFT := 110.0
 const MAX_GRAB_SIDE := 130.0
-## 화면 하단에서 조작을 받지 않는 높이(게임 유닛).
-## ⚠️ 여기에 AdMob 배너가 뜬다. 배너는 Godot 뷰 위에 얹히는 **네이티브 뷰**라 터치를 가로채므로,
-##    기체를 이 위로만 다니게 해서 손가락이 배너에 닿을 일이 없게 만든다.
-##    (배너 50dp = 480dpi 기기에서 약 140물리px = 약 93게임유닛. 여유를 두고 110.)
-const BOTTOM_RESERVE := 110.0
+## 배너 높이(dp). AdMob 표준 배너는 50dp 다.
+const BANNER_DP := 50.0
+
+## 화면 하단에서 조작을 받지 않는 높이(게임 유닛). **실행 시 계산한다.**
+##
+## `stretch/aspect = keep` 라 세로가 긴 기기에서는 아래에 여백(레터박스)이 생기고,
+## 배너는 그 여백 안에 뜬다 — 이때는 플레이 영역을 깎을 필요가 **전혀 없다**(0).
+## 여백이 배너보다 작은 기기(16:9 등)에서만 모자란 만큼 비운다.
+## ⚠️ 상수로 박아 두면 세로가 긴 기기에서 멀쩡한 플레이 영역을 괜히 깎는다.
+var _bottom_reserve: float = 0.0
+
+
+## 기기의 아래 여백을 재서 배너와 겹치는 만큼만 조작 영역에서 뺀다.
+func _compute_bottom_reserve() -> void:
+	_bottom_reserve = 0.0
+	var win := Vector2(DisplayServer.window_get_size())
+	if win.x <= 0.0 or win.y <= 0.0 or _screen_size.x <= 0.0:
+		return
+	var scale: float = win.x / _screen_size.x          # 게임유닛 → 물리픽셀
+	var bar_px: float = (win.y - _screen_size.y * scale) * 0.5   # 아래 여백(물리픽셀)
+	var dpi: float = float(DisplayServer.screen_get_dpi())
+	if dpi <= 0.0:
+		dpi = 160.0
+	var banner_px: float = BANNER_DP * dpi / 160.0
+	if banner_px > bar_px:
+		_bottom_reserve = (banner_px - bar_px) / scale
 
 var weapon_type: WeaponType = WeaponType.SINGLE
 ## 시작 화력. 1은 단발이라 화면을 못 덮는다. 2(2줄기)로 시작해 첫 순간부터 시원하게 터진다.
@@ -80,6 +101,7 @@ func _ready() -> void:
 	# 세로가 긴 기기(예: 1080x2316 = 1:2.14)에서는 화면의 62% 지점 — 거의 한가운데에 떠 있었다.
 	# 부활 경로(Game._respawn_player)가 쓰는 0.75 와 같은 비율로 맞춘다.
 	global_position = Vector2(_screen_size.x * 0.5, _screen_size.y * 0.75)
+	_compute_bottom_reserve()
 	_apply_skin()
 	# ⚠️ 보상 버프는 여기서 읽으면 안 된다. 자식(Player)의 _ready 는 부모(Game)의 _ready 보다
 	#    **먼저** 실행되므로, 이 시점의 GameManager.reward_* 는 아직 이전 판의 값이다.
@@ -274,7 +296,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag and _is_touching:
 		_target_pos = event.position + _touch_offset
 		# 손가락이 배너 자리까지 내려가도 기체는 그 위에 머문다.
-		_target_pos.y = minf(_target_pos.y, _screen_size.y - 30.0 - BOTTOM_RESERVE)
+		_target_pos.y = minf(_target_pos.y, _screen_size.y - 30.0 - _bottom_reserve)
 
 
 func _apply_movement(delta: float) -> void:
@@ -312,9 +334,9 @@ func _apply_movement(delta: float) -> void:
 	# Clamp to screen
 	var margin := 30.0
 	global_position.x = clamp(global_position.x, margin, _screen_size.x - margin)
-	# 아래쪽은 배너 자리를 비워 둔다(BOTTOM_RESERVE 주석 참조).
+	# 아래쪽은 배너와 겹치는 만큼만 비운다(_compute_bottom_reserve 참조).
 	global_position.y = clamp(global_position.y, margin,
-		_screen_size.y - margin - BOTTOM_RESERVE)
+		_screen_size.y - margin - _bottom_reserve)
 
 
 func _handle_fire() -> void:

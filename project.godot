@@ -37,7 +37,12 @@ DifficultyDirector="*res://scripts/DifficultyDirector.gd"
 window/size/viewport_width=720
 window/size/viewport_height=1280
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+# ⚠️ **expand 가 아니라 keep 이다.** expand 는 폭만 720 으로 고정하고 높이를 기기 비율만큼
+# 늘려서, 세로가 긴 기기일수록 플레이 영역이 넓어지고 **난이도가 기기마다 달라졌다**
+# (9:16 → 720x1280, 실기기 1:2.14 → 720x1544).
+# keep 은 720x1280 비율을 모든 기기에서 그대로 유지하고 남는 부분을 여백으로 둔다.
+# 실기기(1080x2316) 기준 위아래 각 198px 여백이 생기고, 그 아래 여백에 배너(150px)가 들어간다.
+window/stretch/aspect="keep"
 window/handheld/orientation=1
 
 [editor_plugins]

@@ -26,7 +26,22 @@
 - **가장 안정적인 export 방법 = Godot 에디터 GUI** (`Project → Export... → Android (Debug) → Export Project...`).
 - CLI export를 쓸 땐 반드시 백그라운드(`&`) + 타임아웃 + 로그 확인(`tail`)로 진행 상황을 감시하라.
 
-### ⚠️ 함정 3 — 화면 크기를 하드코딩하지 마라
+### ⚠️ 함정 3 — 화면 크기를 하드코딩하지 마라 (그리고 비율은 고정이다)
+
+⚠️ **`stretch/aspect` 는 `keep` 이다. `expand` 로 되돌리지 마라.**
+`expand` 는 폭만 720 으로 고정하고 **높이를 기기 비율만큼 늘려서**, 세로가 긴 기기일수록
+플레이 영역이 넓어지고 **난이도가 기기마다 달라졌다**(9:16 → 720x1280, 1:2.14 → 720x1544).
+`keep` 은 720x1280 을 모든 기기에서 그대로 유지하고 남는 부분을 여백으로 둔다.
+- 실기기(1080x2316): 배율 1.5, 렌더 1080x1920, **위아래 각 198px 여백**
+- 그 아래 여백에 배너(50dp = 150px)가 들어간다 → **플레이 영역을 전혀 침범하지 않는다**
+- `GameManager.screen_speed_scale()` 은 이제 항상 1.0 이다(뷰포트 높이가 늘 1280).
+  남겨 두지만 사실상 무동작이다.
+
+⚠️ 하단 예약(`Player._compute_bottom_reserve`)은 **실행 시 계산**한다.
+여백이 배너보다 크면 0(깎지 않음), 작은 기기(16:9 등)에서만 모자란 만큼 비운다.
+상수로 박으면 세로가 긴 기기에서 멀쩡한 플레이 영역을 괜히 깎는다.
+
+
 - 절대 `720`/`1280` 상수로 스폰·이동·UI 범위를 정하지 마라.
 - 항상 `get_viewport_rect().size` 로 동적 획득 (`Player.gd`, `EnemySpawner.gd`, `Joystick.gd` 가 이 규칙을 따름).
 - `expand` 모드라 기기마다 가로세로가 달라도 정상 동작해야 한다.
@@ -141,7 +156,7 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 ### 화면 방향/맞춤 설정 변경
 `project.godot`의 `[display]`:
 - `window/handheld/orientation` = `0`(가로) / `1`(세로) / ...
-- `window/stretch/mode` = `"canvas_items"`, `window/stretch/aspect` = `"expand"` (여백·왜곡 없이 꽉 채움)
+- `window/stretch/mode` = `"canvas_items"`, `window/stretch/aspect` = **`"keep"`**
 - 변경 후 Godot export 필수(함정 1).
 
 ### 사운드/SFX/BGM
