@@ -4,6 +4,14 @@ extends Area2D
 @export var speed: float = 800.0
 @export var damage: int = 1
 @export var lifetime: float = 2.5
+## 플레이어 탄이 날아갈 수 있는 최대 거리(0 = 무제한).
+##
+## ⚠️ 예전에는 무제한이었다. 수명 2.5초 x 속도 800 = 2420 유닛으로 **화면 높이(1544)보다 길어서
+##    탄 줄기가 항상 화면 꼭대기까지 닿았다.** 그래서 적이 나오자마자 위에서 죽고,
+##    화면 아래 절반이 통째로 비었다(실기기에서 확인).
+## ⚠️ 사거리를 제한하면 **위로 붙어 있는 것이 손해가 된다** — 사거리 밖으로 적이 흘러
+##    아래로 지나가 버리기 때문이다. 하드 클램프로 이동을 막지 않고도 자리를 잡게 만든다.
+@export var max_travel: float = 0.0
 
 var direction: Vector2 = Vector2.UP
 var is_player_bullet: bool = true
@@ -20,6 +28,7 @@ var _consumed: bool = false  # 충돌 후 중복 처리 방지
 
 ## 플레이어 탄 색. Player 가 스폰할 때 기체 스킨 색으로 덮어쓴다.
 var skin_color: Color = Color(0.3, 0.9, 1.0)
+var _traveled: float = 0.0
 
 
 func _ready() -> void:
@@ -54,6 +63,11 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	global_position += direction * speed * delta
+	if max_travel > 0.0:
+		_traveled += speed * delta
+		if _traveled >= max_travel:
+			queue_free()
+			return
 	# Update trail
 	_trail.add_point(global_position)
 	if _trail.get_point_count() > 4:

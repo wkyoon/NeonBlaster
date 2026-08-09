@@ -34,17 +34,17 @@ const MAX_BONUS_MINUTES := 20
 ## CALM(초반) → INTENSE(목표 시간) → LETHAL(초과 구간, 확실히 죽는다)
 ## ⚠️ CALM/INTENSE 는 예전 EASY/NORMAL 실측값이다(사망률 0% / 20%, 10게임·오차 0.15).
 const CALM := {
-	"spawn_interval": 0.65, "enemy_hp": 0.35, "enemy_speed": 0.68,
+	"spawn_interval": 0.98, "enemy_hp": 0.24, "enemy_speed": 0.68,
 	"wave_duration": 1.25, "bullet_speed": 0.55,
 }
 const INTENSE := {
-	"spawn_interval": 0.34, "enemy_hp": 0.45, "enemy_speed": 0.75,
+	"spawn_interval": 0.52, "enemy_hp": 0.32, "enemy_speed": 0.75,
 	"wave_duration": 1.0, "bullet_speed": 0.65,
 }
 ## 목표 시간을 넘겼을 때 도달하는 지점. 여기까지 오면 버티기 어렵다 —
 ## 판에 끝을 보장하는 장치라서 의도적으로 가혹하게 잡는다.
 const LETHAL := {
-	"spawn_interval": 0.18, "enemy_hp": 0.60, "enemy_speed": 1.05,
+	"spawn_interval": 0.28, "enemy_hp": 0.44, "enemy_speed": 1.05,
 	"wave_duration": 0.7, "bullet_speed": 0.95,
 }
 

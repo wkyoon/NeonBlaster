@@ -159,7 +159,10 @@ func _create_word_label() -> void:
 ## 도감이 동기가 된다 — 조용히 채워지면 모으는 재미가 생기지 않는다.
 func _show_new_badge(total: int, goal: int) -> void:
 	var badge := Label.new()
-	badge.text = "★ NEW!  %d / %d" % [total, goal]
+	# ⚠️ 숫자는 넣지 않는다. 리빌이 1.9초라 "NEW 47/300" 은 읽히기 전에 사라졌다 —
+	#    수집 개수는 HUD 상단에 **상시로** 있다(HUD._create_collect_label).
+	#    여기서는 "처음 본 단어다" 라는 사실만 알린다.
+	badge.text = "★ NEW!"
 	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	badge.add_theme_font_size_override("font_size", 30)
 	badge.add_theme_color_override("font_color", Color(1.0, 0.9, 0.35))

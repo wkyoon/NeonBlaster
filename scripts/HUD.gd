@@ -14,6 +14,7 @@ const BADGE_RADIUS := 11.0
 const BADGE_STEP := 30.0
 
 var _badge_strip: Node2D = null
+var _collect_label: Label = null
 var _word_slots: WordSlots
 var _word_tween: Tween
 
@@ -32,6 +33,7 @@ func _ready() -> void:
 	_on_lives_changed(GameManager.lives)
 	_create_word_slots()
 	_create_badge_strip()
+	_create_collect_label()
 	# 완성 리빌이 슬롯과 **같은 자리**에 뜨므로, 리빌 동안에는 슬롯을 감춘다.
 	# 그래야 "채워지던 글자가 그대로 커진다"로 보인다.
 	WordManager.word_completed.connect(func(_w): _set_slots_visible(false))
@@ -50,28 +52,32 @@ func _create_audio_toggles() -> void:
 	var container := HBoxContainer.new()
 	container.name = "AudioToggles"
 	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	container.position = Vector2(-270, 10)
+	# ⚠️ 실기기(1080 폭, 480dpi) 기준으로 잰 값이다. 뷰포트 720 → 1.5배 확대되고
+	#    1 물리픽셀 = 0.356dp 이므로, 예전 56x46 은 **30x25 dp** 였다 —
+	#    Android 최소 터치 타깃(48x48 dp)의 절반이라 실제로 누르기 어려웠다.
+	#    96x88 = 51x47 dp 로 키운다.
+	container.position = Vector2(-316, 10)
 	container.add_theme_constant_override("separation", 6)
 	$UI.add_child(container)
 
 	_sfx_btn = Button.new()
 	_sfx_btn.focus_mode = Control.FOCUS_NONE
-	_sfx_btn.custom_minimum_size = Vector2(56, 46)
-	_sfx_btn.add_theme_font_size_override("font_size", 22)
+	_sfx_btn.custom_minimum_size = Vector2(96, 88)
+	_sfx_btn.add_theme_font_size_override("font_size", 34)
 	_sfx_btn.pressed.connect(_on_sfx_toggle)
 	container.add_child(_sfx_btn)
 
 	_music_btn = Button.new()
 	_music_btn.focus_mode = Control.FOCUS_NONE
-	_music_btn.custom_minimum_size = Vector2(56, 46)
-	_music_btn.add_theme_font_size_override("font_size", 22)
+	_music_btn.custom_minimum_size = Vector2(96, 88)
+	_music_btn.add_theme_font_size_override("font_size", 34)
 	_music_btn.pressed.connect(_on_music_toggle)
 	container.add_child(_music_btn)
 
 	_tts_btn = Button.new()
 	_tts_btn.focus_mode = Control.FOCUS_NONE
-	_tts_btn.custom_minimum_size = Vector2(56, 46)
-	_tts_btn.add_theme_font_size_override("font_size", 22)
+	_tts_btn.custom_minimum_size = Vector2(96, 88)
+	_tts_btn.add_theme_font_size_override("font_size", 34)
 	_tts_btn.pressed.connect(_on_tts_toggle)
 	container.add_child(_tts_btn)
 
@@ -120,9 +126,9 @@ func _create_auto_play_indicator() -> void:
 	_auto_label.add_theme_color_override("font_outline_color", Color(0, 0.3, 0.1))
 	_auto_label.add_theme_constant_override("outline_size", 6)
 	_auto_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	# ⚠️ y=10 은 WAVE 라벨(x 312~446, y 24~56)과 86x17px 겹쳤다(실측).
-	#    목숨 표시(y 74~100) 아래로 내린다.
-	_auto_label.position.y = 108
+	# ⚠️ 상단은 이미 빽빽하다. y=10 은 WAVE 와, y=108 은 훈장 띠(y 115~154)와 겹쳤다(둘 다 실측).
+	#    훈장 띠 아래, 단어(y 422)보다 훨씬 위인 자리로 내린다.
+	_auto_label.position.y = 162
 	_auto_label.visible = GameManager.auto_play
 	$UI.add_child(_auto_label)
 
@@ -177,6 +183,37 @@ func _on_combo_level_up(level: int, _multiplier: float) -> void:
 
 
 # ---------------- Word Display ----------------
+
+## 수집 진행을 **상시** 보여준다.
+## ⚠️ 예전에는 새 단어를 딸 때만 "NEW 1/300" 배지가 잠깐 떴다 사라졌다 —
+##    1.9초짜리 리빌 안에서 지나가서 읽을 수가 없었다.
+##    몇 개를 모았고 목표가 몇 개인지는 **언제든 보여야** 목표로 작동한다.
+func _create_collect_label() -> void:
+	_collect_label = Label.new()
+	_collect_label.name = "CollectLabel"
+	_collect_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# 훈장 띠와 같은 줄. 훈장은 최대 x 445 까지 늘어난다.
+	# ⚠️ 일시정지 버튼(x 610~706, y 106~194)은 **다른 CanvasLayer(UI)** 에 있다 —
+	#    HUD/UI 만 훑는 겹침 검사로는 안 잡힌다. 실기기에서 글자가 버튼에 깔려서야 드러났다.
+	#    그래서 수집 라벨은 그 왼쪽(x 455~600)에 둔다.
+	_collect_label.position = Vector2(455, 112)
+	_collect_label.size = Vector2(145, 40)
+	_collect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_collect_label.add_theme_font_size_override("font_size", 26)
+	_collect_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	_collect_label.add_theme_color_override("font_outline_color", Color(0.2, 0.12, 0.0))
+	_collect_label.add_theme_constant_override("outline_size", 6)
+	$UI.add_child(_collect_label)
+	WordManager.word_collected.connect(func(_w, _g, _t): _refresh_collect())
+	_refresh_collect()
+
+
+func _refresh_collect() -> void:
+	if _collect_label == null:
+		return
+	var p := WordManager.get_collection_progress()
+	_collect_label.text = "📖 %d / %d" % [p.x, p.y]
+
 
 ## 딴 훈장을 플레이 중에도 보여준다. 모은 걸 자랑할 데가 있어야 한다.
 ##

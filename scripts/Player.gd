@@ -24,6 +24,13 @@ enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 ## 손가락과 기체 사이의 최소 세로 간격(px). 이보다 가까이 잡아도 기체는 이만큼 위에 뜬다.
 ## 130~150 이면 기체와 바로 앞 탄이 손가락에 가리지 않고 함께 보인다.
 @export var touch_lift: float = 140.0
+## 플레이어 탄 사거리(화면 높이 대비). 이 값이 곧 **교전이 벌어지는 띠의 높이**다.
+## 무제한이면 탄이 꼭대기까지 닿아 적이 화면 위에서만 죽고 아래가 빈다.
+const BULLET_RANGE_RATIO := 0.60
+## 손가락에서 기체까지 허용되는 **추가** 세로 간격과 좌우 간격.
+## 이 상한이 없으면 멀리서 잡은 간격이 그대로 유지돼 기체가 화면 위에 갇힌다.
+const MAX_GRAB_LIFT := 110.0
+const MAX_GRAB_SIDE := 130.0
 
 var weapon_type: WeaponType = WeaponType.SINGLE
 ## 시작 화력. 1은 단발이라 화면을 못 덮는다. 2(2줄기)로 시작해 첫 순간부터 시원하게 터진다.
@@ -249,7 +256,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			# 기체는 43x36px — 손가락이 기체보다 2배 이상 커서 자기 위치도, 코앞의 탄도 안 보인다.
 			# 아래에서 잡았을 때만 보정하고(위에서 잡으면 그 간격을 존중), 이동은 기존 추종
 			# 로직이 부드럽게 처리하므로 튀지 않는다.
-			_touch_offset.y = minf(_touch_offset.y, -touch_lift)
+			# ⚠️ **상한도 걸어야 한다.** 예전에는 minf 로 최소 간격만 강제해서,
+			#    화면 아래에서 기체를 잡으면 그 큰 간격(수백 px)이 드래그 내내 유지됐다.
+			#    손가락은 화면 아래 끝까지밖에 못 가므로 **기체가 계속 화면 위쪽에 붙어 있게 된다** —
+			#    실기기에서 손을 안 대도 기체가 31% 지점에 떠 있던 원인이다.
+			#    좌우도 마찬가지로 묶는다. 멀리서 잡아도 기체가 손가락 근처로 따라온다.
+			_touch_offset.y = clampf(_touch_offset.y, -(touch_lift + MAX_GRAB_LIFT), -touch_lift)
+			_touch_offset.x = clampf(_touch_offset.x, -MAX_GRAB_SIDE, MAX_GRAB_SIDE)
 			_target_pos = global_position
 		elif not event.pressed:
 			_is_touching = false
@@ -380,6 +393,8 @@ func _spawn_bullet(pos: Vector2, dir: Vector2) -> void:
 	bullet.skin_color = _skin_bullet_color
 	# 보상 화력은 탄을 조금 굵게 만든다. 개수를 늘리는 대신 **같은 탄이 세 보이게** 한다.
 	bullet.scale = Vector2.ONE * (1.0 + GameManager.reward_power * 0.6)
+	# 사거리를 화면 높이에 비례시킨다 — 기기가 달라도 "화면의 몇 %까지 닿는가"가 같아야 한다.
+	bullet.max_travel = _screen_size.y * BULLET_RANGE_RATIO
 	# 적과 같은 화면 높이 보정. 세로가 긴 기기에서 총알이 화면을 가로지르는 시간이
 	# 늘어나면 사거리 체감과 교전 리듬이 달라진다.
 	bullet.speed *= GameManager.screen_speed_scale()
