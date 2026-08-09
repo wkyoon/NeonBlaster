@@ -651,7 +651,23 @@ Godot 테마 스플래시(`splash_screen/icon`)가 겹친 것이다. 후자의 �
 **남은 것(직접)**: Play Console `수익 창출 → 인앱 상품` 에 `StoreItems.ITEMS` 의 ID 를 그대로 등록.
 결제 테스트는 내부 테스트 트랙에 업로드된 앱 + 라이선스 테스터 계정에서만 된다.
 
+### 뒤로 가기 (안드로이드)
+
+⚠️ `application/config/quit_on_go_back = false` 여야 한다. 기본값 true 면 뒤로 가기가
+**곧바로 앱 종료**다 — 플레이 중에 눌러도 그냥 꺼진다.
+`SceneManager._notification(NOTIFICATION_WM_GO_BACK_REQUEST)` 가 받아서:
+게임·하위 화면 → 메뉴로, 메뉴 → 앱 종료. 게임에서 나갈 때 배너를 내리고 pause 를 푼다.
+데스크톱에서는 ESC 가 같은 경로를 탄다(`_unhandled_input`).
+⚠️ iOS 에는 하드웨어 뒤로 가기가 없다. 같은 동작을 주려면 화면 안 버튼이 필요하다.
+
 ### 광고 — 하단 배너 하나만
+
+⚠️ **`addons/AdmobPlugin/android_export.cfg` 가 없으면 앱이 시작하자마자 죽는다.**
+AdMob SDK 의 `MobileAdsInitProvider` 가 프로세스 시작 시 **AndroidManifest** 에서 앱 ID 를 읽는데,
+코드에서 `Admob` 노드에 ID 를 넣는 것은 그보다 한참 뒤라 늦다.
+실제 크래시: `java.lang.IllegalStateException: Invalid application ID`.
+이 파일이 export 시 매니페스트로 주입된다.
+
 
 **플레이 중 화면 하단에 AdMob 배너 하나.** 전면·보상형은 없다(노출 최소).
 메뉴·도감 등 다른 화면에서는 내린다(`Game` 이 시작 시 `show_banner`, 종료·이탈 시 `hide_banner`).

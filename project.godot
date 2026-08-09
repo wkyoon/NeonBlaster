@@ -18,6 +18,8 @@ boot_splash/bg_color=Color(0.05, 0.03, 0.11, 1)
 boot_splash/stretch_mode=0
 boot_splash/image="res://assets/icons/icon_full.png"
 config/icon="res://assets/icons/icon.png"
+; ⚠️ 안드로이드 뒤로 가기로 **앱이 꺼지지 않게** 한다. SceneManager 가 받아서 메뉴로 돌아간다.
+config/quit_on_go_back=false
 
 [autoload]
 

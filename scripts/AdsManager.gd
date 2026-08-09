@@ -43,12 +43,17 @@ func _ready() -> void:
 	_is_stub = false
 	_admob.set("android_real_application_id", ADMOB_APP_ID)
 	_admob.set("android_real_banner_id", BANNER_ID)
+	# ⚠️ 위치와 캐시는 **add_child 전에** 정해야 한다.
+	#    add_child 시점에 Admob._ready 가 돌면서 캐시를 만들고 자동 설정이 시작되는데,
+	#    banner_position 기본값이 **TOP** 이라 그 뒤에 바꾸면 이미 만들어진 배너가 위에 남는다
+	#    (실기기에서 배너가 위·아래 두 개 떴다).
+	_admob.set("banner_position", AD_POSITION_BOTTOM)
+	# 배너는 한 개만 있으면 된다. 캐시가 여러 개면 갱신될 때마다 겹쳐 보인다.
+	_admob.set("max_banner_ad_cache", 1)
 	add_child(_admob)
 	# ⚠️ 신호 인자 개수가 제각각(AdInfo, ResponseInfo …)이라 그대로 연결하면 터진다.
 	if _admob.has_signal("banner_ad_loaded"):
 		_admob.connect("banner_ad_loaded", func(_a = null, _b = null): _on_banner_loaded())
-	if _admob.has_method("set_banner_position"):
-		_admob.set_banner_position(AD_POSITION_BOTTOM)
 	if _admob.has_method("initialize"):
 		_admob.initialize()
 	print("[AdsManager] AdMob 초기화 — 하단 배너만 사용.")
@@ -68,7 +73,16 @@ func show_banner() -> void:
 	if _is_stub or _admob == null:
 		return
 	if not _banner_ready and _admob.has_method("load_banner_ad"):
-		_admob.load_banner_ad()
+		# ⚠️ 위치를 **요청에 직접 실어** 보낸다. 노드 속성(banner_position)만 바꾸면
+		#    자동 설정 경로에서 기본값(TOP)으로 배너가 먼저 뜰 수 있다 —
+		#    실기기에서 위·아래 두 개가 동시에 떴다.
+		if _admob.has_method("create_banner_ad_request"):
+			var req = _admob.create_banner_ad_request()
+			if req != null and req.has_method("set_ad_position"):
+				req.set_ad_position(AD_POSITION_BOTTOM)
+			_admob.load_banner_ad(req)
+		else:
+			_admob.load_banner_ad()
 		return
 	if _admob.has_method("show_banner_ad"):
 		_admob.show_banner_ad()
