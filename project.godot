@@ -62,4 +62,4 @@ environment/defaults/default_clear_color=Color(0.04, 0.03, 0.09, 1)
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg")
+enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/AdmobPlugin/plugin.cfg")

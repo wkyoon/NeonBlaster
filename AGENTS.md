@@ -501,6 +501,22 @@ AAR 과 gradle 의존성(`com.android.billingclient:billing-ktx:9.1.0`)을 자�
 
 ### AdMob (배너 없음)
 
+**플러그인은 이미 설치돼 있다** — `addons/AdmobPlugin/` + `addons/GMPShared/` (AdmobPlugin 7.0, 커밋됨).
+`project.godot` 의 `[editor_plugins]` 에서 활성화도 되어 있다. export 체크박스는 없다(자동 주입).
+
+⚠️ **`Admob` / `LoadAdRequest` 를 식별자로 쓰지 마라.** 애드온을 지운 환경에서 AdsManager 가
+컴파일에 실패해 오토로드가 통째로 죽는다. 경로(`ADMOB_SCRIPT`)로 로드해서 쓴다.
+⚠️ stub 판정은 **안드로이드 싱글톤(`AdmobPlugin`) 유무**로 한다. 애드온 존재만 보면
+데스크톱에서 광고 호출이 오류 로그만 남기고 조용히 무시된다.
+⚠️ 광고 단위 ID 는 `Admob` 노드의 `@export` 속성으로 넘긴다
+(`android_real_application_id` / `android_real_interstitial_id` / `android_real_rewarded_id`).
+⚠️ 신호 인자 개수가 제각각이라(`AdInfo`, `ResponseInfo`, `RewardItem` …) 그대로 연결하면 터진다 —
+`_bind()` 가 인자를 버리는 래퍼로 감싼다.
+
+**남은 것 (직접)**: `ADMOB_APP_ID` / `INTERSTITIAL_ID` / `REWARDED_ID` 를 실제 ID 로 교체.
+지금은 Google 공식 **테스트 ID** 라 그대로 두면 수익이 나지 않는다.
+
+
 ⚠️ **배너 광고는 쓰지 않는다. 다시 넣지 마라.**
 조작이 드래그 추적이라 손가락이 화면 하단을 지나는데, 배너는 Godot 뷰 위에 얹히는
 **네이티브 뷰라 그 터치를 가로챈다.** 기하로 확인: 기체가 화면 84% 아래로만 내려가도
