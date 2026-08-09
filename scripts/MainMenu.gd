@@ -118,6 +118,8 @@ func _create_bottom_buttons() -> void:
 	# Row container for Scores + Dictionary + Story buttons
 	var container := HBoxContainer.new()
 	container.name = "BottomButtons"
+	# ⚠️ 버튼 4개다. 205px 로 두면 856px 이 되어 화면(720)을 넘쳐 양끝이 잘린다(실측).
+	#    164 x 4 + 간격 12 x 3 = 692 로 맞춘다. 버튼을 더 늘리려면 폭을 다시 계산할 것.
 	container.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	container.position.y = -145
 	_center_horizontally(container)
@@ -128,7 +130,7 @@ func _create_bottom_buttons() -> void:
 	var scores_btn := Button.new()
 	scores_btn.name = "ScoresButton"
 	scores_btn.text = "★ SCORES"
-	scores_btn.custom_minimum_size = Vector2(205, 50)
+	scores_btn.custom_minimum_size = Vector2(164, 50)
 	scores_btn.add_theme_font_size_override("font_size", 18)
 	scores_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.25))
 	scores_btn.focus_mode = Control.FOCUS_NONE
@@ -145,8 +147,8 @@ func _create_bottom_buttons() -> void:
 		dict_btn.text = "📖 %d/%d ★" % [_cp.x, _cp.y]
 	else:
 		dict_btn.text = "📖 %s -%d" % [_goal["name_en"], _goal["left"]]
-	dict_btn.custom_minimum_size = Vector2(205, 50)
-	dict_btn.add_theme_font_size_override("font_size", 18)
+	dict_btn.custom_minimum_size = Vector2(164, 50)
+	dict_btn.add_theme_font_size_override("font_size", 15)
 	dict_btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
 	dict_btn.focus_mode = Control.FOCUS_NONE
 	dict_btn.pressed.connect(_on_dictionary)
@@ -155,7 +157,7 @@ func _create_bottom_buttons() -> void:
 	var story_btn := Button.new()
 	story_btn.name = "StoryButton"
 	story_btn.text = "✦ STORY"
-	story_btn.custom_minimum_size = Vector2(205, 50)
+	story_btn.custom_minimum_size = Vector2(164, 50)
 	story_btn.add_theme_font_size_override("font_size", 18)
 	story_btn.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
 	story_btn.focus_mode = Control.FOCUS_NONE
@@ -165,7 +167,7 @@ func _create_bottom_buttons() -> void:
 	var store_btn := Button.new()
 	store_btn.name = "StoreButton"
 	store_btn.text = "🛒 STORE"
-	store_btn.custom_minimum_size = Vector2(205, 50)
+	store_btn.custom_minimum_size = Vector2(164, 50)
 	store_btn.add_theme_font_size_override("font_size", 18)
 	store_btn.add_theme_color_override("font_color", Color(0.6, 1.0, 0.8))
 	store_btn.focus_mode = Control.FOCUS_NONE
@@ -177,7 +179,12 @@ func _create_bottom_buttons() -> void:
 
 
 ## SFX 후보 비교 화면 진입 버튼 (개발용). 우측 상단 구석에 작게 배치.
+## ⚠️ 개발 도구다. **디버그 빌드에서만** 보인다.
+## 지우지는 않는다 — 효과음 비교(SfxLab)와 자동 플레이(벤치마크)는 개발에 계속 쓴다.
+## `OS.is_debug_build()` 는 에디터·디버그 export 에서 true, 릴리스 export 에서 false 다.
 func _create_sfx_lab_button() -> void:
+	if not OS.is_debug_build():
+		return
 	var btn := Button.new()
 	btn.name = "SfxLabButton"
 	btn.text = "🔊 SFX"
@@ -654,7 +661,11 @@ func _on_story() -> void:
 	SceneManager.goto_story()
 
 
+## ⚠️ 개발 도구다. 디버그 빌드에서만 보인다(_create_sfx_lab_button 주석 참조).
+## 벤치마크는 이 버튼이 아니라 `GameManager.auto_play` 를 직접 켜므로 영향이 없다.
 func _create_auto_play_toggle() -> void:
+	if not OS.is_debug_build():
+		return
 	var btn := Button.new()
 	btn.name = "AutoPlayButton"
 	btn.text = "▶ AUTO: OFF"

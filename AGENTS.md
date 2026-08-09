@@ -464,6 +464,19 @@ godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
 - 속도 튜닝: `Player.gd`의 `@export var max_speed`(기본 700), `acceleration`, `friction`.
 - 가상 조이스틱(`Joystick.gd`)은 비활성화됨(`set_process_input(false)`) — 노드는 호환성 유지.
 
+### 개발 도구는 릴리스에 넣지 않는다
+
+메뉴의 `🔊 SFX`(효과음 비교)와 `▶ AUTO`(자동 플레이)는 **`OS.is_debug_build()` 로 가린다.**
+지우지는 않는다 — 둘 다 개발에 계속 쓴다. 에디터·디버그 export 에서는 보이고 릴리스에서는 사라진다.
+벤치마크는 이 버튼이 아니라 `GameManager.auto_play` 를 직접 켜므로 영향이 없다.
+
+릴리스(AAB) 프리셋의 `exclude_filter` 로 개발용 씬·스크립트도 뺀다
+(Benchmark / SfxLab / SfxLibrary / WordSim / WordOrderCheck).
+⚠️ **디버그 프리셋에서는 빼지 마라** — 실기기에서 벤치마크를 돌릴 수 없게 된다.
+
+⚠️ 메뉴 하단 버튼은 **4개까지가 폭 한계**다. 205px 로 두면 856px 이 되어 화면(720)을 넘쳐
+양끝이 잘린다(실측). 현재 164 x 4 + 간격 12 x 3 = 692. 버튼을 더 늘리려면 폭을 다시 계산할 것.
+
 ### 학습 통계
 
 단어별 **노출 횟수와 마지막 본 시점**(`WordManager._word_stats`)을 도감 파일에 함께 저장한다.
