@@ -415,6 +415,12 @@ func _create_enemy_panel(data: Dictionary, enemy_key: String) -> PanelContainer:
 			StoryArt.animate_rotation(enemy, 10.0)     # 느리게 굴러온다
 		"SHIELDER":
 			StoryArt.animate_pulse(enemy, 0.96, 1.06, 2.0)  # 재생하는 보호막
+		"SWARM":
+			StoryArt.animate_float(enemy, 8.0, 1.4)         # 무리째 일렁인다
+		"TURRET":
+			StoryArt.animate_pulse(enemy, 0.97, 1.03, 0.9)  # 발사 반동
+		"PHANTOM":
+			StoryArt.animate_float(enemy, 6.0, 2.4)         # 느리게 떠다닌다
 
 	# --- 텍스트 정보 (우측) ---
 	var text_vbox := VBoxContainer.new()

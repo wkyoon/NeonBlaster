@@ -10,7 +10,8 @@ extends SceneTree
 ## ⚠️ `--fixed-fps 60` 없이 돌리면 재현되지 않는다(AGENTS.md 측정 함정 1).
 ## ⚠️ 도감 수집이 오염되지 않게 저장을 끄고 학습 상태를 비운다(측정 함정 0).
 
-const TYPE_NAMES := ["CHASER", "SHOOTER", "TANK", "DASHER", "BOMBER", "SPLITTER", "SHIELDER"]
+const TYPE_NAMES := ["CHASER", "SHOOTER", "TANK", "DASHER", "BOMBER", "SPLITTER", "SHIELDER",
+	"SWARM", "TURRET", "PHANTOM"]
 
 ## DASHER 지그재그 한 주기. ⚠️ `Enemy._behave` 의 `_zigzag_phase += delta * N` 과 맞출 것 —
 ## 게임 쪽만 바꾸면 옛 기준으로 재게 되어 수치가 통째로 무의미해진다(실제로 겪었다).
@@ -115,6 +116,7 @@ func _scan(delta: float) -> void:
 				"type": int(e.enemy_type), "born": _elapsed, "last": _elapsed,
 				"y": e.global_position.y, "is_child": is_child,
 				"bomb_at": -1.0, "hp_dropped": false, "regen": false,
+				"parked": false, "phased": false,
 				"max_hp": int(e.get("health")),
 			}
 			if not is_child:
@@ -128,6 +130,11 @@ func _scan(delta: float) -> void:
 		# BOMBER: 점화 시각을 기록해 두면 실제로 터졌는지(도화선을 다 태웠는지) 알 수 있다.
 		if rec["bomb_at"] < 0.0 and bool(e.get("_bomb_triggered")):
 			rec["bomb_at"] = _elapsed
+
+		if bool(e.get("_turret_parked")):
+			rec["parked"] = true
+		if bool(e.get("_phased")):
+			rec["phased"] = true
 
 		# SHIELDER: 체력이 깎였다가 다시 오르면 재생이 실제로 일어난 것이다.
 		var hp := int(e.get("health"))
@@ -177,6 +184,16 @@ func _retire(rec: Dictionary) -> void:
 		"SPLITTER":
 			s["special"] += 1                  # 죽으면 무조건 분열한다
 			s["special_full"] += 1
+		"TURRET":
+			# 멈춰 서서 한 발이라도 쐈는가. 정지 지점까지 못 가면 그냥 느린 적이다.
+			if bool(rec["parked"]):
+				s["special"] += 1
+				s["special_full"] += 1
+		"PHANTOM":
+			# 한 번이라도 흐려졌는가(= 탄이 통과하는 구간을 보여줬는가)
+			if bool(rec["phased"]):
+				s["special"] += 1
+				s["special_full"] += 1
 		"SHIELDER":
 			if bool(rec["regen"]):
 				s["special"] += 1

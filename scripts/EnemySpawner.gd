@@ -72,11 +72,21 @@ func _process(delta: float) -> void:
 func _spawn_enemy() -> void:
 	var enemy: Enemy = _enemy_scene.instantiate()
 	var type: Enemy.EnemyType = _pick_enemy_type()
-	enemy.enemy_type = type
 	# ⚠️ 웨이브 기반 체력 가산에는 상한이 필요하다. 목표가 10분이면 웨이브가 50을 넘어
 	#    체력이 끝없이 불어난다(예전엔 90초 판이라 웨이브 8이 최대였다).
 	#    시간에 따른 난이도 상승은 DifficultyDirector 가 담당한다.
 	var wave := mini(_current_wave, MAX_STAT_WAVE)
+	_apply_stats(enemy, type, wave)
+	# Assign a letter from WordManager (target letter or random decoy)
+	# 타겟 글자가 붙어 나올 확률. 0.3 은 첫 단어 완성이 34.8초까지 늘어져 학습 루프가 느렸다.
+	enemy.letter = WordManager.get_random_letter(0.45)
+	_place_and_register(enemy, type, wave)
+
+
+## 종류별 스탯 + 난이도 배수. ⚠️ 군체는 여러 마리를 만들므로 **한 곳에 모여 있어야** 한다 —
+## 흩어져 있으면 무리의 뒤쪽만 다른 능력치를 갖게 된다.
+func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
+	enemy.enemy_type = type
 
 	match type:
 		Enemy.EnemyType.CHASER:
@@ -114,6 +124,23 @@ func _spawn_enemy() -> void:
 			enemy.move_speed = randf_range(90.0, 130.0)
 			enemy.fire_rate = randf_range(0.6, 1.0)
 			enemy.score_value = 40
+		Enemy.EnemyType.SWARM:
+			# 군체 - 한 마리는 약하다. 여럿이 한 번에 나오는 것이 위협이다.
+			enemy.max_health = 1
+			enemy.move_speed = randf_range(150.0, 190.0)
+			enemy.score_value = 5
+		Enemy.EnemyType.TURRET:
+			# 포탑 - 멈춰 서서 버틴다. 체력이 곧 수명이다.
+			# ⚠️ 정지선까지 살아서 가야 정체성이 발현된다. 체력이 곧 그 조건이다.
+			enemy.max_health = 9 + wave / 2
+			enemy.move_speed = randf_range(140.0, 180.0)
+			enemy.fire_rate = randf_range(0.8, 1.3)
+			enemy.score_value = 45
+		Enemy.EnemyType.PHANTOM:
+			# 환영 - 절반은 무적이라 실효 체력이 두 배다. 표기 체력은 낮게 둔다.
+			enemy.max_health = 2 + wave / 5
+			enemy.move_speed = randf_range(120.0, 160.0)
+			enemy.score_value = 35
 
 	# 난이도 배수 적용 (체력/속도/총알속도)
 	var dm := _get_diff_mult()
@@ -124,12 +151,36 @@ func _spawn_enemy() -> void:
 	enemy.move_speed *= float(dm["enemy_speed"]) * hs
 	enemy.bullet_speed *= float(dm["bullet_speed"]) * hs
 
-	# Assign a letter from WordManager (target letter or random decoy)
-	# 타겟 글자가 붙어 나올 확률. 0.3 은 첫 단어 완성이 34.8초까지 늘어져 학습 루프가 느렸다.
-	enemy.letter = WordManager.get_random_letter(0.45)
 
+func _place_and_register(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 	# Spawn position: top edge, random X
 	enemy.global_position = Vector2(randf_range(60, _screen_size.x - 60), -50)
+	_register(enemy, type)
+
+	# ⚠️ 군체는 **한 마리가 아니라 한 무리**다. 혼자 나오면 그냥 약한 적이라
+	#    다른 종류와 구분되지 않는다. 위 개체를 무리의 중심으로 삼아 나머지를 붙인다.
+	if type == Enemy.EnemyType.SWARM:
+		_spawn_swarm_mates(enemy, wave)
+
+
+## 무리의 나머지를 중심 좌우로 V 대형으로 붙인다.
+func _spawn_swarm_mates(leader: Enemy, wave: int) -> void:
+	var cx: float = leader.global_position.x
+	for i in range(1, Enemy.SWARM_COUNT):
+		var side := 1.0 if i % 2 == 1 else -1.0
+		var step := float((i + 1) / 2)
+		var mate: Enemy = _enemy_scene.instantiate()
+		mate.enemy_type = Enemy.EnemyType.SWARM
+		_apply_stats(mate, Enemy.EnemyType.SWARM, wave)
+		mate.letter = WordManager.get_random_letter(0.45)
+		mate.global_position = Vector2(
+			clampf(cx + side * step * 52.0, 40.0, _screen_size.x - 40.0),
+			-50.0 - step * 46.0)
+		_register(mate, Enemy.EnemyType.SWARM)
+
+
+## 화면에 올리고 처치 신호를 잇는다.
+func _register(enemy: Enemy, type: Enemy.EnemyType) -> void:
 	get_tree().current_scene.add_child(enemy)
 	_enemies_alive += 1
 	# Pass enemy_type via lambda so spawner can emit a typed kill signal
@@ -146,12 +197,19 @@ func _pick_enemy_type() -> Enemy.EnemyType:
 
 	# 웨이브 기반 확률 분포 (누적)
 	# 고급 적일수록 뒷부분에 등장, 상한선 존재
-	var tank_chance: float = clampf(0.05 + w * 0.02, 0.05, 0.15)
-	var shooter_chance: float = clampf(0.15 + w * 0.025, 0.15, 0.25)
-	var dasher_chance: float = clampf(0.05 + w * 0.02, 0.05, 0.15)
-	var bomber_chance: float = clampf(0.03 + w * 0.015, 0.03, 0.12)
-	var splitter_chance: float = clampf(0.03 + w * 0.012, 0.03, 0.10)
-	var shielder_chance: float = clampf(0.02 + w * 0.01, 0.02, 0.08)
+	# ⚠️ 상한의 합이 1을 넘으면 뒤쪽 종류가 영영 안 나온다. 10종 기준 합 0.89(나머지 CHASER).
+	var tank_chance: float = clampf(0.04 + w * 0.016, 0.04, 0.12)
+	var shooter_chance: float = clampf(0.12 + w * 0.02, 0.12, 0.20)
+	var dasher_chance: float = clampf(0.04 + w * 0.016, 0.04, 0.12)
+	var bomber_chance: float = clampf(0.03 + w * 0.012, 0.03, 0.10)
+	var splitter_chance: float = clampf(0.02 + w * 0.010, 0.02, 0.08)
+	var shielder_chance: float = clampf(0.02 + w * 0.008, 0.02, 0.07)
+	# ⚠️ 군체는 한 번 뽑히면 SWARM_COUNT 마리가 나온다. 확률을 다른 종류와 같게 두면
+	#    화면이 노란 마름모로 뒤덮인다 — 낮게 잡을 것.
+	#    실측: 확률 0.05 로 뒀더니 **개체 비중이 22.4%** 가 됐다(한 번에 5마리이므로).
+	var swarm_chance: float = clampf(0.008 + w * 0.002, 0.008, 0.022)
+	var turret_chance: float = clampf(0.02 + w * 0.008, 0.02, 0.07)
+	var phantom_chance: float = clampf(0.02 + w * 0.008, 0.02, 0.07)
 
 	var cumulative := 0.0
 	cumulative += tank_chance
@@ -172,6 +230,15 @@ func _pick_enemy_type() -> Enemy.EnemyType:
 	cumulative += shielder_chance
 	if roll < cumulative:
 		return Enemy.EnemyType.SHIELDER
+	cumulative += swarm_chance
+	if roll < cumulative:
+		return Enemy.EnemyType.SWARM
+	cumulative += turret_chance
+	if roll < cumulative:
+		return Enemy.EnemyType.TURRET
+	cumulative += phantom_chance
+	if roll < cumulative:
+		return Enemy.EnemyType.PHANTOM
 	# 나머지는 CHASER (가장 흔한 기본 적)
 	return Enemy.EnemyType.CHASER
 

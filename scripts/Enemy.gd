@@ -5,14 +5,25 @@ extends CharacterBody2D
 
 signal enemy_destroyed(points: int)
 
-enum EnemyType { CHASER, SHOOTER, TANK, DASHER, BOMBER, SPLITTER, SHIELDER }
+enum EnemyType { CHASER, SHOOTER, TANK, DASHER, BOMBER, SPLITTER, SHIELDER, SWARM, TURRET, PHANTOM }
 
 ## SHIELDER 체력 재생 주기. ⚠️ **이 적의 수명보다 짧아야 한다** —
 ##    같거나 길면 대부분 한 번도 재생하지 못하고 죽어 정체성이 사라진다(실측 10%).
-const REGEN_INTERVAL := 0.8
+const REGEN_INTERVAL := 0.6
 ## BOMBER 가 **격추될 때** 뿌리는 탄 수. 접근 자폭(12발)보다 적게 둔다 —
 ## 자폭병이 전체 스폰의 14% 라 격추 폭발까지 12발이면 탄막이 판을 뒤덮는다.
 const BOMB_DEATH_BULLETS := 5
+
+## 포탑이 멈춰 서는 높이(화면 비율). 적은 보통 최상단에서 죽는데, 포탑은 **스스로 멈춰서**
+## 오래 버티는 것이 정체성이다 — 다가가지 않으므로 수명이 체력으로만 정해진다.
+## ⚠️ 실측: 0.18 로 뒀더니 87% 가 도달 전에 죽어 발동률이 13% 였다.
+## 적이 실제로 죽는 높이(중앙 2~10%)보다 **위여야** 멈춰 설 수 있다.
+const TURRET_STOP_RATIO := 0.08
+## 환영의 위상 주기. ⚠️ **수명(0.6~2.7초)보다 짧아야** 한 판에서 깜빡이는 게 보인다.
+const PHANTOM_SOLID := 0.5
+const PHANTOM_FADED := 0.35
+## 군체 한 무리의 마릿수. 스포너가 이 수만큼 한 번에 낸다.
+const SWARM_COUNT := 5
 
 @export var enemy_type: EnemyType = EnemyType.CHASER
 @export var max_health: int = 1
@@ -37,6 +48,10 @@ var _zigzag_phase: float = 0.0        # DASHER 지그재그 위상
 var _bomb_triggered: bool = false     # BOMBER 자폭 시작 여부
 var _regen_timer: float = 0.0         # SHIELDER 체력 재생 타이머
 var _bomb_exploded: bool = false      # BOMBER 탄막을 이미 뿌렸는지(이중 폭발 방지)
+var _turret_parked: bool = false      # TURRET 정지 위치 도달 여부
+var _phase_timer: float = 0.0         # PHANTOM 위상 타이머
+var _phased: bool = false             # PHANTOM 이 지금 흐릿한(무적) 상태인가
+var _swarm_phase: float = 0.0         # SWARM 대형 좌우 흔들림 위상
 var _is_child: bool = false           # SPLITTER 분열된 자식 여부 (자식은 분열 안 함)
 
 @onready var _sprite: Polygon2D = $Sprite
@@ -137,6 +152,21 @@ func _configure_type() -> void:
 			_sprite.color = Color(0.3, 0.5, 1.0)
 			_glow.color = Color(0.3, 0.5, 1.0)
 			_sprite.polygon = _make_square(18)
+		EnemyType.SWARM:
+			# 군체 - 노란 작은 마름모. 여럿이 대형으로 몰려온다
+			_sprite.color = Color(1.0, 0.85, 0.2)
+			_glow.color = Color(1.0, 0.85, 0.2)
+			_sprite.polygon = _make_diamond(12)
+		EnemyType.TURRET:
+			# 포탑 - 짙은 빨강 오각형. 멈춰 서서 쏜다
+			_sprite.color = Color(0.9, 0.15, 0.25)
+			_glow.color = Color(0.9, 0.15, 0.25)
+			_sprite.polygon = _make_pentagon(21)
+		EnemyType.PHANTOM:
+			# 환영 - 창백한 백색 쐐기. 주기적으로 흐려지며 탄이 통과한다
+			_sprite.color = Color(1.0, 0.95, 0.85)
+			_glow.color = Color(1.0, 0.95, 0.85)
+			_sprite.polygon = _make_chevron(20)
 
 
 func _make_triangle(size: float) -> PackedVector2Array:
@@ -188,6 +218,22 @@ func _make_octagon(size: float) -> PackedVector2Array:
 		var angle := TAU * i / 8.0 + PI / 8.0
 		pts.append(Vector2(cos(angle), sin(angle)) * size)
 	return pts
+
+
+func _make_pentagon(size: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 5:
+		var angle := TAU * i / 5.0 - PI / 2.0
+		pts.append(Vector2(cos(angle), sin(angle)) * size)
+	return pts
+
+
+## 아래를 향한 쐐기(V). 다른 어떤 적과도 안 겹치는 실루엣이다.
+func _make_chevron(size: float) -> PackedVector2Array:
+	return PackedVector2Array([
+		Vector2(0, size), Vector2(-size, -size * 0.7), Vector2(-size * 0.45, -size),
+		Vector2(0, -size * 0.25), Vector2(size * 0.45, -size), Vector2(size, -size * 0.7)
+	])
 
 
 func _make_circle(size: float, segments: int = 16) -> PackedVector2Array:
@@ -293,6 +339,38 @@ func _behave(delta: float) -> void:
 			velocity = to_player.normalized() * move_speed * 0.7
 			_sprite.rotation += delta * 1.0
 
+		EnemyType.SWARM:
+			# 군체: 대형을 유지한 채 곧게 내려온다. 좌우로 얕게 흔들려 무리처럼 보인다.
+			# ⚠️ 플레이어를 쫓지 않는다 — 쫓게 하면 대형이 한 점으로 뭉쳐 무리로 안 보인다.
+			_swarm_phase += delta * 3.0
+			velocity = Vector2(sin(_swarm_phase) * 55.0, move_speed)
+			_sprite.rotation += delta * 2.0
+
+		EnemyType.TURRET:
+			# 포탑: 정해진 높이까지 내려와 **멈춘 뒤** 계속 쏜다.
+			# 다가가지 않으므로 수명이 접근 속도가 아니라 체력으로 정해진다 —
+			# 이 게임에서 특수 행동을 확실히 보여줄 수 있는 유일한 방식이다.
+			var stop_y := get_viewport_rect().size.y * TURRET_STOP_RATIO
+			if not _turret_parked and global_position.y >= stop_y:
+				_turret_parked = true
+			velocity = Vector2.ZERO if _turret_parked else Vector2(0, move_speed)
+			_sprite.rotation = to_player.angle() + PI / 2
+			if _turret_parked:
+				_fire_timer -= delta
+				if _fire_timer <= 0:
+					_fire_at_player()
+					_fire_timer = 1.0 / fire_rate
+
+		EnemyType.PHANTOM:
+			# 환영: 주기적으로 흐려지며 **탄이 통과**한다(충돌 자체를 끈다).
+			# 조준이 없는 게임이라 "맞출 타이밍"을 요구할 수 없다 —
+			# 대신 처치에 걸리는 시간이 늘어나 화면에 오래 남는다.
+			velocity = to_player.normalized() * move_speed * 0.8
+			_sprite.rotation = velocity.angle() + PI / 2
+			_phase_timer -= delta
+			if _phase_timer <= 0.0:
+				_set_phased(not _phased)
+
 		EnemyType.SHIELDER:
 			# 느리게 다가오며 체력 자동 재생
 			velocity = to_player.normalized() * move_speed * 0.6
@@ -335,6 +413,18 @@ func _fire_spread() -> void:
 		bullet.speed = bullet_speed * 0.9
 		bullet.is_player_bullet = false
 		get_tree().current_scene.add_child(bullet)
+
+
+## 환영의 위상 전환. ⚠️ 색만 바꾸면 탄을 **먹어 버려서** 플레이어는 왜 안 죽는지 알 수 없다.
+## 충돌 레이어를 꺼서 탄이 그대로 통과하게 해야 "지금은 못 맞힌다" 가 눈에 보인다.
+func _set_phased(on: bool) -> void:
+	_phased = on
+	_phase_timer = PHANTOM_FADED if on else PHANTOM_SOLID
+	set_deferred("collision_layer", 0 if on else 2)
+	if _sprite:
+		_sprite.color.a = 0.25 if on else 1.0
+	if _glow:
+		_glow.energy = 0.3 if on else 1.0
 
 
 ## 재생을 **눈에 보이게** 한다. 숫자만 오르고 화면에 아무 일도 없으면

@@ -105,6 +105,12 @@ static func draw_void_enemy(parent: Node2D, enemy_key: String, scale_factor: flo
 			_draw_void_splitter(node)
 		"SHIELDER":
 			_draw_void_shielder(node)
+		"SWARM":
+			_draw_void_swarm(node)
+		"TURRET":
+			_draw_void_turret(node)
+		"PHANTOM":
+			_draw_void_phantom(node)
 		_:
 			# ⚠️ **CHASER 로 떨어뜨리지 마라.** 예전에는 그랬는데, 그러면 match 에서 빠진 적이
 			#    멀쩡한 삼각형으로 그려져 **빠진 사실 자체가 안 보였다**(적 4종이 그 상태였다).
@@ -210,6 +216,84 @@ static func _draw_void_tank(node: Node2D) -> void:
 		node.add_child(eye)
 
 	_add_light(node, Color(0.8, 0.3, 1.0), 3.0, 3.5)
+
+
+static func _draw_void_swarm(node: Node2D) -> void:
+	# 군체: 작은 노란 마름모 다섯이 V 대형. **한 마리를 그리면 안 된다** —
+	# 이 적의 정체성은 개체가 아니라 무리다.
+	var offsets := [Vector2(0, 18), Vector2(-30, -6), Vector2(30, -6), Vector2(-58, -30), Vector2(58, -30)]
+	for i in offsets.size():
+		var body := Polygon2D.new()
+		var r: float = 20.0 if i == 0 else 15.0
+		body.polygon = PackedVector2Array([
+			Vector2(0, r), Vector2(r * 0.7, 0), Vector2(0, -r), Vector2(-r * 0.7, 0)
+		])
+		body.color = Color(1.0, 0.85, 0.2)
+		body.position = offsets[i]
+		node.add_child(body)
+
+		var core := Polygon2D.new()
+		core.polygon = _circle_polygon(8, r * 0.36)
+		core.color = Color(0.16, 0.10, 0.0)
+		core.position = offsets[i]
+		node.add_child(core)
+
+	_add_light(node, Color(1.0, 0.85, 0.2), 2.6, 3.2)
+
+
+static func _draw_void_turret(node: Node2D) -> void:
+	# 포탑: 오각형 몸체 + 아래를 겨눈 포신 + 바닥에 박힌 받침
+	var base := Polygon2D.new()
+	base.polygon = PackedVector2Array([
+		Vector2(-52, -34), Vector2(52, -34), Vector2(38, 8), Vector2(-38, 8)
+	])
+	base.color = Color(0.35, 0.06, 0.12)
+	node.add_child(base)
+
+	var body := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i in 5:
+		var a := TAU * i / 5.0 - PI / 2
+		pts.append(Vector2(cos(a), sin(a)) * 46)
+	body.polygon = pts
+	body.color = Color(0.85, 0.14, 0.24)
+	node.add_child(body)
+
+	var core := Polygon2D.new()
+	core.polygon = _circle_polygon(20, 18)
+	core.color = Color(0.12, 0.0, 0.03)
+	node.add_child(core)
+
+	# 아래를 향한 포신 — 멈춰 서서 쏜다는 뜻
+	var barrel := Polygon2D.new()
+	barrel.polygon = PackedVector2Array([
+		Vector2(-11, 10), Vector2(11, 10), Vector2(8, 62), Vector2(-8, 62)
+	])
+	barrel.color = Color(1.0, 0.45, 0.4)
+	node.add_child(barrel)
+
+	_add_light(node, Color(1.0, 0.2, 0.3), 3.0, 3.2)
+
+
+static func _draw_void_phantom(node: Node2D) -> void:
+	# 환영: 창백한 쐐기 + 뒤에 남은 잔상. 반투명으로 "실체가 없음"을 드러낸다.
+	for i in 3:
+		var ghost := Polygon2D.new()
+		var r := 52.0 - float(i) * 9.0
+		ghost.polygon = PackedVector2Array([
+			Vector2(0, r), Vector2(-r, -r * 0.7), Vector2(-r * 0.45, -r),
+			Vector2(0, -r * 0.25), Vector2(r * 0.45, -r), Vector2(r, -r * 0.7)
+		])
+		ghost.color = Color(1.0, 0.95, 0.85, 0.85 - float(i) * 0.28)
+		ghost.position = Vector2(0, -float(i) * 12.0)
+		node.add_child(ghost)
+
+	var core := Polygon2D.new()
+	core.polygon = _circle_polygon(16, 13)
+	core.color = Color(0.25, 0.22, 0.30)
+	node.add_child(core)
+
+	_add_light(node, Color(0.95, 0.92, 1.0), 2.4, 3.0)
 
 
 ## 그림이 아직 없는 적. **일부러 어느 유닛과도 안 닮게** 그린다 —

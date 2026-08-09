@@ -27,7 +27,9 @@ func _process(delta: float) -> bool:
 	print("소개된 적: %d종 %s" % [keys.size(), str(keys)])
 
 	# 게임이 실제로 스폰하는 종류와 같아야 한다.
-	var spawned := ["CHASER", "SHOOTER", "TANK", "DASHER", "BOMBER", "SPLITTER", "SHIELDER"]
+	# ⚠️ `EnemySpawner._pick_enemy_type` 이 실제로 내보내는 종류와 같아야 한다.
+	var spawned := ["CHASER", "SHOOTER", "TANK", "DASHER", "BOMBER", "SPLITTER", "SHIELDER",
+		"SWARM", "TURRET", "PHANTOM"]
 	for k in spawned:
 		if not keys.has(k):
 			print("FAIL %s 가 게임에는 있는데 소개에 없다" % k)

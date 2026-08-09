@@ -159,27 +159,33 @@ boosting score up to 5x."""
 빛의 언어를 삼키고, 우주를 영원한 침묵으로
 만들려는 존재들이다.
 
-일곱 가지 병과로 구성된다:
+열 가지 병과로 구성된다:
 • 추적자 (Chaser) - 빠르고 약한 정찰대
 • 포격수 (Shooter) - 원거리 공격 담당
 • 중갑병 (Tank) - 느리지만 강한 방어력
 • 돌진자 (Dasher) - 지그재그로 파고드는 급습대
 • 자폭병 (Bomber) - 접근해 열두 방향으로 터진다
 • 분열체 (Splitter) - 부수면 셋으로 갈라진다
-• 방벽병 (Shielder) - 스스로 체력을 되돌린다""",
+• 방벽병 (Shielder) - 스스로 체력을 되돌린다
+• 군체 (Swarm) - 다섯이 한 무리로 몰려온다
+• 포탑 (Turret) - 멈춰 서서 계속 쏜다
+• 환영 (Phantom) - 흐려지면 탄이 통과한다""",
 		"en": """A force from the abyss of darkness.
 
 They devour the Words of Light and seek to
 condemn the universe to eternal silence.
 
-Seven military branches:
+Ten military branches:
 • Chaser - fast, weak scouts
 • Shooter - ranged attackers
 • Tank - slow, heavily armored
 • Dasher - zigzagging raiders
 • Bomber - closes in and bursts twelve ways
 • Splitter - breaks into three
-• Shielder - regenerates its own health"""
+• Shielder - regenerates its own health
+• Swarm - arrives five at a time
+• Turret - halts and keeps firing
+• Phantom - bullets pass through when it fades"""
 	}
 }
 
@@ -284,6 +290,60 @@ units the moment it breaks. Those do not split again.
 
 Clear it while the screen is quiet - breaking it in
 a crowd multiplies the crowd."""
+	},
+	"SWARM": {
+		"name": "군체",
+		"name_en": "Void Swarm",
+		"ko": """홀로는 아무것도 아닌 보이드의 소모품.
+
+한 마리는 단어탄 한 발에 스러지지만
+언제나 **다섯이 한 대형**으로 내려온다.
+
+쫓아오지 않고 곧게 떨어지므로 피하기는 쉽다.
+다만 화면을 가득 채워 다른 적을 가린다 — 먼저 쓸어라.""",
+		"en": """Void chaff that is nothing on its own.
+
+One falls to a single word-bullet,
+but they always descend **five in formation**.
+
+They do not chase, so dodging is easy.
+But they fill the screen and hide the rest - sweep them first."""
+	},
+	"TURRET": {
+		"name": "포탑",
+		"name_en": "Void Turret",
+		"ko": """자리를 잡고 눌러앉는 보이드의 거점.
+
+일정 높이까지 내려오면 **그 자리에 멈춰 서서**
+가디언을 향해 끊임없이 어둠의 탄환을 쏜다.
+
+다가오지 않으니 부딪힐 걱정은 없다.
+대신 부수기 전까지 사라지지 않는다 — 화면 위에 쌓이게 두지 마라.""",
+		"en": """A Void strongpoint that digs in.
+
+Once it descends to a certain height it **halts there**
+and fires dark bullets at the Guardian without pause.
+
+It never closes in, so it will not ram you.
+But it will not leave until broken - do not let them pile up."""
+	},
+	"PHANTOM": {
+		"name": "환영",
+		"name_en": "Void Phantom",
+		"ko": """실체와 그림자를 오가는 보이드의 유령.
+
+주기적으로 몸이 흐려지는데, 그동안에는
+**단어탄이 그대로 통과한다.**
+
+맞히려 애쓸 필요는 없다 — 계속 쏘고 있으면
+다시 선명해지는 순간 박힌다. 다만 그만큼 오래 머문다.""",
+		"en": """A Void ghost drifting between form and shadow.
+
+It fades on a cycle, and while faded
+**word-bullets pass straight through.**
+
+There is no need to time your shots - keep firing and
+they land the moment it solidifies. It simply lingers longer."""
 	},
 	"SHIELDER": {
 		"name": "방벽병",
