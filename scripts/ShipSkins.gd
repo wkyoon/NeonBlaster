@@ -15,7 +15,13 @@ const DEFAULT_ID := "aurora"
 ## body/glow/engine = 기체 폴리곤 · PointLight2D · 분사 파티클 색.
 ## aura = 기체 주위 링 연출 강도(0 없음 / 1 단일 링 / 2 이중 링 + 궤도 스파크).
 ## hue = 시간에 따라 색상환을 도는 스킨(PRISM).
-## streak = 이 스킨을 해금하는 연속 접속 일수(0 = 기본 제공).
+## streak = 이 스킨을 해금하는 연속 접속 일수(0 = 기본 제공, -1 = 출석으로는 못 얻음).
+## hull = 기체 실루엣. 없으면 기본 실루엣(DEFAULT_HULL)을 쓴다.
+## product = 이 기체를 여는 상품 ID(StoreItems). 없으면 출석 보상으로만 얻는다.
+##
+## ⚠️ **출석 보상과 결제 상품은 계열을 나눈다.**
+##    출석은 같은 실루엣의 **색 변주**, 결제는 **형태 변주**다.
+##    같은 축으로 주면 결제가 출석 보상의 값어치를 깎는다.
 const SKINS: Array[Dictionary] = [
 	{
 		"id": "aurora", "name_en": "AURORA", "streak": 0, "aura": 0, "hue": false,
@@ -42,14 +48,60 @@ const SKINS: Array[Dictionary] = [
 		"body": Color(1.45, 1.25, 0.75), "glow": Color(1.0, 0.9, 0.5),
 		"engine": Color(1.0, 0.9, 0.55, 0.9),
 	},
+	# ---- 결제 기체: 형태가 다르다(출석 보상은 색만 다르다) ----
+	{
+		"id": "dart", "name_en": "DART", "streak": -1, "aura": 1, "hue": false,
+		"hull": "dart", "product": "ship_dart",
+		"body": Color(0.55, 1.3, 1.0), "glow": Color(0.4, 1.0, 0.85),
+		"engine": Color(0.4, 1.0, 0.85, 0.85),
+	},
+	{
+		"id": "aegis", "name_en": "AEGIS", "streak": -1, "aura": 1, "hue": false,
+		"hull": "aegis", "product": "ship_aegis",
+		"body": Color(1.15, 0.85, 1.35), "glow": Color(0.85, 0.6, 1.0),
+		"engine": Color(0.85, 0.6, 1.0, 0.85),
+	},
+	{
+		"id": "beetle", "name_en": "BEETLE", "streak": -1, "aura": 2, "hue": false,
+		"hull": "beetle", "product": "ship_beetle",
+		"body": Color(1.3, 1.0, 0.55), "glow": Color(1.0, 0.75, 0.35),
+		"engine": Color(1.0, 0.75, 0.35, 0.85),
+	},
 ]
 
-## 기체 실루엣. Player.tscn 의 Sprite 폴리곤과 같은 모양이라
+## 기본 기체 실루엣. Player.tscn 의 Sprite 폴리곤과 같은 모양이라
 ## 미리보기·타이틀 엠블럼·게임 내 기체가 모두 같은 기호로 읽힌다.
-static var HULL: PackedVector2Array = PackedVector2Array([
+static var DEFAULT_HULL: PackedVector2Array = PackedVector2Array([
 	Vector2(0, -25), Vector2(-18, 15), Vector2(-8, 10),
 	Vector2(0, 18), Vector2(8, 10), Vector2(18, 15)
 ])
+
+## 결제 기체의 실루엣. 폴리곤만 다르면 완전히 다른 기체로 읽힌다 —
+## 절차적 _draw 라 에셋 없이 형태를 늘릴 수 있다.
+static var HULLS: Dictionary = {
+	# 화살형 — 길고 날카롭다. 빠른 인상.
+	"dart": PackedVector2Array([
+		Vector2(0, -30), Vector2(-9, 6), Vector2(-16, 18), Vector2(-5, 13),
+		Vector2(0, 20), Vector2(5, 13), Vector2(16, 18), Vector2(9, 6),
+	]),
+	# 방패형 — 넓고 묵직하다. 단단한 인상.
+	"aegis": PackedVector2Array([
+		Vector2(0, -20), Vector2(-14, -10), Vector2(-22, 8), Vector2(-10, 16),
+		Vector2(0, 12), Vector2(10, 16), Vector2(22, 8), Vector2(14, -10),
+	]),
+	# 곤충형 — 날개가 벌어진다. 유기적인 인상.
+	"beetle": PackedVector2Array([
+		Vector2(0, -24), Vector2(-7, -8), Vector2(-21, -2), Vector2(-12, 8),
+		Vector2(-6, 18), Vector2(0, 12), Vector2(6, 18), Vector2(12, 8),
+		Vector2(21, -2), Vector2(7, -8),
+	]),
+}
+
+
+## 이 스킨의 실루엣. 지정이 없으면 기본형.
+static func get_hull(skin: Dictionary) -> PackedVector2Array:
+	var key := String(skin.get("hull", ""))
+	return HULLS.get(key, DEFAULT_HULL)
 
 
 static func get_skin(id: String) -> Dictionary:

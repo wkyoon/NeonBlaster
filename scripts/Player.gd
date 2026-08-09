@@ -316,6 +316,8 @@ func _handle_invincibility(delta: float) -> void:
 ## 성능에는 영향을 주지 않는다 — 색과 오라만 바꾼다.
 func _apply_skin() -> void:
 	var skin := RewardManager.get_equipped_skin()
+	# 실루엣도 스킨을 따른다 — 결제 기체는 색이 아니라 **형태**가 다르다.
+	_sprite.polygon = ShipSkins.get_hull(skin)
 	_sprite.color = skin["body"]
 	_glow.color = skin["glow"]
 	_engine_particles.color = skin["engine"]

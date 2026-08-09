@@ -69,10 +69,10 @@ func _draw_orbit_letters() -> void:
 ## 가운데 플레이어 기체. Player.tscn 의 실루엣과 같은 모양을 축소해 쓴다
 ## (목숨 아이콘도 같은 실루엣이라 화면 전체에서 "내 기체" 기호가 일관된다).
 func _draw_ship() -> void:
-	var pts := PackedVector2Array([
-		Vector2(0, -20), Vector2(-14, 12), Vector2(-6, 8),
-		Vector2(0, 14), Vector2(6, 8), Vector2(14, 12)
-	])
+	# 타이틀도 장착 기체의 실루엣을 쓴다 — 산 기체가 첫 화면부터 보여야 한다.
+	var pts := PackedVector2Array()
+	for v in ShipSkins.get_hull(RewardManager.get_equipped_skin()):
+		pts.append(v * 0.8)
 	# 글로우 먼저(크게, 흐리게) → 본체
 	draw_colored_polygon(pts, Color(ship_color.r, ship_color.g, ship_color.b, 0.25))
 	var inner := PackedVector2Array()

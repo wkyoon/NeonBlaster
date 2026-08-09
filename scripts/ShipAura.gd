@@ -56,8 +56,9 @@ func _draw() -> void:
 				Color(accent.r, accent.g, accent.b, 0.8))
 	if draw_hull:
 		# 미리보기 — 글로우를 크게 깔고 그 위에 본체.
-		draw_colored_polygon(ShipSkins.HULL, Color(accent.r, accent.g, accent.b, 0.25))
+		var hull := ShipSkins.get_hull(skin)
+		draw_colored_polygon(hull, Color(accent.r, accent.g, accent.b, 0.25))
 		var inner := PackedVector2Array()
-		for p in ShipSkins.HULL:
+		for p in hull:
 			inner.append(p * 0.84)
 		draw_colored_polygon(inner, accent)

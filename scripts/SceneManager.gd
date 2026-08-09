@@ -7,6 +7,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 const DICTIONARY_SCENE := "res://scenes/Dictionary.tscn"
 const STORY_SCENE := "res://scenes/Story.tscn"
 const SFX_LAB_SCENE := "res://scenes/SfxLab.tscn"
+const STORE_SCENE := "res://scenes/Store.tscn"
 
 var _transition: ColorRect
 var _transition_tween: Tween
@@ -73,3 +74,7 @@ func goto_story() -> void:
 ## SFX 후보 비교 화면 (개발용).
 func goto_sfx_lab() -> void:
 	change_scene(SFX_LAB_SCENE)
+
+
+func goto_store() -> void:
+	change_scene(STORE_SCENE)

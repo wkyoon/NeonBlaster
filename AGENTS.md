@@ -464,39 +464,32 @@ godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
 - 속도 튜닝: `Player.gd`의 `@export var max_speed`(기본 700), `acceleration`, `friction`.
 - 가상 조이스틱(`Joystick.gd`)은 비활성화됨(`set_process_input(false)`) — 노드는 호환성 유지.
 
-### 인앱 결제 (PurchaseManager)
+### 상점 / 인앱 결제
 
-파는 것은 **광고 제거** 하나뿐이다(`PRODUCT_REMOVE_ADS = "remove_ads"`, 일회성 관리형 상품).
-`ads_removed` 한 값이 게임 전체의 광고 표시를 결정한다:
-- `AdsManager.show_interstitial_if_ready()` → 즉시 false
-- `AdsManager.show_rewarded_if_ready()` → 광고 없이 보상만 즉시 지급
-  (상품을 산 사람이 부활하려고 광고를 봐야 한다면 산 의미가 없다)
+⚠️ **기본은 절대 팔지 않는다.** 단어 300개·25테마·출석·랭크·도감·모든 게임 기능은 전부 무료다.
+학습에 필요한 것을 잠그면 "공부를 돈 주고 사는" 게임이 된다.
+파는 것은 **없어도 되지만 있으면 내 화면이 달라지는 것**뿐이다([`StoreItems`](scripts/StoreItems.gd)).
 
-⚠️ **플러그인 클래스를 식별자로 쓰지 마라.** `BillingClient` 를 코드에 그대로 적으면
-플러그인이 없는 환경에서 **이 스크립트가 컴파일에 실패하고 오토로드가 통째로 죽는다**
-(HUD 에서 이미 같은 사고를 겪었다). `ClassDB.class_exists` / `ClassDB.instantiate` 로
-**이름 문자열**을 통해서만 접근한다. 신호도 `has_signal` 로 확인 후 연결한다.
+⚠️ **출석 보상과 결제는 계열을 나눈다.**
+출석 = 같은 실루엣의 **색 변주**(AURORA→NOVA), 결제 = **형태 변주**(DART/AEGIS/BEETLE).
+같은 축으로 주면 결제가 출석 보상의 값어치를 깎는다.
 
-⚠️ **로컬 저장(user://)은 캐시일 뿐 근거가 아니다.** 진짜 소유 여부는 앱을 켤 때마다
-Play 에 질의해 받는다(`_query_purchases`). 로컬 파일은 오프라인용이다.
+⚠️ **가격을 코드에 적지 마라.** Play 에서 받아온 값(`PurchaseManager.get_price`)을 그대로 쓴다 —
+나라별 통화·현지 가격이 맞아야 한다. 자체 결제 수단은 정책 위반이라 앱이 내려간다
+(상점은 UI 만 자체이고 결제는 반드시 Play Billing 을 거친다).
 
-⚠️ 일회성 상품은 **acknowledge 하지 않으면 3일 뒤 자동 환불된다**(`_acknowledge`).
+⚠️ **구매 복원 버튼은 필수다**(상점 하단). 없으면 정책에 걸리고 환불 문의가 들어온다.
 
-⚠️ 복원 수단(`RESTORE PURCHASES`, 보상 패널 안)은 스토어 정책상 반드시 있어야 한다.
+구매하면 **즉시 장착**한다 — 출석 보상이 그렇게 동작하므로(받는 순간 기체가 바뀐다)
+같은 흐름이어야 산 것이 상품이 아니라 보상처럼 느껴진다.
 
-**플러그인은 이미 설치돼 있다** — `addons/GodotGooglePlayBilling/` (3.3.0, 커밋됨).
-`project.godot` 의 `[editor_plugins]` 에서 활성화도 되어 있다.
-⚠️ 이 플러그인은 **export 프리셋에 체크박스가 없다.** `export_plugin.gd` 가 `EditorExportPlugin` 으로
-AAR 과 gradle 의존성(`com.android.billingclient:billing-ktx:9.1.0`)을 자동 주입한다.
+**플러그인**: `addons/GodotGooglePlayBilling/` (3.3.0, 커밋됨). export 체크박스는 없다(자동 주입).
+⚠️ `BillingClient` 를 식별자로 쓰지 말고 경로로 로드한다 — 애드온을 지우면 오토로드가 통째로 죽는다.
+⚠️ stub 판정은 **안드로이드 싱글톤 유무**로 한다. 애드온 존재만 보면 데스크톱에서 테스트가 막힌다.
+⚠️ 일회성 상품은 acknowledge 하지 않으면 3일 뒤 자동 환불된다.
 
-⚠️ **stub 판정은 애드온 설치 여부가 아니라 안드로이드 싱글톤 유무로 한다**(`ANDROID_SINGLETON`).
-`BillingClient` 는 싱글톤이 없으면 모든 메서드를 조용히 무시해서, 데스크톱에서는 구매를 눌러도
-연결 신호조차 오지 않는다. 애드온 존재만 보고 판정하면 데스크톱 테스트가 통째로 막힌다.
-
-**남은 것 (Google 계정이 필요해 직접 해야 하는 부분)**
-1. Play Console `수익 창출 → 인앱 상품` 에 **`remove_ads`** 등록 (ID 가 정확히 일치해야 한다)
-2. 앱을 **내부 테스트 트랙**에 업로드 — 결제는 스토어에 등록된 앱에서만 테스트된다
-3. 라이선스 테스터 계정 등록 — 실제 결제 없이 테스트
+**남은 것(직접)**: Play Console `수익 창출 → 인앱 상품` 에 `StoreItems.ITEMS` 의 ID 를 그대로 등록.
+결제 테스트는 내부 테스트 트랙에 업로드된 앱 + 라이선스 테스터 계정에서만 된다.
 
 ### 광고 없음
 
