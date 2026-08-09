@@ -19,6 +19,7 @@ var _detail_phrase: Label
 var _detail_desc_en: Label
 var _detail_speak_btn: Button
 var _detail_close_btn: Button
+var _detail_share_btn: Button
 var _selected_category: String = "ALL"
 var _progress_label: Label = null
 
@@ -350,16 +351,26 @@ func _create_detail_panel() -> void:
 	# Speak button
 	_detail_speak_btn = Button.new()
 	_detail_speak_btn.text = "🔊 LISTEN"
-	_detail_speak_btn.position = Vector2(200, 470)
+	_detail_speak_btn.position = Vector2(120, 470)
 	_detail_speak_btn.size = Vector2(140, 50)
 	_detail_speak_btn.add_theme_font_size_override("font_size", 20)
 	_detail_speak_btn.pressed.connect(_on_speak_detail)
 	_detail_panel.add_child(_detail_speak_btn)
 
+	# 공유 버튼 — 말풍선에 예문을 담은 카드를 만들어 보낸다.
+	_detail_share_btn = Button.new()
+	_detail_share_btn.text = "↗ SHARE"
+	_detail_share_btn.position = Vector2(270, 470)
+	_detail_share_btn.size = Vector2(130, 50)
+	_detail_share_btn.add_theme_font_size_override("font_size", 20)
+	_detail_share_btn.add_theme_color_override("font_color", Color(0.5, 1.0, 0.85))
+	_detail_share_btn.pressed.connect(_on_share_detail)
+	_detail_panel.add_child(_detail_share_btn)
+
 	# Close button
 	_detail_close_btn = Button.new()
 	_detail_close_btn.text = "✕ CLOSE"
-	_detail_close_btn.position = Vector2(360, 470)
+	_detail_close_btn.position = Vector2(410, 470)
 	_detail_close_btn.size = Vector2(140, 50)
 	_detail_close_btn.add_theme_font_size_override("font_size", 20)
 	_detail_close_btn.pressed.connect(_on_close_detail)
@@ -367,6 +378,18 @@ func _create_detail_panel() -> void:
 
 
 var _detail_word_text: String = ""
+
+
+## 단어 카드를 만들어 공유한다. 카드 렌더에 한 프레임이 걸려서 중복 요청을 막는다.
+func _on_share_detail() -> void:
+	AudioManager.play_sfx("button")
+	if _detail_word_text == "":
+		return
+	_detail_share_btn.disabled = true
+	_detail_share_btn.text = "..."
+	await ShareManager.share_word(_detail_word_text)
+	_detail_share_btn.disabled = false
+	_detail_share_btn.text = "↗ SHARE"
 
 
 func _show_detail(word: String) -> void:

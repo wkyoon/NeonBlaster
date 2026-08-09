@@ -511,6 +511,24 @@ godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
 
 (예전에는 진행 라벨과 탭이 **둘 다 y100** 이라 겹쳐 있었다.)
 
+### 단어 카드 공유
+
+도감 상세에서 `↗ SHARE` — 이모지 + 단어 + **말풍선에 담긴 예문**을 카드로 만들어 보낸다.
+[`ShareCard`](scripts/ShareCard.gd) 가 절차적 `_draw` 로 그리고,
+[`ShareManager`](scripts/ShareManager.gd) 가 `SubViewport` 로 한 프레임 렌더해 텍스처로 뽑는다.
+
+⚠️ 카드는 **정사각형 1080x1080** 이다. 소셜 미리보기가 대부분 정사각형으로 잘리는데
+세로로 길게 만들면 위아래가 잘려 말풍선이 사라진다.
+⚠️ 배경을 투명하게 두지 마라 — 밝은 배경 앱에서 글자가 사라진다.
+⚠️ `SubViewport` 는 **한 프레임을 기다려야** 내용이 채워진다(`await RenderingServer.frame_post_draw`).
+바로 읽으면 빈 이미지가 나온다. `render_card`/`share_word` 는 코루틴이라 호출부도 `await` 해야 한다.
+⚠️ 카드 색은 그 단어가 속한 **테마 색**을 쓴다 — 카드마다 색이 달라 모으는 맛이 생긴다.
+
+**플러그인**: `addons/SharePlugin/` + `addons/GMPShared/` (SharePlugin 6.0, 커밋됨).
+⚠️ `Share` 를 식별자로 쓰지 말고 경로로 로드한다 — 애드온을 지우면 오토로드가 통째로 죽는다.
+⚠️ stub 판정은 **안드로이드 싱글톤 유무**로 한다. 데스크톱에서는 카드를
+`user://share_card.png` 로 저장해 눈으로 확인할 수 있다.
+
 ### 훈장 (Achievements)
 
 목표를 채우면 하나씩 열린다(14종, 동/은/금 3등급). 정의는 [`Achievements`](scripts/Achievements.gd) 한 곳.
