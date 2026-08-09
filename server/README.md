@@ -27,7 +27,7 @@ npm run build && npm run test:e2e
 정상 저장 / 토큰 오류 403 / 토큰 없음 403 / `install_id` 형식 400 /
 **모르는 지표도 그대로 저장** / 동시 40건에서 줄 안 깨짐 / 1MB 초과 413.
 
-## 배포 (won-solution.com)
+## 배포 (nb-api.won-solution.com)
 
 ### 1. 앱과 토큰 맞추기
 
@@ -66,25 +66,53 @@ WantedBy=multi-user.target
 > 프로세스 하나를 전제로 한다. 늘리는 순간 JSONL 이 섞일 수 있다.
 > 테스터 수십 명 규모에서 늘릴 이유도 없다.
 
-### 3. nginx
+### 3. DNS + nginx
+
+DNS 에 `nb-api.won-solution.com` A 레코드를 서버 IP 로 추가한다.
 
 ```nginx
-location /api/nb/ {
-    proxy_pass http://127.0.0.1:3000/;
-    proxy_set_header Host $host;
+server {
+    listen 443 ssl http2;
+    server_name nb-api.won-solution.com;
+
+    ssl_certificate     /etc/letsencrypt/live/nb-api.won-solution.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nb-api.won-solution.com/privkey.pem;
+
+    # 판 300개 배치가 1MB 안이다. Nest 도 1mb 로 막고 있어 여기서 먼저 끊는다.
     client_max_body_size 2m;
-    # ⚠️ 접근 로그에 IP 가 남는다. 앱에서 "수집하지 않는다" 고 고지했으므로 끄거나
-    #    보존 기간을 짧게 둘 것.
+
+    # ⚠️ 접근 로그에 IP 가 남는다. 앱에서 "수집하지 않는다" 고 고지했으므로 반드시 끌 것.
     access_log off;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+    }
+}
+
+server {
+    listen 80;
+    server_name nb-api.won-solution.com;
+    # 인증서 발급(certbot) 경로만 열고 나머지는 https 로 보낸다.
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
 }
 ```
 
-이러면 앱이 보내는 `https://won-solution.com/api/nb/collect` 가 Nest 의 `/collect` 로 간다.
+```bash
+sudo certbot --nginx -d nb-api.won-solution.com
+```
+
+⚠️ **https 가 반드시 살아 있어야 한다.** 앱의 `flush()` 는 `ENDPOINT` 가 https 가 아니면
+아예 보내지 않고, 안드로이드는 기본 설정에서 평문 HTTP 를 막는다. 인증서가 만료되면
+전송이 조용히 실패하고 큐만 쌓인다(자료를 잃지는 않지만 회수가 멈춘다).
+
+앱이 보내는 `https://nb-api.won-solution.com/collect` 가 Nest 의 `/collect` 로 그대로 간다.
 
 ### 4. 확인
 
 ```bash
-curl -sS -X POST https://won-solution.com/api/nb/collect \
+curl -sS -X POST https://nb-api.won-solution.com/collect \
   -H 'Content-Type: application/json' -H 'X-NB-Token: <토큰>' \
   -d '{"schema":1,"install_id":"0123456789abcdef","runs":[{"end_reason":"died","survival_time":123.4}]}'
 # → {"ok":true,"stored":1}

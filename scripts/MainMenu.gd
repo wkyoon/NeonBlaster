@@ -1011,7 +1011,7 @@ func _create_consent_panel() -> void:
 
 	var link := Label.new()
 	link.name = "PolicyLink"
-	link.text = "개인정보처리방침 · won-solution.com/privacy.html"
+	link.text = "개인정보처리방침 · nb.won-solution.com/privacy.html"
 	link.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	link.position = Vector2(30, 506)
 	link.size = Vector2(540, 30)

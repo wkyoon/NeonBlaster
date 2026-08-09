@@ -758,8 +758,14 @@ cd server && npm run build && npm run test:e2e                   # 수신 서버
 `words_per_min` …). 이름이 갈라지면 알파 자료를 기존 밸런스 기준과 비교할 수 없다.
 
 **출시 전 직접 할 것**
-1. `server/` 를 서버에 올려 `npm ci && npm run build` 후 systemd 로 띄우고, nginx 가
-   `/api/nb/` 를 `127.0.0.1:3000/` 로 넘기게 한다(README 에 유닛 파일·nginx 설정 있음).
+1. `server/` 를 서버에 올려 `npm ci && npm run build` 후 systemd 로 띄우고,
+   `nb-api.won-solution.com` 서브도메인 + Let's Encrypt 인증서로 `127.0.0.1:3000` 에
+   연결한다(README 에 DNS·유닛 파일·nginx 설정 있음).
+   ⚠️ **https 가 끊기면 전송이 조용히 멈춘다** — 앱은 http 주소로는 아예 보내지 않고
+   안드로이드도 평문을 막는다. 인증서 자동 갱신을 확인할 것.
 2. 서버 `.env` 의 `NB_TOKEN` 과 `Telemetry.TOKEN` 을 같은 값으로 바꾼다(둘 다 `CHANGE_ME_BEFORE_DEPLOY`).
-3. `privacy.html` 을 `won-solution.com/privacy.html` 로 올리고 Play Console 에 URL 등록.
+3. `website/` 를 `nb.won-solution.com` 으로 올린다(홍보 페이지 + `privacy.html`).
+   `https://nb.won-solution.com/privacy.html` 를 Play Console 에 등록한다.
+   ⚠️ 동의 화면(`MainMenu._create_consent_panel`)에 이 주소가 **글자로** 적혀 있다.
+   주소를 바꾸면 그 텍스트도 같이 바꿀 것 — 안 맞으면 고지 자체가 무효다.
 4. Play Console **데이터 보안 양식**을 위 표대로 신고(앱 활동·기기 ID 수집, 선택적, 미공유).
