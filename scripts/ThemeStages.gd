@@ -16,6 +16,8 @@ class_name ThemeStages
 ##   2. 테마마다 **같은 개수**(현재 8개). 예전에는 ANIMAL 13 / MACHINE 7 로 편중돼 있었다.
 ##   3. 스테이지 순서는 **평균 글자수 오름차순** — 진행할수록 조금씩 어려워진다.
 ##   4. ⚠️ `words`/`advanced` 배열은 **글자 수 오름차순으로 정렬**해 둘 것.
+##      **기본의 마지막 단어가 심화의 첫 단어보다 길면 안 된다** — 두 층의 경계에서 난이도가
+##      거꾸로 간다(실측: SPACE 기본 GALAXY(6) → 심화 ORBIT(5)).
 ##      WordManager 가 이 배열 순서 그대로 단어를 낸다(쉬운 것 → 어려운 것).
 ##      정렬이 깨지면 어려운 단어가 먼저 나온다. `tools/check_word_order.py` 로 확인.
 ##      예전 순서는 4.6 → 3.9 → 3.4 → 4.9 → 4.9 → 5.9 로 중간에 쉬워졌다.
@@ -79,9 +81,9 @@ const STAGES: Array[Dictionary] = [
 		"name_ko": "우주",
 		"name_en": "SPACE",
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
-		"words": ["SUN", "STAR", "MOON", "MARS", "COMET", "EARTH", "PLANET", "GALAXY"],
+		"words": ["SUN", "STAR", "MOON", "MARS", "ORBIT", "COMET", "EARTH", "PLANET"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["ORBIT", "METEOR", "NEBULA", "ASTEROID"],
+		"advanced": ["GALAXY", "METEOR", "NEBULA", "ASTEROID"],
 		"bg": Color(0.04, 0.03, 0.09),
 		"accent": Color(0.4, 0.85, 1.0),
 		"particle": Color(1.0, 1.0, 1.0),
@@ -92,9 +94,9 @@ const STAGES: Array[Dictionary] = [
 		"name_ko": "자연",
 		"name_en": "NATURE",
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
-		"words": ["SKY", "ICE", "FIRE", "RAIN", "STORM", "FLAME", "VOLCANO", "THUNDER"],
+		"words": ["SKY", "ICE", "FIRE", "RAIN", "RIVER", "STORM", "FLAME", "DESERT"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["RIVER", "DESERT", "RAINBOW", "GLACIER"],
+		"advanced": ["RAINBOW", "VOLCANO", "THUNDER", "GLACIER"],
 		"bg": Color(0.03, 0.09, 0.11),
 		"accent": Color(0.35, 1.0, 0.8),
 		"particle": Color(0.6, 1.0, 0.85),
@@ -105,9 +107,9 @@ const STAGES: Array[Dictionary] = [
 		"name_ko": "기계",
 		"name_en": "MACHINES",
 		# 평균 5.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
-		"words": ["GEAR", "WIRE", "MOTOR", "ROBOT", "ENGINE", "CYBORG", "ANDROID", "CIRCUIT"],
+		"words": ["GEAR", "WIRE", "MOTOR", "ROBOT", "ENGINE", "CYBORG", "MAGNET", "ANDROID"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["MAGNET", "BATTERY", "TURBINE", "PROPELLER"],
+		"advanced": ["BATTERY", "TURBINE", "CIRCUIT", "PROPELLER"],
 		"bg": Color(0.06, 0.07, 0.10),
 		"accent": Color(0.7, 0.8, 1.0),
 		"particle": Color(0.55, 0.7, 0.9),

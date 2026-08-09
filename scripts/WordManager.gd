@@ -34,8 +34,7 @@ const ALPHABET := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # --- 단어 학습 가중치 설정 (튜닝 포인트) ---
 
-## 몇 번째 단어마다 복습을 끼워 넣을지. 3이면 "새 단어 2개 → 복습 1개".
-const REVIEW_EVERY := 3
+## (복습은 스테이지 첫 단어로 고정이므로 별도 주기 상수가 필요 없다.)
 ## 이 횟수 이상 노출되면 숙달로 본다(도감 통계 표시용).
 const MASTERY_THRESHOLD := 4
 
@@ -48,7 +47,6 @@ var _filled_indices: Array[int] = []
 # Autoload이므로 게임 재시작에도 유지되어 여러 판에 걸친 학습이 누적됩니다.
 var _word_stats: Dictionary = {}
 # 단어 선택 카운터 (간격 반복 계산용). 세션 전체에 걸쳐 단조 증가.
-var _word_counter: int = 0
 var _selection_counter: int = 0
 
 # --- 테마 스테이지 진행 상태 ---
@@ -121,8 +119,9 @@ func set_stage(index: int) -> void:
 ##   1. 한 테마 안에서 **쉬운 것부터 어려운 순으로** 나온다
 ##      (`ThemeStages` 의 words 배열이 글자 수 오름차순으로 정렬돼 있다).
 ##   2. 이미 수집한 단어는 건너뛴다 → 다시 그 테마에 오면 그 다음 난이도부터 이어진다.
-##   3. `REVIEW_EVERY` 번째마다 **가장 오래 안 본 수집 완료 단어**를 복습으로 끼워 넣는다.
+##   3. 테마에 다시 들어올 때 **첫 단어는 복습**(가장 오래 안 본 수집 완료 단어)이다.
 ##      한 번 보고 끝이면 눈으로 익히는 게임이 성립하지 않는다.
+##      ⚠️ 복습을 스테이지 **끝**에 붙이면 오름차순이 깨진다(실측 "EAR(3) NOSE(4) EYE(3)").
 ##
 ## ⚠️ 예전에는 가중치 룰렛(무작위)으로 뽑았다. 배열은 쉬운 순으로 정렬해 두었는데
 ##    뽑기가 무작위라 **그 순서가 게임에 전혀 반영되지 않았다** — 어려운 단어가 첫 판에 나왔다.
@@ -131,7 +130,6 @@ func start_new_word() -> String:
 	if chosen == "":
 		return current_word
 
-	_word_counter += 1
 	_record_exposure(chosen)
 	current_word = chosen
 	_filled_indices.clear()
@@ -145,9 +143,10 @@ func _pick_next_word() -> String:
 	var fresh := _unlearned_in_order()
 	var review := _review_in_order()
 
-	# 새 단어 (REVIEW_EVERY - 1)개마다 복습 1개.
-	var want_review: bool = (_word_counter + 1) % REVIEW_EVERY == 0
-	if want_review and not review.is_empty():
+	# 복습은 **스테이지의 첫 단어**로 넣는다.
+	# ⚠️ 끝에 붙이면 난이도 오름차순이 깨진다 — 실측 "EAR(3) NOSE(4) EYE(3)".
+	#    앞에 두면 "지난번 것 한 번 상기 → 새 단어를 쉬운 순으로" 가 되어 램프가 유지된다.
+	if _stage_done.is_empty() and not review.is_empty():
 		return review[0]
 	if not fresh.is_empty():
 		return fresh[0]
