@@ -24,6 +24,10 @@ func _ready() -> void:
 	_on_score_changed(GameManager.score)
 	_on_lives_changed(GameManager.lives)
 	_create_word_slots()
+	# 완성 리빌이 슬롯과 **같은 자리**에 뜨므로, 리빌 동안에는 슬롯을 감춘다.
+	# 그래야 "채워지던 글자가 그대로 커진다"로 보인다.
+	WordManager.word_completed.connect(func(_w): _set_slots_visible(false))
+	WordManager.new_word_started.connect(func(_w): _set_slots_visible(true))
 	_create_audio_toggles()
 	_create_auto_play_indicator()
 	# Connect to WordManager signals
@@ -108,7 +112,9 @@ func _create_auto_play_indicator() -> void:
 	_auto_label.add_theme_color_override("font_outline_color", Color(0, 0.3, 0.1))
 	_auto_label.add_theme_constant_override("outline_size", 6)
 	_auto_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_auto_label.position.y = 10
+	# ⚠️ y=10 은 WAVE 라벨(x 312~446, y 24~56)과 86x17px 겹쳤다(실측).
+	#    목숨 표시(y 74~100) 아래로 내린다.
+	_auto_label.position.y = 108
 	_auto_label.visible = GameManager.auto_play
 	$UI.add_child(_auto_label)
 
@@ -164,14 +170,23 @@ func _on_combo_level_up(level: int, _multiplier: float) -> void:
 
 # ---------------- Word Display ----------------
 
+## 리빌과 자리가 겹치므로 표시를 껐다 켠다.
+func _set_slots_visible(v: bool) -> void:
+	if _word_slots:
+		_word_slots.visible = v
+
+
 func _create_word_slots() -> void:
 	# ⚠️ Label 에 "W _ _ _" 를 그대로 넣으면 밑줄 문자가 글자 baseline 아래에 그려져
 	# 채워진 글자와 빈 칸의 높이가 어긋나 보인다. 글자와 칸을 각각 고정 위치에 그린다.
 	_word_slots = WordSlots.new()
 	_word_slots.name = "WordSlots"
-	# 화면 가로 중앙, 기존 단어 라벨과 같은 높이(y 120~200 대의 baseline).
+	# ⚠️ 세로 위치는 **WordReveal.WORD_ANCHOR 와 같아야 한다.**
+	#    예전에는 진행 스펠이 화면 14%(y 178), 완성 단어가 46% 에 떠서 시선이 점프했다.
+	#    "한 자씩 채워지다 → 그 자리에서 완성돼 커진다"가 이 게임의 핵심 순간이라
+	#    한 자리에서 일어나야 한다. 상단은 시선이 가장 덜 가는 자리이기도 하다.
 	var vp := get_viewport().get_visible_rect().size
-	_word_slots.position = Vector2(vp.x * 0.5, 178.0)
+	_word_slots.position = Vector2(vp.x * 0.5, vp.y * WordReveal.WORD_ANCHOR)
 	$UI.add_child(_word_slots)
 	_refresh_word_style()
 

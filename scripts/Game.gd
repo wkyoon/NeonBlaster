@@ -28,6 +28,9 @@ func _ready() -> void:
 	EffectsManager.set_camera(_camera)
 	# Create word reveal overlay
 	_word_reveal = Control.new()
+	# ⚠️ 이름을 지정하지 않으면 런타임에 "@Control@31" 로 자동 생성돼
+	#    get_node("WordReveal") 로 찾을 수 없다(테스트·디버깅에서 실제로 막혔다).
+	_word_reveal.name = "WordReveal"
 	_word_reveal.set_script(preload("res://scripts/WordReveal.gd"))
 	add_child(_word_reveal)
 	_player.player_died.connect(_on_player_died)

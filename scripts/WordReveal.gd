@@ -1,3 +1,4 @@
+class_name WordReveal
 extends Control
 ## WordReveal - shows a celebration overlay when a word is completed.
 ## Displays a neon-style procedural icon + the word + TTS pronunciation.
@@ -8,7 +9,15 @@ extends Control
 ## 리빌이 끝났을 때. 다음 단어 시작 타이밍을 여기에 맞춘다.
 signal reveal_finished
 
-const VERTICAL_ANCHOR := 0.38
+## 완성된 단어가 뜨는 세로 위치. **HUD 의 진행 스펠(WordSlots)과 같은 자리**여야 한다.
+## ⚠️ 예전에는 진행 스펠이 화면 14%, 완성 단어가 46% 에 떠서 시선이 점프했다.
+##    "한 자씩 채워지다 → 그 자리에서 완성돼 커진다"가 이 게임의 핵심 순간이라 한 자리에서 일어나야 한다.
+const WORD_ANCHOR := 0.33
+## 아이콘은 단어 **위**에 둔다. 학습 대상은 이모지가 아니라 글자다.
+const ICON_OFFSET := -150.0
+## 아이콘 묶음(이모지 + 링 + 글로우) 축소 배율.
+## ⚠️ 이모지가 160pt, 단어가 64pt 라 **아이콘이 단어의 2.5배**였다. 주인공이 뒤바뀌어 있었다.
+const ICON_SCALE := 0.5
 ## 등장·퇴장에 쓰는 시간과, 온전히 보이는 시간의 하한/상한.
 ## 하한은 음성이 없거나 아주 짧을 때도 읽을 수 있게, 상한은 판이 늘어지지 않게.
 const FADE_IN := 0.3
@@ -44,9 +53,12 @@ func _create_background() -> void:
 	add_child(_bg)
 	# Decorative pulsing ring behind the icon
 	_ring = _create_glow_ring()
+	# ⚠️ 링은 _icon_container 의 자식이 아니라 형제다 — 컨테이너만 줄이면 링만 원래 크기로 남는다.
+	#    같은 배율을 직접 걸어 아이콘 묶음 전체가 함께 작아지게 한다.
+	_ring.scale = Vector2(ICON_SCALE, ICON_SCALE)
 	_ring.position = Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
+		get_viewport_rect().size.y * WORD_ANCHOR + ICON_OFFSET
 	)
 	add_child(_ring)
 
@@ -89,8 +101,9 @@ func _create_icon_container() -> void:
 	_icon_container = Node2D.new()
 	_icon_container.position = Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
+		get_viewport_rect().size.y * WORD_ANCHOR + ICON_OFFSET
 	)
+	_icon_container.scale = Vector2(ICON_SCALE, ICON_SCALE)
 	add_child(_icon_container)
 
 
@@ -98,7 +111,7 @@ func _create_word_label() -> void:
 	_word_label = Label.new()
 	_word_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_word_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_word_label.add_theme_font_size_override("font_size", 64)
+	_word_label.add_theme_font_size_override("font_size", 76)
 	_word_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.9))
 	_word_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	_word_label.add_theme_color_override("font_outline_color", Color(0, 0.3, 0.4))
@@ -113,7 +126,8 @@ func _create_word_label() -> void:
 	var vp := get_viewport_rect().size
 	var label_size := Vector2(vp.x, 100.0)
 	_word_label.size = label_size
-	_word_label.position = Vector2(0.0, vp.y * VERTICAL_ANCHOR + 100.0)
+	# 진행 스펠(WordSlots)과 정확히 같은 자리 — 그 자리에서 커진다.
+	_word_label.position = Vector2(0.0, vp.y * WORD_ANCHOR - label_size.y * 0.5)
 	add_child(_word_label)
 
 
@@ -129,7 +143,7 @@ func _show_new_badge(total: int, goal: int) -> void:
 	badge.add_theme_constant_override("outline_size", 8)
 	var vp := get_viewport_rect().size
 	badge.size = Vector2(vp.x, 40)
-	badge.position = Vector2(0.0, vp.y * VERTICAL_ANCHOR + 160.0)
+	badge.position = Vector2(0.0, vp.y * WORD_ANCHOR + 90.0)
 	add_child(badge)
 	var tw := create_tween()
 	badge.modulate.a = 0.0
@@ -145,6 +159,7 @@ func reveal_word(word: String) -> void:
 	_word_label.text = word
 	visible = true
 	_draw_neon_icon(word)
+	_ring.scale = Vector2(ICON_SCALE, ICON_SCALE)
 	_spawn_sparkles()
 	if _tween:
 		_tween.kill()
@@ -154,7 +169,7 @@ func reveal_word(word: String) -> void:
 	_tween.tween_property(self, "modulate:a", 1.0, FADE_IN)
 	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	# Pulsing ring effect
-	_tween.parallel().tween_property(_ring, "scale", Vector2(1.3, 1.3), 0.6).set_ease(Tween.EASE_OUT)
+	_tween.parallel().tween_property(_ring, "scale", Vector2(ICON_SCALE * 1.3, ICON_SCALE * 1.3), 0.6).set_ease(Tween.EASE_OUT)
 	# ⚠️ 표시 시간을 **음성 길이에 맞춘다.**
 	#    고정 0.9초였을 때 음성(중앙값 1.91초)이 81개 중 80개나 더 길어서
 	#    단어가 사라진 뒤에도 문장이 계속 나왔다 — 눈으로 익히는 게임에서 치명적이다.
@@ -171,7 +186,7 @@ func reveal_word(word: String) -> void:
 func _spawn_sparkles() -> void:
 	var icon_pos := Vector2(
 		get_viewport_rect().size.x / 2,
-		get_viewport_rect().size.y * VERTICAL_ANCHOR - 80
+		get_viewport_rect().size.y * WORD_ANCHOR + ICON_OFFSET
 	)
 	# Burst sparkles
 	for i in 24:
