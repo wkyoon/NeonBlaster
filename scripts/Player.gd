@@ -322,7 +322,9 @@ func _apply_skin() -> void:
 	_glow.color = skin["glow"]
 	_engine_particles.color = skin["engine"]
 	_skin_bullet_color = skin["glow"]
-	if int(skin.get("aura", 0)) <= 0 and not bool(skin.get("hue", false)):
+	# 응원 배지는 오라가 없는 스킨에서도 보여야 한다 — 오라 노드를 그 목적으로도 쓴다.
+	if int(skin.get("aura", 0)) <= 0 and not bool(skin.get("hue", false)) \
+			and not PurchaseManager.is_owned("support_tip"):
 		return
 	# 오라는 기체 **뒤**에 그린다(기체 실루엣을 가리지 않게).
 	var aura := ShipAura.new()

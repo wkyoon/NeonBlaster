@@ -25,6 +25,30 @@ const FADE_OUT := 0.45
 const MIN_HOLD := 1.0
 const MAX_HOLD := 2.6
 
+## 완성 연출 스타일. 상점에서 산 것으로 바뀐다(RewardManager.equipped_reveal).
+## ⚠️ **표시 시간(hold)은 스타일이 건드리지 않는다.** 그 시간이 곧 학습 시간이라
+##    꾸미기가 학습을 깎으면 안 된다. 스타일은 **등장하는 방식과 장식**만 바꾼다.
+const STYLES := {
+	"default": {
+		"ring": Color(0.3, 1.0, 0.9, 0.5), "blob": Color(0.3, 0.9, 1.0, 0.12),
+		"from_scale": 0.5, "trans": Tween.TRANS_BACK, "spin": 0.0, "shards": 0,
+	},
+	"ink": {
+		# 먹물처럼 크게 번져 들어온다 — 커진 상태에서 제자리로 오므라든다.
+		"ring": Color(0.75, 0.85, 1.0, 0.25), "blob": Color(0.1, 0.15, 0.3, 0.35),
+		"from_scale": 1.45, "trans": Tween.TRANS_SINE, "spin": 0.0, "shards": 0,
+	},
+	"glass": {
+		# 조각들이 모여 붙는다 — 살짝 돌면서 들어온다.
+		"ring": Color(0.9, 0.98, 1.0, 0.6), "blob": Color(0.6, 0.85, 1.0, 0.10),
+		"from_scale": 0.72, "trans": Tween.TRANS_ELASTIC, "spin": 0.35, "shards": 7,
+	},
+}
+
+
+static func get_style(id: String) -> Dictionary:
+	return STYLES.get(id, STYLES["default"])
+
 var _icon_container: Node2D
 var _word_label: Label
 var _bg: ColorRect
@@ -159,15 +183,21 @@ func reveal_word(word: String) -> void:
 	_word_label.text = word
 	visible = true
 	_draw_neon_icon(word)
+	var style := get_style(RewardManager.equipped_reveal)
+	_apply_style(style)
 	_ring.scale = Vector2(ICON_SCALE, ICON_SCALE)
 	_spawn_sparkles()
+	_spawn_shards(int(style["shards"]))
 	if _tween:
 		_tween.kill()
 	modulate.a = 0.0
-	scale = Vector2(0.5, 0.5)
+	scale = Vector2.ONE * float(style["from_scale"])
+	rotation = float(style["spin"])
 	_tween = create_tween()
 	_tween.tween_property(self, "modulate:a", 1.0, FADE_IN)
-	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.4) \
+		.set_ease(Tween.EASE_OUT).set_trans(style["trans"])
+	_tween.parallel().tween_property(self, "rotation", 0.0, 0.5).set_ease(Tween.EASE_OUT)
 	# Pulsing ring effect
 	_tween.parallel().tween_property(_ring, "scale", Vector2(ICON_SCALE * 1.3, ICON_SCALE * 1.3), 0.6).set_ease(Tween.EASE_OUT)
 	# ⚠️ 표시 시간을 **음성 길이에 맞춘다.**
@@ -181,6 +211,42 @@ func reveal_word(word: String) -> void:
 	_tween.tween_interval(hold)
 	_tween.tween_property(self, "modulate:a", 0.0, FADE_OUT)
 	_tween.tween_callback(_on_reveal_complete)
+
+
+## 스타일 색을 링에 입힌다. 노드를 새로 만들지 않고 색만 바꾼다.
+func _apply_style(style: Dictionary) -> void:
+	if _ring == null:
+		return
+	for c in _ring.get_children():
+		if c is Line2D:
+			c.default_color = style["ring"]
+		elif c is Polygon2D:
+			var base: Color = style["blob"]
+			# 바깥 겹은 더 옅게 — 원래 톤(0.08 / 0.12)의 비율을 유지한다.
+			c.color = Color(base.r, base.g, base.b, base.a * (0.7 if c == _ring.get_child(0) else 1.0))
+
+
+## GLASS 스타일의 조각들. 단어 주위에 짧게 흩어졌다 사라진다.
+func _spawn_shards(count: int) -> void:
+	if count <= 0:
+		return
+	var center := Vector2(get_viewport_rect().size.x * 0.5,
+		get_viewport_rect().size.y * WORD_ANCHOR)
+	for i in count:
+		var shard := Polygon2D.new()
+		var a := TAU * i / float(count)
+		shard.polygon = PackedVector2Array([
+			Vector2(0, -9), Vector2(6, 4), Vector2(-5, 6)
+		])
+		shard.color = Color(0.85, 0.95, 1.0, 0.9)
+		shard.position = center + Vector2(cos(a), sin(a)) * 40.0
+		shard.rotation = a
+		add_child(shard)
+		var tw := create_tween()
+		tw.tween_property(shard, "position", center + Vector2(cos(a), sin(a)) * 130.0, 0.5) \
+			.set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(shard, "modulate:a", 0.0, 0.5)
+		tw.tween_callback(shard.queue_free)
 
 
 func _spawn_sparkles() -> void:

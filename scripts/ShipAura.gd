@@ -54,6 +54,9 @@ func _draw() -> void:
 			var ang: float = -_t * 1.6 + TAU * i / 4.0
 			draw_circle(Vector2(cos(ang), sin(ang)) * r2, 3.0,
 				Color(accent.r, accent.g, accent.b, 0.8))
+	# 응원해 준 사람 표식. 파는 물건이 아니라 감사 표시라 작고 조용하게 둔다.
+	if PurchaseManager.is_owned("support_tip"):
+		draw_circle(Vector2(0, 22), 3.5, Color(1.0, 0.45, 0.55, 0.95))
 	if draw_hull:
 		# 미리보기 — 글로우를 크게 깔고 그 위에 본체.
 		var hull := ShipSkins.get_hull(skin)

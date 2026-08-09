@@ -67,6 +67,8 @@ var pending_score_mult: float = 1.0
 ## 해금한 기체 스킨(영구)과 현재 장착 중인 스킨.
 var unlocked_skins: Dictionary = {ShipSkins.DEFAULT_ID: true}
 var equipped_skin: String = ShipSkins.DEFAULT_ID
+## 장착 중인 단어 완성 연출(상점에서 산 것). 기본은 "default".
+var equipped_reveal: String = "default"
 
 var _daily_emitted: bool = false
 
@@ -244,6 +246,15 @@ func equip_skin(id: String) -> bool:
 	return true
 
 
+## 완성 연출을 갈아입는다. 산 것만 장착할 수 있다.
+func equip_reveal(id: String) -> bool:
+	if id != "default" and not PurchaseManager.is_owned("reveal_" + id):
+		return false
+	equipped_reveal = id
+	_save()
+	return true
+
+
 func get_equipped_skin() -> Dictionary:
 	return ShipSkins.get_skin(equipped_skin)
 
@@ -261,6 +272,7 @@ func _save() -> void:
 	cfg.set_value("reward", "pending_score_mult", pending_score_mult)
 	cfg.set_value("reward", "unlocked_skins", unlocked_skins.keys())
 	cfg.set_value("reward", "equipped_skin", equipped_skin)
+	cfg.set_value("reward", "equipped_reveal", equipped_reveal)
 	cfg.save(SAVE_PATH)
 
 
@@ -281,6 +293,7 @@ func _load() -> void:
 	for k in cfg.get_value("reward", "unlocked_skins", []):
 		unlocked_skins[String(k)] = true
 	equipped_skin = cfg.get_value("reward", "equipped_skin", ShipSkins.DEFAULT_ID)
+	equipped_reveal = cfg.get_value("reward", "equipped_reveal", "default")
 	if not unlocked_skins.has(equipped_skin):
 		equipped_skin = ShipSkins.DEFAULT_ID
 	_daily_emitted = today_seconds >= DAILY_GOAL_SECONDS

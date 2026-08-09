@@ -131,6 +131,8 @@ func _rebuild() -> void:
 		_list.add_child(header)
 		for item in items:
 			_list.add_child(_make_card(item))
+		if kind == StoreItems.Kind.REVEAL:
+			_list.add_child(_make_default_reveal_row())
 	_refresh_preview()
 
 
@@ -139,6 +141,34 @@ func _refresh_preview() -> void:
 	_preview.set_skin(skin)
 	_preview_label.text = String(skin["name_en"])
 	_preview_label.add_theme_color_override("font_color", skin["body"])
+
+
+## 산 연출을 끄고 기본으로 돌아가는 줄. 되돌릴 수 없으면 사고 나서 후회한다.
+func _make_default_reveal_row() -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 64)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	card.add_child(row)
+	var info := Label.new()
+	info.text = "DEFAULT"
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	info.add_theme_font_size_override("font_size", 17)
+	info.add_theme_color_override("font_color", Color(0.6, 0.66, 0.75))
+	row.add_child(info)
+	var btn := Button.new()
+	btn.custom_minimum_size = Vector2(150, 48)
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn.add_theme_font_size_override("font_size", 17)
+	btn.focus_mode = Control.FOCUS_NONE
+	var on: bool = RewardManager.equipped_reveal == "default"
+	btn.text = "● USING" if on else "EQUIP"
+	btn.disabled = on
+	if not on:
+		btn.pressed.connect(_on_equip_reveal.bind("default"))
+	row.add_child(btn)
+	return card
 
 
 func _make_card(item: Dictionary) -> Control:
@@ -176,6 +206,12 @@ func _make_card(item: Dictionary) -> Control:
 		btn.disabled = equipped
 		if not equipped:
 			btn.pressed.connect(_on_equip.bind(String(item["ref"])))
+	elif item["kind"] == StoreItems.Kind.REVEAL:
+		var on: bool = RewardManager.equipped_reveal == String(item["ref"])
+		btn.text = "● USING" if on else "EQUIP"
+		btn.disabled = on
+		if not on:
+			btn.pressed.connect(_on_equip_reveal.bind(String(item["ref"])))
 	else:
 		btn.text = "✓ OWNED"
 		btn.disabled = true
@@ -189,6 +225,13 @@ func _on_buy(product_id: String) -> void:
 	PurchaseManager.buy(product_id)
 
 
+## 완성 연출을 갈아입는다. 기본 연출로 되돌릴 수 있어야 하므로 목록 위에 DEFAULT 버튼도 둔다.
+func _on_equip_reveal(reveal_id: String) -> void:
+	AudioManager.play_sfx("powerup")
+	RewardManager.equip_reveal(reveal_id)
+	_rebuild()
+
+
 func _on_equip(skin_id: String) -> void:
 	AudioManager.play_sfx("powerup")
 	RewardManager.equip_skin(skin_id)
@@ -198,8 +241,13 @@ func _on_equip(skin_id: String) -> void:
 ## 구매가 끝나면 **즉시 장착**한다. 산 것이 보상처럼 느껴지려면 바로 보여야 한다.
 func _on_purchase_state(product_id: String) -> void:
 	var item := StoreItems.get_item(product_id)
-	if not item.is_empty() and item["kind"] == StoreItems.Kind.SHIP:
-		RewardManager.unlock_skin(String(item["ref"]), true)
+	if not item.is_empty():
+		# 구매 즉시 장착한다 — 산 것이 보상처럼 느껴지려면 바로 보여야 한다.
+		match item["kind"]:
+			StoreItems.Kind.SHIP:
+				RewardManager.unlock_skin(String(item["ref"]), true)
+			StoreItems.Kind.REVEAL:
+				RewardManager.equip_reveal(String(item["ref"]))
 	AudioManager.play_sfx("powerup")
 	_status.text = ""
 	_rebuild()
