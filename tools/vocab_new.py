@@ -584,3 +584,156 @@ theme("DESSERT", "디저트", "DESSERT", "BLOB", (0.11, 0.06, 0.08), (1.0, 0.6, 
 	("BROWNIE", "🍫", "브라우니. 초콜릿을 넣어 구워요.", "A dense chocolate cake square.", "One brownie is enough."),
 	("ICECREAM", "🍨", "아이스크림. 차갑고 달아요.", "A frozen sweet food.", "My icecream melts too fast."),
 ])
+
+
+# ============================================================
+# 확장 2차분 — 동사·형용사 8개 테마 (96단어)
+# ⚠️ 지금까지는 전부 구체 명사였다. 명사만으로는 문장을 못 만든다 —
+#    동사·형용사가 들어와야 예문이 실제 영어처럼 읽힌다.
+# ⚠️ 이미 사전에 있는 동사(RUN JUMP SWIM CLIMB MOVE PLAY BEAT SHINE SAVE)와
+#    형용사(HOT COLD WARM CALM + 감정어)는 제외했다.
+# ============================================================
+
+theme("ACTION", "동작", "ACTION", "PULSE", (0.10, 0.06, 0.09), (1.0, 0.55, 0.8), (1.0, 0.75, 0.9),
+[
+	("EAT", "🍽️", "먹다. 음식을 입에 넣어요.", "To put food in your mouth.", "We eat at seven every day."),
+	("SIT", "🪑", "앉다. 의자에 몸을 내려요.", "To rest on a chair or the ground.", "Please sit next to me."),
+	("CUT", "✂️", "자르다. 둘로 나눠요.", "To divide something with a sharp tool.", "Cut the paper in half."),
+	("READ", "📖", "읽다. 글을 눈으로 따라가요.", "To look at words and understand them.", "I read one page a night."),
+	("WALK", "🚶", "걷다. 다리로 천천히 가요.", "To move on your feet slowly.", "They walk to school together."),
+	("WASH", "🧼", "씻다. 물로 깨끗하게 해요.", "To clean something with water.", "Wash your hands before lunch."),
+	("SPEAK", "🗣️", "말하다. 소리를 내어 전해요.", "To say words out loud.", "She speaks very softly."),
+	("WRITE", "✍️", "쓰다. 글자를 남겨요.", "To make letters with a pen.", "Write your name on top."),
+],
+[
+	("SLEEP", "😴", "자다. 눈을 감고 쉬어요.", "To rest with your eyes closed.", "The cat sleeps all day."),
+	("LISTEN", "👂", "듣다. 소리에 귀를 기울여요.", "To pay attention to a sound.", "Listen to the rain outside."),
+	("FOLLOW", "👣", "따라가다. 뒤를 좇아요.", "To go after someone.", "The puppy follows me home."),
+	("REMEMBER", "🧠", "기억하다. 잊지 않고 떠올려요.", "To keep something in your mind.", "I remember that song well."),
+])
+
+theme("MOTION", "움직임", "MOTION", "PULSE", (0.06, 0.09, 0.11), (0.5, 0.9, 1.0), (0.7, 1.0, 1.0),
+[
+	("SPIN", "🌀", "돌다. 제자리에서 빙 돌아요.", "To turn around quickly.", "The coin spins on the table."),
+	("ROLL", "🎳", "구르다. 굴러서 나아가요.", "To turn over and over while moving.", "The ball rolls down the hill."),
+	("DIVE", "🤿", "뛰어들다. 머리부터 물에 들어가요.", "To go head first into water.", "He dives into the cold pool."),
+	("SLIDE", "🛝", "미끄러지다. 매끈하게 내려가요.", "To move smoothly along a surface.", "Children slide down the ramp."),
+	("CRAWL", "🐛", "기다. 배를 붙이고 나아가요.", "To move slowly on hands and knees.", "The baby crawls to the door."),
+	("DANCE", "💃", "춤추다. 음악에 맞춰 움직여요.", "To move your body to music.", "They dance until midnight."),
+	("FLOAT", "🎈", "떠오르다. 가라앉지 않아요.", "To stay on top of water or air.", "The balloon floats away."),
+	("BOUNCE", "🏀", "튀다. 부딪혀 되올라와요.", "To spring back after hitting something.", "The ball bounces twice."),
+],
+[
+	("GALLOP", "🐎", "질주하다. 말이 빠르게 달려요.", "To run fast like a horse.", "The horse gallops across the field."),
+	("TUMBLE", "🤸", "굴러 넘어지다. 데굴데굴 구르며 넘어져요.", "To fall while rolling over.", "He tumbles onto the grass."),
+	("SPRINT", "🏃", "전력 질주하다. 짧게 아주 빨리 달려요.", "To run as fast as you can for a short way.", "She sprints to the finish line."),
+	("SOMERSAULT", "🤸", "공중제비. 몸을 한 바퀴 돌려요.", "A jump where you turn all the way over.", "He did one clean somersault."),
+])
+
+theme("SENSE", "감각", "SENSE", "STAR", (0.08, 0.06, 0.12), (0.8, 0.7, 1.0), (0.9, 0.85, 1.0),
+[
+	("SEE", "👀", "보다. 눈으로 알아봐요.", "To notice something with your eyes.", "I see a bird on the roof."),
+	("HEAR", "👂", "듣다. 소리가 귀에 들어와요.", "To notice a sound with your ears.", "Do you hear that noise?"),
+	("FEEL", "🤲", "느끼다. 몸이나 마음으로 알아요.", "To notice something by touch or emotion.", "I feel the warm sun."),
+	("TASTE", "👅", "맛보다. 혀로 맛을 알아요.", "To notice flavor with your tongue.", "Taste the soup for me."),
+	("SMELL", "👃", "냄새를 맡다. 코로 알아봐요.", "To notice something with your nose.", "The flowers smell sweet."),
+	("TOUCH", "✋", "만지다. 손을 대어 봐요.", "To put your hand on something.", "Do not touch the hot pan."),
+	("WATCH", "👁️", "지켜보다. 오래 바라봐요.", "To look at something for a while.", "We watch the clouds move."),
+	("SILENCE", "🤫", "고요. 아무 소리도 없어요.", "A time with no sound at all.", "The silence woke me up."),
+],
+[
+	("WHISPER", "🤫", "속삭임. 아주 작은 목소리예요.", "A very quiet way of speaking.", "She answers in a whisper."),
+	("TEXTURE", "🧵", "질감. 만졌을 때의 느낌이에요.", "How a surface feels when touched.", "The texture is rough and dry."),
+	("LOUDNESS", "🔊", "소리 크기. 얼마나 큰지예요.", "How strong a sound is.", "Lower the loudness a little."),
+	("FRAGRANCE", "🌸", "향기. 좋은 냄새예요.", "A pleasant smell.", "The fragrance fills the room."),
+])
+
+theme("SIZE", "크기", "SIZE", "BLOB", (0.07, 0.09, 0.06), (0.6, 1.0, 0.6), (0.8, 1.0, 0.8),
+[
+	("BIG", "🐘", "큰. 크기가 많이 나가요.", "Large in size.", "That is a big elephant."),
+	("TINY", "🐜", "아주 작은. 눈에 겨우 보여요.", "Extremely small.", "A tiny ant walks by."),
+	("WIDE", "↔️", "넓은. 좌우가 멀어요.", "Large from side to side.", "The river is very wide."),
+	("TALL", "🦒", "키가 큰. 위로 길어요.", "High from top to bottom.", "The giraffe is so tall."),
+	("DEEP", "🌊", "깊은. 아래로 멀어요.", "Going far down.", "The lake is deep here."),
+	("SMALL", "🐁", "작은. 크기가 적어요.", "Little in size.", "A small mouse hides there."),
+	("SHORT", "📏", "짧은. 길이가 적어요.", "Not long or not tall.", "This rope is too short."),
+	("NARROW", "🚪", "좁은. 폭이 적어요.", "Small from side to side.", "The narrow path turns left."),
+],
+[
+	("LITTLE", "🤏", "조그마한. 아주 조금이에요.", "Small in size or amount.", "Just a little salt, please."),
+	("MASSIVE", "🏔️", "거대한. 엄청나게 커요.", "Extremely large and heavy.", "A massive rock blocks the road."),
+	("GIGANTIC", "🦕", "굉장히 큰. 상상보다 커요.", "Much bigger than normal.", "The gigantic tree hides the sky."),
+	("ENORMOUS", "🐋", "막대한. 아주아주 커요.", "Very much larger than usual.", "An enormous whale passed by."),
+])
+
+theme("FLAVOR", "맛", "FLAVOR", "BLOB", (0.11, 0.08, 0.05), (1.0, 0.75, 0.4), (1.0, 0.9, 0.6),
+[
+	("SOUR", "🍋", "신. 레몬 같은 맛이에요.", "Having a sharp taste like lemon.", "This lemon is very sour."),
+	("MILD", "🥛", "순한. 세지 않은 맛이에요.", "Not strong or spicy.", "The sauce is mild and soft."),
+	("SALTY", "🧂", "짠. 소금 맛이 나요.", "Tasting of salt.", "The soup is a bit salty."),
+	("SWEET", "🍬", "단. 설탕 맛이 나요.", "Tasting of sugar.", "This tea is too sweet."),
+	("SPICY", "🌶️", "매운. 혀가 따끔해요.", "Having a hot burning taste.", "The spicy noodles made me cry."),
+	("FRESH", "🥬", "신선한. 갓 나온 상태예요.", "Newly made or picked.", "The bread is still fresh."),
+	("BITTER", "☕", "쓴. 커피 같은 맛이에요.", "Having a sharp unpleasant taste.", "Black coffee tastes bitter."),
+	("SAVORY", "🍜", "감칠맛 나는. 짭짤하고 깊어요.", "Salty and full of flavor, not sweet.", "The savory broth smells great."),
+],
+[
+	("CREAMY", "🍦", "크림 같은. 부드럽고 진해요.", "Smooth and thick like cream.", "The sauce is rich and creamy."),
+	("CRUNCHY", "🥕", "아삭한. 씹으면 소리가 나요.", "Making a sharp sound when bitten.", "These carrots are very crunchy."),
+	("DELICIOUS", "😋", "아주 맛있는. 정말 맛나요.", "Tasting extremely good.", "That was a delicious meal."),
+	("FLAVORFUL", "🍲", "풍미가 좋은. 맛이 가득해요.", "Full of strong good taste.", "The stew is warm and flavorful."),
+])
+
+theme("TEMPERATURE", "온도", "TEMPERATURE", "STAR", (0.06, 0.08, 0.12), (0.6, 0.85, 1.0), (0.8, 0.95, 1.0),
+[
+	("ICY", "🧊", "얼음처럼 찬. 매우 차가워요.", "As cold as ice.", "The icy wind hurts my face."),
+	("COOL", "🌬️", "시원한. 조금 차가워요.", "A little cold, in a pleasant way.", "A cool breeze came in."),
+	("DAMP", "💧", "축축한. 조금 젖어 있어요.", "Slightly wet.", "The towel is still damp."),
+	("HUMID", "💦", "습한. 공기에 물기가 많아요.", "Having a lot of water in the air.", "Summer here is very humid."),
+	("CHILLY", "🥶", "쌀쌀한. 몸이 오슬오슬해요.", "Cold enough to feel uncomfortable.", "The morning is chilly today."),
+	("FROZEN", "❄️", "얼어붙은. 단단하게 얼었어요.", "Turned hard because of cold.", "The pond is frozen solid."),
+	("BURNING", "🔥", "타는. 불처럼 뜨거워요.", "So hot that it feels like fire.", "The sand is burning hot."),
+	("BOILING", "♨️", "끓는. 물이 펄펄 끓어요.", "Hot enough to bubble.", "The water is boiling now."),
+],
+[
+	("FREEZING", "🧊", "몹시 추운. 얼 만큼 추워요.", "Cold enough to turn water to ice.", "It is freezing outside tonight."),
+	("LUKEWARM", "🌡️", "미지근한. 뜨겁지도 차갑지도 않아요.", "Only slightly warm.", "The tea went lukewarm."),
+	("SCORCHING", "☀️", "타는 듯한. 햇볕이 아주 강해요.", "Extremely hot, like the summer sun.", "It was a scorching afternoon."),
+	("TEMPERATE", "🌤️", "온화한. 너무 춥지도 덥지도 않아요.", "Never very hot or very cold.", "This island has a temperate climate."),
+])
+
+theme("SPEED", "속도", "SPEED", "PULSE", (0.09, 0.06, 0.11), (0.9, 0.6, 1.0), (1.0, 0.8, 1.0),
+[
+	("FAST", "⚡", "빠른. 아주 빨리 가요.", "Moving at high speed.", "That train is really fast."),
+	("SLOW", "🐢", "느린. 천천히 가요.", "Moving with little speed.", "The turtle is slow but sure."),
+	("RUSH", "💨", "서두름. 급하게 움직여요.", "To move or act in a hurry.", "Do not rush your breakfast."),
+	("QUICK", "🐇", "재빠른. 순식간이에요.", "Done in a very short time.", "Take a quick look inside."),
+	("RAPID", "🌊", "급속한. 빠르게 이어져요.", "Happening very fast.", "The river has rapid water."),
+	("STEADY", "🚶", "꾸준한. 일정하게 계속해요.", "Moving at the same speed all along.", "Keep a steady pace uphill."),
+	("SUDDEN", "💥", "갑작스러운. 예고 없이 와요.", "Happening without warning.", "A sudden noise woke us."),
+	("GRADUAL", "📉", "점진적인. 조금씩 변해요.", "Changing slowly over time.", "The gradual climb is easy."),
+],
+[
+	("INSTANT", "⏱️", "즉각적인. 바로 그 순간이에요.", "Happening immediately.", "The reply was instant."),
+	("SLUGGISH", "🦥", "느릿한. 힘없이 느려요.", "Moving slowly and without energy.", "The old fan is sluggish."),
+	("IMMEDIATE", "⏰", "즉시의. 조금도 기다리지 않아요.", "Done at once, with no delay.", "We need an immediate answer."),
+	("ACCELERATE", "🏎️", "가속하다. 점점 빨라져요.", "To go faster and faster.", "The car begins to accelerate."),
+])
+
+theme("STATE", "상태", "STATE", "GEAR", (0.08, 0.08, 0.09), (0.85, 0.9, 1.0), (0.95, 1.0, 1.0),
+[
+	("NEW", "✨", "새로운. 막 생겼어요.", "Made or bought a short time ago.", "These are my new shoes."),
+	("OLD", "🧓", "오래된. 나이가 많아요.", "Having lived or existed a long time.", "This old clock still works."),
+	("WET", "💧", "젖은. 물이 묻었어요.", "Covered with water.", "My socks are all wet."),
+	("DRY", "🌵", "마른. 물기가 없어요.", "Having no water in it.", "The towel is dry again."),
+	("FULL", "🍽️", "가득한. 더 들어갈 자리가 없어요.", "Holding as much as possible.", "The glass is almost full."),
+	("EMPTY", "🕳️", "빈. 아무것도 없어요.", "Having nothing inside.", "The box came back empty."),
+	("CLEAN", "🧼", "깨끗한. 더러움이 없어요.", "Free from dirt.", "Keep your desk clean."),
+	("DIRTY", "🧹", "더러운. 먼지가 묻었어요.", "Covered with dirt.", "His hands are very dirty."),
+],
+[
+	("BROKEN", "💔", "부서진. 못 쓰게 됐어요.", "Damaged and no longer working.", "The broken chair wobbles."),
+	("PERFECT", "💯", "완벽한. 흠이 하나도 없어요.", "Having nothing wrong at all.", "That was a perfect throw."),
+	("FRAGILE", "🥚", "깨지기 쉬운. 조심해야 해요.", "Easily broken.", "This box is fragile, be careful."),
+	("COMPLETE", "✅", "완성된. 빠진 것이 없어요.", "Having all its parts.", "My collection is complete."),
+])

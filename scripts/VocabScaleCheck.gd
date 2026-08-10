@@ -42,7 +42,56 @@ func _ready() -> void:
 		print("FAIL 총량의 %.0f%% 지점 이후로는 수집 보상이 없다 — 기준을 늘릴 것" % ratio)
 		fails += 1
 
-	# 3) 단어별 음성 파일이 다 있는가. 없으면 기기 TTS 로 떨어져 발음이 흔들린다.
+	# 3) 모든 테마 단어가 사전에 있는가.
+	# ⚠️ 이 검사가 없어서 **사전이 통째로 깨진 것을 놓쳤다.** 생성기가 확장 블록을
+	#    교체할 때 기존 단어를 다시 담지 않아 사전 항목이 337 → 255 로 줄고
+	#    EGG·RICE·PIZZA 등이 사라졌는데, `ThemeStages` 는 단어 **목록**만 갖고 있어
+	#    글자수·순서 검사는 전부 통과했다. 사전이 비면 이모지·설명·예문이 없어진다.
+	var no_entry: Array[String] = []
+	var no_phrase: Array[String] = []
+	var no_emoji: Array[String] = []
+	var words := ThemeStages.get_all_words()
+	words.append_array(ThemeStages.get_all_advanced())
+	for w in words:
+		var word := String(w)
+		if WordDictionary.get_description(word).is_empty():
+			no_entry.append(word)
+			continue
+		if WordDictionary.get_phrase(word) == "":
+			no_phrase.append(word)
+		if WordDictionary.get_emoji(word) == "":
+			no_emoji.append(word)
+	print("  사전 누락 %d개 / 예문 누락 %d개 / 이모지 누락 %d개" % [
+		no_entry.size(), no_phrase.size(), no_emoji.size()])
+	if not no_entry.is_empty():
+		print("FAIL 사전에 없는 단어: %s" % ", ".join(no_entry.slice(0, 10)))
+		fails += 1
+	if not no_phrase.is_empty():
+		print("FAIL 예문이 없는 단어: %s" % ", ".join(no_phrase.slice(0, 10)))
+		fails += 1
+	if not no_emoji.is_empty():
+		print("FAIL 이모지가 없는 단어: %s" % ", ".join(no_emoji.slice(0, 10)))
+		fails += 1
+
+	# 4) 한 단어가 두 테마에 들어가면 안 된다. 도감 수집이 한 번만 되므로
+	#    두 테마의 완주 판정이 서로 어긋난다.
+	var owner_of := {}
+	var cross: Array[String] = []
+	for st in ThemeStages.STAGES:
+		var tid := String(st["id"])
+		for arr in [st["words"], st["advanced"]]:
+			for w in arr:
+				var word := String(w)
+				if owner_of.has(word):
+					cross.append("%s(%s↔%s)" % [word, owner_of[word], tid])
+				owner_of[word] = tid
+	print("  테마 간 중복 %d개%s" % [cross.size(),
+		("" if cross.is_empty() else " — " + ", ".join(cross.slice(0, 6)))])
+	if not cross.is_empty():
+		print("FAIL 같은 단어가 두 테마에 있다")
+		fails += 1
+
+	# 5) 단어별 음성 파일이 다 있는가. 없으면 기기 TTS 로 떨어져 발음이 흔들린다.
 	var missing: Array[String] = []
 	var all_words := ThemeStages.get_all_words()
 	all_words.append_array(ThemeStages.get_all_advanced())

@@ -67,7 +67,14 @@ def build_stage_block(theme):
 def main() -> int:
 	write = "--write" in sys.argv
 	dict_src = DICT_PATH.read_text()
-	existing = set(re.findall(r'^\t"(\w+)":', dict_src, re.M))
+	# ⚠️ **확장 어휘 블록 안의 단어는 `existing` 에 넣지 마라.**
+	#    블록은 아래에서 통째로 새로 쓰인다. 블록 안 단어를 "이미 있음" 으로 건너뛰면
+	#    새 블록에 다시 안 담기고, 교체되는 순간 **사전에서 사라진다.**
+	#    실제로 겪었다: 1차 확장에서 사전 항목이 337 → 255 로 줄고 EGG·RICE·PIZZA 등
+	#    기존 단어가 통째로 빠졌다(ThemeStages 는 목록만 갖고 있어 순서 검사는 통과했다).
+	marker_ = "\t# --- 확장 어휘 ---"
+	outside = dict_src[:dict_src.index(marker_)] if marker_ in dict_src else dict_src
+	existing = set(re.findall(r'^\t"(\w+)":', outside, re.M))
 
 	# 1) 사전 — WORD_DATA 의 닫는 중괄호 앞에 삽입
 	block = build_dict_block(existing)

@@ -78,6 +78,28 @@ const SKINS: Array[Dictionary] = [
 		"body": Color(1.35, 1.2, 0.6), "glow": Color(1.0, 0.9, 0.4),
 		"engine": Color(1.0, 0.9, 0.4, 0.9),
 	},
+	# ⚠️ 아래 셋은 **어휘 1000개 목표 기준**으로 놓았다. 지금 총량(540)보다 높은 것도 있지만
+	#    어휘가 늘면 닿는다. 기준을 총량에 비례해 움직이면 이미 열린 기체가 다시 잠긴다 —
+	#    절대값으로 두고 최종 목표에 맞추는 것이 맞다.
+	#    (scenes/VocabScaleCheck.tscn 이 "최고 기준 < 총량의 60%" 면 FAIL 로 알려 준다.)
+	{
+		"id": "arrow", "name_en": "ARROW", "rank": -1, "aura": 2, "hue": false,
+		"hull": "arrow", "collect": 500,
+		"body": Color(0.8, 1.3, 1.15), "glow": Color(0.5, 1.0, 0.9),
+		"engine": Color(0.5, 1.0, 0.9, 0.9),
+	},
+	{
+		"id": "crown", "name_en": "CROWN", "rank": -1, "aura": 3, "hue": false,
+		"hull": "crown", "collect": 750,
+		"body": Color(1.3, 0.85, 1.25), "glow": Color(1.0, 0.6, 1.0),
+		"engine": Color(1.0, 0.6, 1.0, 0.9),
+	},
+	{
+		"id": "phoenix", "name_en": "PHOENIX", "rank": -1, "aura": 3, "hue": false,
+		"hull": "phoenix", "collect": 1000,
+		"body": Color(1.4, 0.95, 0.55), "glow": Color(1.2, 0.65, 0.25),
+		"engine": Color(1.2, 0.65, 0.25, 0.95),
+	},
 	# ---- 결제 기체: 형태가 다르다(출석 보상은 색만 다르다) ----
 	{
 		"id": "dart", "name_en": "DART", "rank": -1, "aura": 1, "hue": false,
@@ -125,6 +147,23 @@ static var HULLS: Dictionary = {
 	# 삼각 날개 — 가장 단순한 변형. 첫 수집 보상.
 	"wing": PackedVector2Array([
 		Vector2(0, -22), Vector2(-20, 14), Vector2(0, 6), Vector2(20, 14),
+	]),
+	# 화살촉형 — 앞이 길게 뻗고 뒤가 깊게 파인다. 수집 500개.
+	"arrow": PackedVector2Array([
+		Vector2(0, -30), Vector2(-9, -6), Vector2(-22, 12), Vector2(-8, 8),
+		Vector2(0, 18), Vector2(8, 8), Vector2(22, 12), Vector2(9, -6),
+	]),
+	# 왕관형 — 위가 세 갈래로 솟는다. 수집 750개.
+	"crown": PackedVector2Array([
+		Vector2(0, -26), Vector2(-7, -10), Vector2(-15, -22), Vector2(-19, -2),
+		Vector2(-24, 14), Vector2(0, 8), Vector2(24, 14), Vector2(19, -2),
+		Vector2(15, -22), Vector2(7, -10),
+	]),
+	# 큰 날개형 — 좌우로 가장 넓게 펼친다. 마지막 수집 기체(1000개).
+	"phoenix": PackedVector2Array([
+		Vector2(0, -28), Vector2(-8, -8), Vector2(-30, -14), Vector2(-20, 6),
+		Vector2(-26, 18), Vector2(-8, 10), Vector2(0, 20), Vector2(8, 10),
+		Vector2(26, 18), Vector2(20, 6), Vector2(30, -14), Vector2(8, -8),
 	]),
 	# 델타익 — 뒤로 젖혀진 날개.
 	"delta": PackedVector2Array([
