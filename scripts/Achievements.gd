@@ -34,18 +34,21 @@ const BADGES: Array[Dictionary] = [
 	{"id": "time10h", "kind": Kind.PLAYTIME, "goal": 36000, "tier": 3,
 		"name": "TEN HOURS", "desc": "누적 10시간"},
 	# ---- 학습: 이 게임의 본체 ----
-	{"id": "words50", "kind": Kind.WORDS, "goal": 50, "tier": 1,
-		"name": "FIRST FIFTY", "desc": "단어 50개 수집"},
-	{"id": "words150", "kind": Kind.WORDS, "goal": 150, "tier": 2,
-		"name": "HALFWAY", "desc": "단어 150개 수집"},
-	{"id": "words300", "kind": Kind.WORDS, "goal": 300, "tier": 3,
-		"name": "ALL WORDS", "desc": "단어 300개 전부 수집"},
+	{"id": "words50", "kind": Kind.WORDS, "goal": 100, "tier": 1,
+		"name": "FIRST HUNDRED", "desc": "단어 100개 수집"},
+	{"id": "words150", "kind": Kind.WORDS, "goal": 400, "tier": 2,
+		"name": "FOUR HUNDRED", "desc": "단어 400개 수집"},
+	# ⚠️ `all: true` 는 목표를 **어휘 총수에서 실시간으로** 가져온다는 뜻이다.
+	#    어휘는 계속 늘어나므로 숫자를 박아 두면 "전부 수집"이 곧 거짓이 된다
+	#    (300 으로 박혀 있던 것을 444 로 늘리는 순간 겪었다).
+	{"id": "words300", "kind": Kind.WORDS, "goal": 300, "all": true, "tier": 3,
+		"name": "ALL WORDS", "desc": "어휘 전부 수집"},
 	{"id": "theme1", "kind": Kind.THEMES, "goal": 1, "tier": 1,
 		"name": "FIRST THEME", "desc": "테마 1개 완주"},
 	{"id": "theme10", "kind": Kind.THEMES, "goal": 10, "tier": 2,
 		"name": "TEN THEMES", "desc": "테마 10개 완주"},
-	{"id": "theme25", "kind": Kind.THEMES, "goal": 25, "tier": 3,
-		"name": "EVERY THEME", "desc": "테마 25개 전부 완주"},
+	{"id": "theme25", "kind": Kind.THEMES, "goal": 25, "all": true, "tier": 3,
+		"name": "EVERY THEME", "desc": "테마 전부 완주"},
 	# ---- 한 판의 성과 ----
 	{"id": "run20", "kind": Kind.RUN_WORDS, "goal": 20, "tier": 1,
 		"name": "TWENTY IN A RUN", "desc": "한 판에 단어 20개"},
@@ -99,9 +102,23 @@ static func earned_now(run_words: int = 0, survived: bool = false) -> Array[Stri
 				value = float(run_words)
 			Kind.SURVIVE:
 				value = 1.0 if survived else 0.0
-		if value >= float(b["goal"]):
+		if value >= goal_of(b):
 			out.append(String(b["id"]))
 	return out
+
+
+## 이 훈장의 목표 수치. `all: true` 면 어휘·테마 **총수를 실시간으로** 쓴다.
+## ⚠️ 어휘가 늘어날 때마다 이 값도 함께 올라야 한다 — 상수로 박으면
+##    단어를 추가한 순간 "전부 수집" 훈장이 실제로는 전부가 아닌 지점에서 열린다.
+static func goal_of(b: Dictionary) -> float:
+	if not bool(b.get("all", false)):
+		return float(b["goal"])
+	match b["kind"]:
+		Kind.WORDS:
+			return float(WordManager.get_collection_progress().y)
+		Kind.THEMES:
+			return float(ThemeStages.count())
+	return float(b["goal"])
 
 
 ## 진행률 문구. 잠긴 훈장에도 "얼마나 왔는지"를 보여준다.
@@ -115,13 +132,13 @@ static func progress_text(id: String) -> String:
 		Kind.PLAYTIME:
 			return "%d / %d MIN" % [int(RewardManager.total_seconds / 60.0), int(b["goal"]) / 60]
 		Kind.WORDS:
-			return "%d / %d WORDS" % [WordManager.get_collection_progress().x, int(b["goal"])]
+			return "%d / %d WORDS" % [WordManager.get_collection_progress().x, int(goal_of(b))]
 		Kind.THEMES:
 			var n := 0
 			for st in ThemeStages.STAGES:
 				if WordManager.is_theme_mastered(String(st["id"])):
 					n += 1
-			return "%d / %d THEMES" % [n, int(b["goal"])]
+			return "%d / %d THEMES" % [n, int(goal_of(b))]
 		Kind.RUN_WORDS:
 			return "%d WORDS IN ONE RUN" % int(b["goal"])
 		Kind.SURVIVE:

@@ -76,6 +76,19 @@ const STAGES: Array[Dictionary] = [
 		"motif": Motif.GEAR,
 	},
 	{
+		"id": "FARM",
+		"name_ko": "농장",
+		"name_en": "FARM",
+		# 평균 4.0글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["COW", "PIG", "HAY", "BARN", "GOAT", "SHEEP", "HORSE", "FENCE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["HARVEST", "PASTURE", "TRACTOR", "SCARECROW"],
+		"bg": Color(0.09, 0.08, 0.05),
+		"accent": Color(1.00, 0.80, 0.45),
+		"particle": Color(1.00, 0.90, 0.60),
+		"motif": Motif.PAW,
+	},
+	{
 		"id": "CLOTHES",
 		"name_ko": "옷",
 		"name_en": "CLOTHES",
@@ -178,6 +191,45 @@ const STAGES: Array[Dictionary] = [
 		"accent": Color(0.50, 1.00, 0.50),
 		"particle": Color(0.70, 1.00, 0.65),
 		"motif": Motif.LEAF,
+	},
+	{
+		"id": "KITCHEN",
+		"name_ko": "주방",
+		"name_en": "KITCHEN",
+		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["POT", "PAN", "BOWL", "FORK", "KNIFE", "SPOON", "PLATE", "KETTLE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["FRIDGE", "BLENDER", "CUPBOARD", "MICROWAVE"],
+		"bg": Color(0.11, 0.07, 0.05),
+		"accent": Color(1.00, 0.70, 0.40),
+		"particle": Color(1.00, 0.85, 0.55),
+		"motif": Motif.BLOB,
+	},
+	{
+		"id": "BIRD",
+		"name_ko": "새",
+		"name_en": "BIRD",
+		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["HEN", "DUCK", "CROW", "DOVE", "SWAN", "EAGLE", "ROBIN", "PARROT"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["TURKEY", "PEACOCK", "FLAMINGO", "WOODPECKER"],
+		"bg": Color(0.07, 0.09, 0.12),
+		"accent": Color(0.70, 0.90, 1.00),
+		"particle": Color(0.85, 0.95, 1.00),
+		"motif": Motif.PAW,
+	},
+	{
+		"id": "DESSERT",
+		"name_ko": "디저트",
+		"name_en": "DESSERT",
+		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["PIE", "JAM", "CAKE", "TART", "HONEY", "CANDY", "DONUT", "COOKIE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["WAFFLE", "PUDDING", "BROWNIE", "ICECREAM"],
+		"bg": Color(0.11, 0.06, 0.08),
+		"accent": Color(1.00, 0.60, 0.75),
+		"particle": Color(1.00, 0.80, 0.90),
+		"motif": Motif.BLOB,
 	},
 	{
 		"id": "COLOR",
@@ -324,6 +376,45 @@ const STAGES: Array[Dictionary] = [
 		"motif": Motif.BLOB,
 	},
 	{
+		"id": "TREE",
+		"name_ko": "나무",
+		"name_en": "TREE",
+		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["ELM", "BARK", "TWIG", "PALM", "MAPLE", "BIRCH", "BRANCH", "WILLOW"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["FOREST", "ORCHARD", "CHESTNUT", "EUCALYPTUS"],
+		"bg": Color(0.05, 0.09, 0.05),
+		"accent": Color(0.45, 0.95, 0.50),
+		"particle": Color(0.65, 1.00, 0.65),
+		"motif": Motif.LEAF,
+	},
+	{
+		"id": "FLOWER",
+		"name_ko": "꽃",
+		"name_en": "FLOWER",
+		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["BUD", "ROSE", "LILY", "IRIS", "PETAL", "DAISY", "POLLEN", "ORCHID"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["BLOSSOM", "LAVENDER", "CARNATION", "CHRYSANTHEMUM"],
+		"bg": Color(0.10, 0.05, 0.10),
+		"accent": Color(1.00, 0.60, 0.90),
+		"particle": Color(1.00, 0.80, 0.95),
+		"motif": Motif.LEAF,
+	},
+	{
+		"id": "TOOL",
+		"name_ko": "공구",
+		"name_en": "TOOL",
+		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["SAW", "NAIL", "BOLT", "TAPE", "DRILL", "SCREW", "HAMMER", "WRENCH"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["LADDER", "SHOVEL", "TOOLBOX", "SCREWDRIVER"],
+		"bg": Color(0.08, 0.08, 0.10),
+		"accent": Color(0.85, 0.85, 0.95),
+		"particle": Color(1.00, 1.00, 1.00),
+		"motif": Motif.GEAR,
+	},
+	{
 		"id": "MUSIC",
 		"name_ko": "음악",
 		"name_en": "MUSIC",
@@ -335,6 +426,45 @@ const STAGES: Array[Dictionary] = [
 		"accent": Color(0.80, 0.50, 1.00),
 		"particle": Color(0.90, 0.70, 1.00),
 		"motif": Motif.PULSE,
+	},
+	{
+		"id": "VEGETABLE",
+		"name_ko": "채소",
+		"name_en": "VEGETABLE",
+		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["PEA", "CORN", "BEAN", "LEEK", "ONION", "GARLIC", "CARROT", "PEPPER"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["POTATO", "SPINACH", "CABBAGE", "CUCUMBER"],
+		"bg": Color(0.05, 0.11, 0.06),
+		"accent": Color(0.50, 1.00, 0.45),
+		"particle": Color(0.70, 1.00, 0.60),
+		"motif": Motif.LEAF,
+	},
+	{
+		"id": "HEALTH",
+		"name_ko": "건강",
+		"name_en": "HEALTH",
+		# 평균 4.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["BONE", "PILL", "MASK", "COUGH", "FEVER", "TOOTH", "HEART", "SYRINGE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["BANDAGE", "VITAMIN", "MEDICINE", "THERMOMETER"],
+		"bg": Color(0.05, 0.10, 0.10),
+		"accent": Color(0.40, 1.00, 0.85),
+		"particle": Color(0.60, 1.00, 0.90),
+		"motif": Motif.PULSE,
+	},
+	{
+		"id": "MONEY",
+		"name_ko": "돈",
+		"name_en": "MONEY",
+		# 평균 4.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["COIN", "CASH", "BILL", "SAVE", "PRICE", "WALLET", "CREDIT", "BUDGET"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["INCOME", "PAYMENT", "DISCOUNT", "INVESTMENT"],
+		"bg": Color(0.09, 0.09, 0.05),
+		"accent": Color(1.00, 0.85, 0.35),
+		"particle": Color(1.00, 0.95, 0.60),
+		"motif": Motif.STAR,
 	},
 	{
 		"id": "JOB",
@@ -350,6 +480,19 @@ const STAGES: Array[Dictionary] = [
 		"motif": Motif.GEAR,
 	},
 	{
+		"id": "TRAVEL",
+		"name_ko": "여행",
+		"name_en": "TRAVEL",
+		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["BAG", "TENT", "VISA", "BEACH", "TICKET", "CAMERA", "JOURNEY", "LUGGAGE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["PASSPORT", "SOUVENIR", "SUITCASE", "ADVENTURE"],
+		"bg": Color(0.06, 0.07, 0.13),
+		"accent": Color(0.50, 0.85, 1.00),
+		"particle": Color(0.70, 0.95, 1.00),
+		"motif": Motif.STAR,
+	},
+	{
 		"id": "MACHINE",
 		"name_ko": "기계",
 		"name_en": "MACHINES",
@@ -360,6 +503,19 @@ const STAGES: Array[Dictionary] = [
 		"bg": Color(0.06, 0.07, 0.10),
 		"accent": Color(0.7, 0.8, 1.0),
 		"particle": Color(0.55, 0.7, 0.9),
+		"motif": Motif.GEAR,
+	},
+	{
+		"id": "AIRPORT",
+		"name_ko": "공항",
+		"name_en": "AIRPORT",
+		# 평균 5.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["GATE", "BELT", "SEAT", "CABIN", "FLIGHT", "RUNWAY", "LANDING", "BOARDING"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["TERMINAL", "DEPARTURE", "PASSENGER", "RESERVATION"],
+		"bg": Color(0.05, 0.08, 0.12),
+		"accent": Color(0.60, 0.90, 1.00),
+		"particle": Color(0.80, 0.95, 1.00),
 		"motif": Motif.GEAR,
 	},
 ]

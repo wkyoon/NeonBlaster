@@ -47,7 +47,8 @@ func _build() -> void:
 
 	# 기본은 무료라는 것을 먼저 말한다. 상점을 열자마자 불안해지지 않게.
 	var note := Label.new()
-	note.text = "ALL 300 WORDS ARE FREE — THESE ARE JUST FOR LOOKS"
+	# ⚠️ 개수를 박지 말 것. 어휘가 늘면 이 문구가 곧 거짓이 된다.
+	note.text = "ALL %d WORDS ARE FREE — THESE ARE JUST FOR LOOKS" % WordManager.get_collection_progress().y
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	note.position = Vector2(0, 82)
 	note.size = Vector2(vp.x, 24)

@@ -86,8 +86,15 @@ def main() -> int:
 	tail = stage_src[stage_src.index("\n]\n\n\n## 모든 테마"):]
 	body = stage_src[len(head):len(stage_src) - len(tail)]
 	old_blocks = re.findall(r'\t\{\n.*?\n\t\},', body, re.S)
+	# ⚠️ **vocab_new 에 있는 테마는 기존 블록을 버리고 새로 찍는다.**
+	#    이 걸러내기가 없으면 --write 를 두 번 돌릴 때 그 테마가 통째로 **중복**된다
+	#    (실측: 25개 → 44개, 19개가 두 벌씩). 생성기는 몇 번 돌려도 결과가 같아야 한다.
+	new_ids = {t["id"] for t in vocab_new.THEMES}
 	entries = []
 	for blk in old_blocks:
+		tid = re.search(r'"id": "(\w+)"', blk).group(1)
+		if tid in new_ids:
+			continue
 		words = re.findall(r'"(\w+)"', re.search(r'"words": \[(.*?)\]', blk, re.S).group(1))
 		entries.append((sum(len(w) for w in words) / len(words), blk))
 	for theme in vocab_new.THEMES:

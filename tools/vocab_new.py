@@ -362,3 +362,225 @@ theme("PLANT", "식물", "PLANTS", "LEAF", (0.04, 0.10, 0.05), (0.5, 1.0, 0.5), 
 	("MUSHROOM", "🍄", "버섯. 우산 모양으로 자라요.", "A soft growth shaped like an umbrella.", "A mushroom grows in shade."),
 	("SUNFLOWER", "🌻", "해바라기. 해를 따라 도는 꽃이에요.", "A tall yellow flower that faces the sun.", "The sunflower faces the sun."),
 ])
+
+
+# ============================================================
+# 확장 1차분 — 새 테마 12개 (144단어)
+# 목표 어휘 1000개를 향한 첫 묶음. 규칙은 파일 맨 위 주석 참조.
+# ============================================================
+
+theme("HEALTH", "건강", "HEALTH", "PULSE", (0.05, 0.10, 0.10), (0.4, 1.0, 0.85), (0.6, 1.0, 0.9),
+[
+	("BONE", "🦴", "뼈. 몸을 받쳐 주는 단단한 부분이에요.", "A hard white part inside the body.", "The dog found a big bone."),
+	("PILL", "💊", "알약. 물과 함께 삼켜요.", "A small round medicine you swallow.", "She takes one pill a day."),
+	("MASK", "😷", "마스크. 입과 코를 덮어요.", "A cover you wear over your mouth and nose.", "He wears a mask on the bus."),
+	("COUGH", "🤧", "기침. 목이 아플 때 나와요.", "A sudden loud sound from a sore throat.", "My cough is getting better."),
+	("FEVER", "🤒", "열. 몸이 뜨거워지는 증상이에요.", "A body that is hotter than normal.", "The baby has a small fever."),
+	("TOOTH", "🦷", "이. 음식을 씹는 데 써요.", "A hard white part in your mouth for chewing.", "One tooth hurts a little."),
+	("HEART", "❤️", "심장. 가슴에서 쿵쿵 뛰어요.", "The organ that pumps blood in your chest.", "I can hear my heart beat."),
+	("SYRINGE", "💉", "주사기. 약을 몸에 넣어요.", "A tool with a needle used to give medicine.", "The nurse holds a syringe."),
+],
+[
+	("BANDAGE", "🩹", "반창고. 다친 곳에 붙여요.", "A strip you put over a cut.", "Put a bandage on your knee."),
+	("VITAMIN", "🍊", "비타민. 몸에 좋은 영양분이에요.", "Something in food that keeps you healthy.", "Fruit is full of vitamin C."),
+	("MEDICINE", "💊", "약. 아플 때 먹어요.", "Something you take to feel better.", "Take your medicine after lunch."),
+	("THERMOMETER", "🌡️", "체온계. 열을 재는 도구예요.", "A tool that measures how hot something is.", "The thermometer shows a fever."),
+])
+
+theme("TRAVEL", "여행", "TRAVEL", "STAR", (0.06, 0.07, 0.13), (0.5, 0.85, 1.0), (0.7, 0.95, 1.0),
+[
+	("BAG", "🎒", "가방. 짐을 넣어 들고 다녀요.", "Something you carry your things in.", "My bag is very heavy."),
+	("TENT", "⛺", "텐트. 밖에서 잘 때 쳐요.", "A cloth shelter you sleep in outdoors.", "We sleep in a small tent."),
+	("VISA", "🛂", "비자. 다른 나라에 들어갈 허가예요.", "Permission to enter another country.", "I need a visa for that trip."),
+	("BEACH", "🏖️", "해변. 바다 옆 모래밭이에요.", "Sand next to the sea.", "The beach is warm today."),
+	("TICKET", "🎫", "표. 타거나 들어갈 때 내요.", "A paper that lets you enter or ride.", "Keep your ticket in your bag."),
+	("CAMERA", "📷", "사진기. 사진을 찍어요.", "A device for taking pictures.", "She holds the camera up."),
+	("JOURNEY", "🧭", "여정. 긴 여행길이에요.", "A long trip from one place to another.", "Our journey starts at dawn."),
+	("LUGGAGE", "🧳", "짐. 여행에 가져가는 가방들이에요.", "The bags you take on a trip.", "My luggage is still in the car."),
+],
+[
+	("PASSPORT", "🛂", "여권. 나라 밖으로 나갈 때 필요해요.", "A book that proves who you are abroad.", "Show your passport at the gate."),
+	("SOUVENIR", "🎁", "기념품. 여행에서 사 오는 물건이에요.", "Something you buy to remember a place.", "I bought a small souvenir."),
+	("SUITCASE", "🧳", "여행 가방. 바퀴가 달려 있어요.", "A flat bag with wheels for clothes.", "The suitcase will not close."),
+	("ADVENTURE", "🏔️", "모험. 신나고 새로운 경험이에요.", "An exciting and unusual experience.", "It was a real adventure."),
+])
+
+theme("AIRPORT", "공항", "AIRPORT", "GEAR", (0.05, 0.08, 0.12), (0.6, 0.9, 1.0), (0.8, 0.95, 1.0),
+[
+	("GATE", "🛫", "탑승구. 비행기를 타러 가는 문이에요.", "The door where you get on a plane.", "Our gate is number nine."),
+	("BELT", "🧷", "안전벨트. 앉으면 매요.", "A strap that holds you in your seat.", "Please fasten your belt."),
+	("SEAT", "💺", "좌석. 앉는 자리예요.", "A place to sit down.", "My seat is by the window."),
+	("CABIN", "🛩️", "객실. 비행기 안 사람이 타는 곳이에요.", "The part of a plane where people sit.", "The cabin is quiet now."),
+	("FLIGHT", "✈️", "비행. 비행기가 가는 길이에요.", "A trip made by plane.", "The flight takes two hours."),
+	("RUNWAY", "🛫", "활주로. 비행기가 달리는 길이에요.", "The long road a plane rolls on.", "The plane waits on the runway."),
+	("LANDING", "🛬", "착륙. 비행기가 땅에 내려요.", "The moment a plane touches the ground.", "The landing was very smooth."),
+	("BOARDING", "🎫", "탑승. 비행기에 올라타요.", "Getting on a plane or ship.", "Boarding starts in ten minutes."),
+],
+[
+	("TERMINAL", "🏢", "터미널. 공항의 큰 건물이에요.", "The big building at an airport.", "We meet at terminal two."),
+	("DEPARTURE", "🛫", "출발. 떠나는 것이에요.", "The act of leaving a place.", "Check the departure time."),
+	("PASSENGER", "🧍", "승객. 타고 가는 사람이에요.", "A person who travels in a vehicle.", "Every passenger is seated."),
+	("RESERVATION", "📋", "예약. 미리 자리를 잡아 두는 거예요.", "An arrangement made in advance.", "I have a reservation for two."),
+])
+
+theme("KITCHEN", "주방", "KITCHEN", "BLOB", (0.11, 0.07, 0.05), (1.0, 0.7, 0.4), (1.0, 0.85, 0.55),
+[
+	("POT", "🍲", "냄비. 국을 끓여요.", "A deep round dish for cooking.", "The pot is on the stove."),
+	("PAN", "🍳", "프라이팬. 부치거나 볶아요.", "A flat dish for frying food.", "Put the egg in the pan."),
+	("BOWL", "🥣", "그릇. 둥글고 깊어요.", "A round deep dish for food.", "She fills the bowl with soup."),
+	("FORK", "🍴", "포크. 찍어서 먹어요.", "A tool with points for picking up food.", "Use a fork for the salad."),
+	("KNIFE", "🔪", "칼. 자를 때 써요.", "A sharp tool for cutting.", "This knife cuts bread well."),
+	("SPOON", "🥄", "숟가락. 떠서 먹어요.", "A round tool for eating liquid food.", "Stir it with a spoon."),
+	("PLATE", "🍽️", "접시. 음식을 담아요.", "A flat dish you put food on.", "My plate is already empty."),
+	("KETTLE", "🫖", "주전자. 물을 끓여요.", "A pot used to boil water.", "The kettle is boiling now."),
+],
+[
+	("FRIDGE", "🧊", "냉장고. 음식을 차게 보관해요.", "A cold box that keeps food fresh.", "The milk is in the fridge."),
+	("BLENDER", "🥤", "믹서. 갈아서 음료를 만들어요.", "A machine that mixes food into liquid.", "The blender makes a loud noise."),
+	("CUPBOARD", "🗄️", "찬장. 그릇을 넣어 두는 곳이에요.", "A closed shelf for dishes and food.", "The cups are in the cupboard."),
+	("MICROWAVE", "♨️", "전자레인지. 음식을 빨리 데워요.", "A machine that heats food quickly.", "Warm the rice in the microwave."),
+])
+
+theme("VEGETABLE", "채소", "VEGETABLE", "LEAF", (0.05, 0.11, 0.06), (0.5, 1.0, 0.45), (0.7, 1.0, 0.6),
+[
+	("PEA", "🫛", "완두콩. 작고 둥근 초록 콩이에요.", "A small round green seed you eat.", "One pea rolled off the plate."),
+	("CORN", "🌽", "옥수수. 노란 알이 줄지어 있어요.", "A tall plant with yellow seeds in rows.", "We grill corn in summer."),
+	("BEAN", "🫘", "콩. 껍질 안에 씨가 있어요.", "A seed that grows inside a pod.", "Every bean is soft now."),
+	("LEEK", "🌿", "대파. 길고 흰 줄기가 있어요.", "A long white vegetable that tastes like onion.", "Cut the leek into rings."),
+	("ONION", "🧅", "양파. 껍질을 벗기면 눈이 매워요.", "A round vegetable with many layers.", "This onion makes me cry."),
+	("GARLIC", "🧄", "마늘. 향이 아주 강해요.", "A small strong-smelling bulb.", "Add garlic to the soup."),
+	("CARROT", "🥕", "당근. 주황색이고 길어요.", "A long orange root you can eat.", "The rabbit eats a carrot."),
+	("PEPPER", "🌶️", "고추. 매운맛이 나요.", "A vegetable that can taste hot.", "That red pepper is very hot."),
+],
+[
+	("POTATO", "🥔", "감자. 땅속에서 자라요.", "A round root that grows under the ground.", "Bake the potato for an hour."),
+	("SPINACH", "🥬", "시금치. 초록 잎을 먹어요.", "A green leaf vegetable full of iron.", "Spinach makes you strong."),
+	("CABBAGE", "🥬", "양배추. 잎이 겹겹이 싸여 있어요.", "A round vegetable with tight leaves.", "She cuts the cabbage thin."),
+	("CUCUMBER", "🥒", "오이. 길고 시원한 맛이에요.", "A long green vegetable that tastes cool.", "The cucumber is fresh and cold."),
+])
+
+theme("BIRD", "새", "BIRD", "PAW", (0.07, 0.09, 0.12), (0.7, 0.9, 1.0), (0.85, 0.95, 1.0),
+[
+	("HEN", "🐔", "암탉. 달걀을 낳아요.", "A female chicken that lays eggs.", "The hen sits on her eggs."),
+	("DUCK", "🦆", "오리. 물에서 헤엄쳐요.", "A water bird with a flat beak.", "A duck swims in the pond."),
+	("CROW", "🐦", "까마귀. 검고 울음소리가 커요.", "A big black bird with a loud call.", "The crow sits on the wire."),
+	("DOVE", "🕊️", "비둘기. 평화를 뜻해요.", "A white bird that means peace.", "A dove lands on the roof."),
+	("SWAN", "🦢", "백조. 목이 길고 하얘요.", "A large white bird with a long neck.", "The swan glides on the lake."),
+	("EAGLE", "🦅", "독수리. 높이 날고 눈이 좋아요.", "A large bird that flies very high.", "The eagle watches from above."),
+	("ROBIN", "🐦", "울새. 가슴이 붉어요.", "A small bird with a red chest.", "A robin sings every morning."),
+	("PARROT", "🦜", "앵무새. 말을 따라 해요.", "A colorful bird that copies words.", "My parrot says my name."),
+],
+[
+	("TURKEY", "🦃", "칠면조. 크고 꼬리를 펴요.", "A large bird with a wide tail.", "The turkey spreads its tail."),
+	("PEACOCK", "🦚", "공작. 꼬리가 아주 화려해요.", "A bird with a huge bright tail.", "The peacock opens its tail."),
+	("FLAMINGO", "🦩", "플라밍고. 분홍색이고 다리가 길어요.", "A pink bird that stands on one leg.", "The flamingo stands very still."),
+	("WOODPECKER", "🪶", "딱따구리. 나무를 두드려요.", "A bird that knocks holes in trees.", "The woodpecker taps the old tree."),
+])
+
+theme("TREE", "나무", "TREE", "LEAF", (0.05, 0.09, 0.05), (0.45, 0.95, 0.5), (0.65, 1.0, 0.65),
+[
+	("ELM", "🌳", "느티나무. 잎이 넓게 퍼져요.", "A tall shade tree with wide leaves.", "An old elm stands by the road."),
+	("BARK", "🪵", "나무껍질. 줄기를 덮고 있어요.", "The hard cover on a tree trunk.", "The bark feels rough."),
+	("TWIG", "🌿", "잔가지. 아주 얇은 가지예요.", "A very thin branch.", "A twig snapped under my shoe."),
+	("PALM", "🌴", "야자나무. 더운 곳에서 자라요.", "A tall tree with big leaves on top.", "One palm leans over the sand."),
+	("MAPLE", "🍁", "단풍나무. 가을에 잎이 붉어져요.", "A tree whose leaves turn red in autumn.", "The maple turns red in fall."),
+	("BIRCH", "🌲", "자작나무. 껍질이 하얘요.", "A tree with thin white bark.", "The birch shines in the snow."),
+	("BRANCH", "🌿", "가지. 줄기에서 뻗어 나와요.", "A part that grows out from a trunk.", "A bird sits on the branch."),
+	("WILLOW", "🌾", "버드나무. 가지가 늘어져요.", "A tree with long hanging branches.", "The willow bends to the water."),
+],
+[
+	("FOREST", "🌲", "숲. 나무가 아주 많은 곳이에요.", "A large area covered with trees.", "The forest is dark and cool."),
+	("ORCHARD", "🍎", "과수원. 과일나무를 기르는 밭이에요.", "A field where fruit trees grow.", "The orchard smells of apples."),
+	("CHESTNUT", "🌰", "밤. 가시 껍질 안에 들어 있어요.", "A brown nut inside a spiky shell.", "He roasts one chestnut."),
+	("EUCALYPTUS", "🌿", "유칼립투스. 잎에서 시원한 향이 나요.", "A tree with leaves that smell fresh.", "Koalas eat eucalyptus leaves."),
+])
+
+theme("FLOWER", "꽃", "FLOWER", "LEAF", (0.10, 0.05, 0.10), (1.0, 0.6, 0.9), (1.0, 0.8, 0.95),
+[
+	("BUD", "🌷", "꽃봉오리. 아직 피지 않은 꽃이에요.", "A flower before it opens.", "A tiny bud opened today."),
+	("ROSE", "🌹", "장미. 향이 좋고 가시가 있어요.", "A flower with a sweet smell and thorns.", "He gives her one rose."),
+	("LILY", "🪷", "백합. 크고 향이 진해요.", "A large flower with a strong smell.", "The lily floats on the pond."),
+	("IRIS", "🌸", "아이리스. 보라색 잎이 펼쳐져요.", "A flower with wide purple petals.", "The iris blooms by the gate."),
+	("PETAL", "🌸", "꽃잎. 꽃의 얇은 잎이에요.", "One thin colored part of a flower.", "A petal fell on the desk."),
+	("DAISY", "🌼", "데이지. 가운데가 노랗고 작아요.", "A small flower with a yellow center.", "She picks a white daisy."),
+	("POLLEN", "🐝", "꽃가루. 벌이 옮겨 줘요.", "Yellow dust that bees carry.", "Pollen covers the window."),
+	("ORCHID", "🪻", "난초. 모양이 특이하고 귀해요.", "An unusual flower with a strange shape.", "The orchid needs little water."),
+],
+[
+	("BLOSSOM", "🌸", "만개한 꽃. 나무에 가득 피어요.", "A flower on a fruit tree.", "The blossom covers the branch."),
+	("LAVENDER", "💜", "라벤더. 연보라색이고 향이 좋아요.", "A purple plant with a calm smell.", "Lavender helps me sleep."),
+	("CARNATION", "🌺", "카네이션. 감사할 때 드려요.", "A ruffled flower given as thanks.", "I give my mother a carnation."),
+	("CHRYSANTHEMUM", "🌼", "국화. 가을에 피는 꽃이에요.", "A round autumn flower with many petals.", "The chrysanthemum blooms in fall."),
+])
+
+theme("TOOL", "공구", "TOOL", "GEAR", (0.08, 0.08, 0.10), (0.85, 0.85, 0.95), (1.0, 1.0, 1.0),
+[
+	("SAW", "🪚", "톱. 나무를 자를 때 써요.", "A tool with teeth for cutting wood.", "The saw cuts through the board."),
+	("NAIL", "🔨", "못. 망치로 박아요.", "A thin metal pin you hammer in.", "Hit the nail once more."),
+	("BOLT", "🔩", "볼트. 너트와 짝을 이뤄요.", "A thick metal pin with a thread.", "Tighten the bolt by hand."),
+	("TAPE", "📏", "테이프. 붙이거나 길이를 재요.", "A long strip used to stick or measure.", "Pull the tape a little more."),
+	("DRILL", "🪛", "드릴. 구멍을 뚫어요.", "A tool that makes round holes.", "The drill is very loud."),
+	("SCREW", "🔩", "나사. 돌려서 박아요.", "A metal pin you turn to fasten.", "One screw is missing."),
+	("HAMMER", "🔨", "망치. 두드려서 박아요.", "A heavy tool used to hit nails.", "He swings the hammer down."),
+	("WRENCH", "🔧", "렌치. 볼트를 조여요.", "A tool for turning bolts.", "Hand me the small wrench."),
+],
+[
+	("LADDER", "🪜", "사다리. 높은 곳에 올라가요.", "Steps you climb to reach high places.", "The ladder leans on the wall."),
+	("SHOVEL", "🪓", "삽. 땅을 파요.", "A tool for digging soil.", "He digs with a wide shovel."),
+	("TOOLBOX", "🧰", "공구함. 도구를 담아 두어요.", "A box that holds tools.", "The toolbox is under the bench."),
+	("SCREWDRIVER", "🪛", "드라이버. 나사를 돌려요.", "A tool for turning screws.", "I need a thin screwdriver."),
+])
+
+theme("MONEY", "돈", "MONEY", "STAR", (0.09, 0.09, 0.05), (1.0, 0.85, 0.35), (1.0, 0.95, 0.6),
+[
+	("COIN", "🪙", "동전. 둥글고 단단한 돈이에요.", "A small round piece of metal money.", "One coin fell on the floor."),
+	("CASH", "💵", "현금. 종이돈과 동전이에요.", "Money in notes and coins.", "I pay in cash today."),
+	("BILL", "💴", "지폐. 종이로 된 돈이에요.", "A paper note of money.", "He folds the bill twice."),
+	("SAVE", "🏦", "저축하다. 돈을 모아 둬요.", "To keep money for later.", "I save a little each week."),
+	("PRICE", "🏷️", "값. 물건이 얼마인지예요.", "How much something costs.", "The price is too high."),
+	("WALLET", "👛", "지갑. 돈을 넣어 다녀요.", "A small case for money.", "My wallet is in the bag."),
+	("CREDIT", "💳", "신용. 나중에 내겠다는 약속이에요.", "A promise to pay later.", "She buys it on credit."),
+	("BUDGET", "📊", "예산. 쓸 돈을 미리 정해요.", "A plan for how to spend money.", "Our budget is very tight."),
+],
+[
+	("INCOME", "💰", "수입. 벌어들이는 돈이에요.", "The money you earn.", "His income grew this year."),
+	("PAYMENT", "🧾", "지불. 돈을 내는 거예요.", "Money given for something.", "The payment is due today."),
+	("DISCOUNT", "🏷️", "할인. 값을 깎아 줘요.", "An amount taken off the price.", "They give a small discount."),
+	("INVESTMENT", "📈", "투자. 늘리려고 돈을 넣어요.", "Money put in to grow more money.", "It was a smart investment."),
+])
+
+theme("FARM", "농장", "FARM", "PAW", (0.09, 0.08, 0.05), (1.0, 0.8, 0.45), (1.0, 0.9, 0.6),
+[
+	("COW", "🐄", "소. 우유를 줘요.", "A large farm animal that gives milk.", "The cow eats green grass."),
+	("PIG", "🐖", "돼지. 코가 넓적해요.", "A pink farm animal with a flat nose.", "A pig sleeps in the mud."),
+	("HAY", "🌾", "건초. 말린 풀이에요.", "Dry grass fed to animals.", "The hay smells sweet."),
+	("BARN", "🏚️", "헛간. 동물과 짐을 두는 곳이에요.", "A big farm building for animals.", "The horses go in the barn."),
+	("GOAT", "🐐", "염소. 뿔이 있고 잘 올라가요.", "A farm animal with horns that climbs.", "The goat climbs the rock."),
+	("SHEEP", "🐑", "양. 털이 두껍고 폭신해요.", "A farm animal with thick wool.", "We count every sheep."),
+	("HORSE", "🐴", "말. 빠르게 달려요.", "A large animal people ride.", "The horse runs very fast."),
+	("FENCE", "🚧", "울타리. 밭이나 마당을 둘러요.", "A wall of wood or wire around land.", "The fence needs a new board."),
+],
+[
+	("HARVEST", "🌾", "수확. 다 자란 것을 거둬요.", "Gathering crops when they are ready.", "The harvest starts in autumn."),
+	("PASTURE", "🐄", "목초지. 동물이 풀을 뜯는 들이에요.", "A field where animals eat grass.", "The cows walk to the pasture."),
+	("TRACTOR", "🚜", "트랙터. 밭을 가는 기계예요.", "A strong machine that pulls farm tools.", "The tractor turns the soil."),
+	("SCARECROW", "🎃", "허수아비. 새를 쫓아요.", "A figure that frightens birds away.", "The scarecrow wears an old hat."),
+])
+
+theme("DESSERT", "디저트", "DESSERT", "BLOB", (0.11, 0.06, 0.08), (1.0, 0.6, 0.75), (1.0, 0.8, 0.9),
+[
+	("PIE", "🥧", "파이. 속을 채워 구워요.", "A baked dish with filling inside.", "The apple pie is warm."),
+	("JAM", "🍯", "잼. 과일을 졸여 만들어요.", "Sweet fruit spread for bread.", "Spread jam on the toast."),
+	("CAKE", "🍰", "케이크. 생일에 먹어요.", "A soft sweet food for parties.", "We cut the cake together."),
+	("TART", "🥧", "타르트. 얇은 껍질에 과일을 올려요.", "A small open pie with fruit on top.", "This tart has fresh berries."),
+	("HONEY", "🍯", "꿀. 벌이 만든 단 액체예요.", "A sweet liquid made by bees.", "Honey drips from the spoon."),
+	("CANDY", "🍬", "사탕. 입에서 천천히 녹아요.", "A small hard sweet you suck.", "One candy is left."),
+	("DONUT", "🍩", "도넛. 가운데 구멍이 있어요.", "A round sweet cake with a hole.", "The donut is still warm."),
+	("COOKIE", "🍪", "쿠키. 바삭하게 구운 과자예요.", "A small flat sweet baked crisp.", "She bakes one more cookie."),
+],
+[
+	("WAFFLE", "🧇", "와플. 네모 무늬가 있어요.", "A crisp cake with square holes.", "The waffle holds the syrup."),
+	("PUDDING", "🍮", "푸딩. 부드럽게 떠먹어요.", "A soft sweet food eaten with a spoon.", "The pudding wobbles a little."),
+	("BROWNIE", "🍫", "브라우니. 초콜릿을 넣어 구워요.", "A dense chocolate cake square.", "One brownie is enough."),
+	("ICECREAM", "🍨", "아이스크림. 차갑고 달아요.", "A frozen sweet food.", "My icecream melts too fast."),
+])
