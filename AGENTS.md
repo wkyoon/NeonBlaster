@@ -331,7 +331,7 @@ python3 tools/balance_report.py # 기존 스윕 결과만 다시 집계
 현재 학습 사이클 (실측 기반 계산):
 | 지표 | 값 |
 |---|---|
-| 전체 어휘 | **540개** (45테마 × 12 = 기본 8 + 심화 4) — **목표 1000개, 확장 중** |
+| 전체 어휘 | **684개** (57테마 × 12 = 기본 8 + 심화 4) — **목표 1000개, 확장 중** |
 | 단어 하나가 화면에 머무는 시간 | 1.91초 (온전히 보이는 시간 1.16초) |
 | 모든 단어를 한 번씩 보는 데 | 완성 600회 |
 | 10분 세션 | 약 50~76개 완성 |
@@ -386,7 +386,10 @@ godot --headless --path . scenes/WordOrderCheck.tscn    # 실제 출현 순서
 ```
 생성기가 스테이지를 **평균 글자수 오름차순으로 재배치**한다(현재 BODY 3.5 → AIRPORT 5.5).
 
-⚠️ **명사만 있으면 문장이 안 된다.** 45테마 중 8개(ACTION MOTION SENSE SIZE FLAVOR
+⚠️ **테마 id 를 기존 단어와 겹치게 만들지 마라.** MONTH·BOOK·LIBRARY·RESTAURANT 는
+이미 단어라서 테마는 CALENDAR·READING·DINING 으로 두었다.
+
+⚠️ **명사만 있으면 문장이 안 된다.** 57테마 중 8개(ACTION MOTION SENSE SIZE FLAVOR
 TEMPERATURE SPEED STATE)는 동사·형용사다. 이모지가 약한 대신 예문이 실제 영어로 읽힌다.
 
 ⚠️ **생성기는 몇 번 돌려도 결과가 같아야 한다.** 예전에는 `vocab_new` 에 있는 테마를

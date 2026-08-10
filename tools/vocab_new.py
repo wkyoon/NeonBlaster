@@ -737,3 +737,226 @@ theme("STATE", "상태", "STATE", "GEAR", (0.08, 0.08, 0.09), (0.85, 0.9, 1.0), 
 	("FRAGILE", "🥚", "깨지기 쉬운. 조심해야 해요.", "Easily broken.", "This box is fragile, be careful."),
 	("COMPLETE", "✅", "완성된. 빠진 것이 없어요.", "Having all its parts.", "My collection is complete."),
 ])
+
+
+# ============================================================
+# 확장 3차분 — 새 테마 12개 (144단어)
+# ⚠️ 테마 id 가 기존 **단어**와 겹치지 않게 이름을 골랐다:
+#    MONTH·BOOK·LIBRARY·RESTAURANT 는 이미 단어라 CALENDAR·READING·DINING 으로 두었다.
+# ============================================================
+
+theme("CALENDAR", "달", "CALENDAR", "STAR", (0.07, 0.07, 0.11), (0.7, 0.8, 1.0), (0.85, 0.9, 1.0),
+[
+	("MAY", "🌷", "5월. 꽃이 많이 피는 달이에요.", "The fifth month of the year.", "My birthday is in May."),
+	("JUNE", "☀️", "6월. 여름이 시작돼요.", "The sixth month of the year.", "June brings warm days."),
+	("JULY", "🏖️", "7월. 가장 더운 달이에요.", "The seventh month of the year.", "We swim a lot in July."),
+	("APRIL", "🌸", "4월. 봄비가 자주 와요.", "The fourth month of the year.", "April rain helps the flowers."),
+	("MARCH", "🌱", "3월. 학교가 시작돼요.", "The third month of the year.", "School starts in March."),
+	("AUGUST", "🌻", "8월. 방학이 있는 달이에요.", "The eighth month of the year.", "August is our holiday month."),
+	("JANUARY", "❄️", "1월. 한 해의 첫 달이에요.", "The first month of the year.", "January is cold and quiet."),
+	("OCTOBER", "🍂", "10월. 잎이 물드는 달이에요.", "The tenth month of the year.", "October leaves turn gold."),
+],
+[
+	("FEBRUARY", "⛄", "2월. 가장 짧은 달이에요.", "The shortest month of the year.", "February has only 28 days."),
+	("NOVEMBER", "🌫️", "11월. 바람이 차가워져요.", "The eleventh month of the year.", "November mornings are misty."),
+	("DECEMBER", "🎄", "12월. 한 해의 마지막 달이에요.", "The last month of the year.", "December ends the year."),
+	("SEPTEMBER", "🌾", "9월. 열매를 거두는 달이에요.", "The ninth month of the year.", "September is harvest time."),
+])
+
+theme("WEEKDAY", "요일", "WEEKDAY", "GEAR", (0.06, 0.08, 0.10), (0.6, 0.9, 0.95), (0.8, 1.0, 1.0),
+[
+	("MONDAY", "1️⃣", "월요일. 한 주가 시작돼요.", "The first day of the work week.", "Monday always comes too fast."),
+	("FRIDAY", "5️⃣", "금요일. 주말 바로 앞이에요.", "The last day before the weekend.", "Friday is my favorite day."),
+	("SUNDAY", "☀️", "일요일. 쉬는 날이에요.", "The day of rest at the week's end.", "We stay home on Sunday."),
+	("TUESDAY", "2️⃣", "화요일. 월요일 다음이에요.", "The day after Monday.", "Tuesday is a busy day."),
+	("WEEKEND", "🛋️", "주말. 토요일과 일요일이에요.", "Saturday and Sunday together.", "The weekend went by fast."),
+	("HOLIDAY", "🎉", "휴일. 일하지 않는 날이에요.", "A day when nobody works.", "Tomorrow is a holiday."),
+	("THURSDAY", "4️⃣", "목요일. 금요일 하루 전이에요.", "The day before Friday.", "We meet every Thursday."),
+	("SATURDAY", "6️⃣", "토요일. 주말의 첫날이에요.", "The first day of the weekend.", "Saturday morning is quiet."),
+],
+[
+	("BIRTHDAY", "🎂", "생일. 태어난 날이에요.", "The day you were born.", "Her birthday is next week."),
+	("SCHEDULE", "🗓️", "일정. 언제 무엇을 할지 적어요.", "A plan of what happens when.", "Check the schedule again."),
+	("WEDNESDAY", "3️⃣", "수요일. 주의 가운데예요.", "The middle day of the week.", "Wednesday is halfway there."),
+	("ANNIVERSARY", "💐", "기념일. 매년 돌아오는 특별한 날이에요.", "A day you remember every year.", "They celebrate their anniversary."),
+])
+
+theme("DIRECTION", "방향", "DIRECTION", "GEAR", (0.08, 0.07, 0.10), (0.75, 0.8, 1.0), (0.9, 0.9, 1.0),
+[
+	("UP", "⬆️", "위. 하늘 쪽이에요.", "Toward a higher place.", "Look up at the stars."),
+	("TOP", "🔝", "맨 위. 가장 높은 곳이에요.", "The highest part of something.", "Write your name at the top."),
+	("LEFT", "⬅️", "왼쪽. 오른쪽의 반대예요.", "The side opposite the right.", "Turn left at the corner."),
+	("EAST", "🌅", "동쪽. 해가 뜨는 쪽이에요.", "The direction where the sun rises.", "The sun rises in the east."),
+	("WEST", "🌇", "서쪽. 해가 지는 쪽이에요.", "The direction where the sun sets.", "The sun sets in the west."),
+	("DOWN", "⬇️", "아래. 땅 쪽이에요.", "Toward a lower place.", "Climb down very slowly."),
+	("NORTH", "🧭", "북쪽. 나침반이 가리키는 쪽이에요.", "The direction a compass points to.", "We walked north all morning."),
+	("RIGHT", "➡️", "오른쪽. 왼쪽의 반대예요.", "The side opposite the left.", "The shop is on the right."),
+],
+[
+	("SOUTH", "🗺️", "남쪽. 북쪽의 반대예요.", "The direction opposite north.", "Birds fly south in autumn."),
+	("MIDDLE", "⏺️", "가운데. 양쪽에서 같은 거리예요.", "The point at the center.", "Sit in the middle row."),
+	("FORWARD", "⏩", "앞으로. 나아가는 쪽이에요.", "Toward the front.", "Take one step forward."),
+	("BACKWARD", "⏪", "뒤로. 물러나는 쪽이에요.", "Toward the back.", "He walked backward slowly."),
+])
+
+theme("NUMBER", "숫자", "NUMBER", "STAR", (0.06, 0.09, 0.09), (0.5, 1.0, 0.9), (0.7, 1.0, 0.95),
+[
+	("ONE", "1️⃣", "하나. 가장 작은 셈이에요.", "The number 1.", "I only need one pencil."),
+	("TWO", "2️⃣", "둘. 하나에 하나를 더해요.", "The number 2.", "Two birds sit on the wire."),
+	("SIX", "6️⃣", "여섯. 다섯보다 하나 많아요.", "The number 6.", "Six eggs are left."),
+	("TEN", "🔟", "열. 손가락 수예요.", "The number 10.", "Count to ten and stop."),
+	("FOUR", "4️⃣", "넷. 셋보다 하나 많아요.", "The number 4.", "A table has four legs."),
+	("FIVE", "5️⃣", "다섯. 한 손의 손가락 수예요.", "The number 5.", "Five minutes is enough."),
+	("NINE", "9️⃣", "아홉. 열보다 하나 적어요.", "The number 9.", "The train leaves at nine."),
+	("THREE", "3️⃣", "셋. 둘보다 하나 많아요.", "The number 3.", "Three cats sleep together."),
+],
+[
+	("SEVEN", "7️⃣", "일곱. 한 주의 날 수예요.", "The number 7.", "A week has seven days."),
+	("EIGHT", "8️⃣", "여덟. 일곱보다 하나 많아요.", "The number 8.", "Eight players are ready."),
+	("HUNDRED", "💯", "백. 열의 열 배예요.", "The number 100.", "A hundred people came."),
+	("THOUSAND", "🔢", "천. 백의 열 배예요.", "The number 1000.", "A thousand stars filled the sky."),
+])
+
+theme("ART", "예술", "ART", "BLOB", (0.10, 0.06, 0.11), (1.0, 0.65, 1.0), (1.0, 0.85, 1.0),
+[
+	("INK", "🖋️", "잉크. 글씨나 그림을 그리는 물감이에요.", "Colored liquid used for writing.", "The ink spilled on my hand."),
+	("CLAY", "🏺", "찰흙. 손으로 모양을 빚어요.", "Soft earth you shape with your hands.", "She shapes the wet clay."),
+	("PAINT", "🎨", "물감. 색을 칠하는 것이에요.", "Colored liquid you spread on a surface.", "The paint is still wet."),
+	("BRUSH", "🖌️", "붓. 물감을 칠하는 도구예요.", "A tool with hairs for painting.", "Dip the brush in water."),
+	("EASEL", "🖼️", "이젤. 그림을 세워 두는 틀이에요.", "A stand that holds a painting.", "The easel stands by the window."),
+	("CANVAS", "🖼️", "캔버스. 그림을 그리는 천이에요.", "Strong cloth that you paint on.", "The canvas is blank still."),
+	("SKETCH", "✏️", "스케치. 대충 그린 그림이에요.", "A quick simple drawing.", "He made a fast sketch."),
+	("GALLERY", "🏛️", "미술관. 그림을 걸어 두는 곳이에요.", "A place where art is shown.", "The gallery opens at ten."),
+],
+[
+	("PALETTE", "🎨", "팔레트. 물감을 섞는 판이에요.", "A board for mixing colors.", "Her palette is full of blue."),
+	("PORTRAIT", "🖼️", "초상화. 사람 얼굴을 그린 그림이에요.", "A picture of a person.", "The portrait looks so real."),
+	("SCULPTURE", "🗿", "조각. 깎거나 빚어 만든 작품이에요.", "Art made by carving or shaping.", "The sculpture is made of stone."),
+	("MASTERPIECE", "🌟", "명작. 아주 훌륭한 작품이에요.", "A work of outstanding quality.", "This painting is a masterpiece."),
+])
+
+theme("READING", "독서", "READING", "LEAF", (0.07, 0.08, 0.06), (0.7, 1.0, 0.7), (0.85, 1.0, 0.85),
+[
+	("PAGE", "📄", "쪽. 책의 한 면이에요.", "One side of a sheet in a book.", "Turn to the next page."),
+	("POEM", "📜", "시. 짧고 아름다운 글이에요.", "A short piece of beautiful writing.", "She read the poem aloud."),
+	("TALE", "📖", "이야기. 옛날부터 전해져요.", "A story, often an old one.", "Grandma told an old tale."),
+	("NOVEL", "📕", "소설. 긴 이야기 책이에요.", "A long written story.", "This novel has 300 pages."),
+	("TITLE", "🏷️", "제목. 책의 이름이에요.", "The name of a book or film.", "I forgot the title."),
+	("COMIC", "📚", "만화. 그림으로 된 이야기예요.", "A story told with pictures.", "He reads one comic a day."),
+	("LETTER", "✉️", "편지. 사람에게 써서 보내요.", "A written message you send.", "A letter came this morning."),
+	("AUTHOR", "✍️", "작가. 책을 쓴 사람이에요.", "The person who wrote a book.", "The author signed my book."),
+],
+[
+	("CHAPTER", "📖", "장. 책을 나눈 한 부분이에요.", "One part of a book.", "Finish this chapter tonight."),
+	("MAGAZINE", "📰", "잡지. 정기적으로 나오는 책이에요.", "A thin book that comes out weekly.", "The magazine has new photos."),
+	("DICTIONARY", "📔", "사전. 단어의 뜻을 찾아요.", "A book that explains words.", "Look it up in the dictionary."),
+	("ENCYCLOPEDIA", "📚", "백과사전. 온갖 지식을 담은 책이에요.", "A book with facts about everything.", "The encyclopedia is very heavy."),
+])
+
+theme("COMPUTER", "컴퓨터", "COMPUTER", "GEAR", (0.05, 0.08, 0.11), (0.5, 0.9, 1.0), (0.7, 1.0, 1.0),
+[
+	("KEY", "🔑", "키. 눌러서 글자를 입력해요.", "A button you press to type.", "This key is stuck."),
+	("FILE", "📁", "파일. 저장한 자료 하나예요.", "A saved set of information.", "Open the file again."),
+	("DATA", "💾", "데이터. 저장된 정보예요.", "Information stored in a machine.", "All the data is safe."),
+	("MOUSE", "🖱️", "마우스. 손으로 움직여 가리켜요.", "A device you move with your hand.", "Move the mouse slowly."),
+	("SCREEN", "🖥️", "화면. 그림과 글자가 보여요.", "The flat part that shows images.", "The screen is too bright."),
+	("LAPTOP", "💻", "노트북. 들고 다니는 컴퓨터예요.", "A computer you can carry.", "My laptop is very light."),
+	("FOLDER", "📂", "폴더. 파일을 모아 두는 곳이에요.", "A place that holds files together.", "Put it in that folder."),
+	("KEYBOARD", "⌨️", "키보드. 글자를 치는 판이에요.", "The board of keys you type on.", "The keyboard needs cleaning."),
+],
+[
+	("INTERNET", "🌐", "인터넷. 온 세상 컴퓨터가 이어져요.", "The network that links computers.", "The internet is slow today."),
+	("PASSWORD", "🔒", "비밀번호. 나만 아는 열쇠예요.", "A secret word that unlocks something.", "Never share your password."),
+	("DOWNLOAD", "⬇️", "다운로드. 파일을 받아 와요.", "To copy a file to your device.", "The download is almost done."),
+	("PROGRAMMER", "🧑‍💻", "프로그래머. 프로그램을 만드는 사람이에요.", "A person who writes software.", "The programmer fixed the bug."),
+])
+
+theme("PHONE", "통신", "PHONE", "PULSE", (0.07, 0.06, 0.11), (0.8, 0.7, 1.0), (0.9, 0.85, 1.0),
+[
+	("CALL", "📞", "전화. 목소리로 이야기해요.", "To speak to someone by phone.", "I will call you tonight."),
+	("TEXT", "💬", "문자. 글로 보내는 짧은 말이에요.", "A short written message.", "Send me a text later."),
+	("CHAT", "🗨️", "대화. 가볍게 주고받는 말이에요.", "A friendly informal talk.", "We chat every evening."),
+	("PHONE", "📱", "휴대전화. 어디서나 연락해요.", "A device for talking far away.", "My phone is almost dead."),
+	("EMAIL", "📧", "이메일. 인터넷으로 보내는 편지예요.", "A letter sent over the internet.", "Check your email now."),
+	("SIGNAL", "📶", "신호. 전파가 닿는 세기예요.", "The strength of a wireless link.", "The signal is weak here."),
+	("MESSAGE", "✉️", "메시지. 전하고 싶은 말이에요.", "Information sent to someone.", "She left a short message."),
+	("CHARGER", "🔌", "충전기. 배터리를 채워요.", "A device that refills a battery.", "I forgot my charger."),
+],
+[
+	("ANTENNA", "📡", "안테나. 전파를 받아요.", "A rod that catches radio waves.", "The antenna sits on the roof."),
+	("WIRELESS", "🛜", "무선. 줄 없이 이어져요.", "Working without any wires.", "This speaker is wireless."),
+	("BROADCAST", "📺", "방송. 여러 사람에게 보내요.", "A program sent to many people.", "The broadcast starts at six."),
+	("NOTIFICATION", "🔔", "알림. 새 소식을 알려 줘요.", "A short alert on your device.", "A notification woke me up."),
+])
+
+theme("SAFETY", "안전", "SAFETY", "PULSE", (0.11, 0.07, 0.05), (1.0, 0.7, 0.35), (1.0, 0.85, 0.5),
+[
+	("EXIT", "🚪", "출구. 나가는 문이에요.", "The way out of a building.", "The exit is behind you."),
+	("HELP", "🆘", "도움. 어려울 때 청해요.", "Aid given when someone needs it.", "Shout for help right away."),
+	("ALARM", "🚨", "경보. 위험을 소리로 알려요.", "A loud sound that warns you.", "The alarm rang at dawn."),
+	("GUARD", "🛡️", "경비. 지켜 주는 사람이에요.", "A person who protects a place.", "A guard stands at the gate."),
+	("HELMET", "⛑️", "헬멧. 머리를 보호해요.", "A hard hat that protects your head.", "Always wear your helmet."),
+	("ESCAPE", "🏃", "탈출. 위험에서 벗어나요.", "To get away from danger.", "They escape through the window."),
+	("DANGER", "⚠️", "위험. 다칠 수 있어요.", "The chance of getting hurt.", "This sign means danger."),
+	("WARNING", "📢", "경고. 미리 알려 주는 말이에요.", "A message that tells you of risk.", "Read the warning first."),
+],
+[
+	("CAUTION", "🚧", "주의. 조심하라는 뜻이에요.", "Careful attention to avoid harm.", "Handle the glass with caution."),
+	("ACCIDENT", "💥", "사고. 뜻하지 않게 생긴 일이에요.", "Something bad that happens by chance.", "The accident blocked the road."),
+	("EMERGENCY", "🚑", "비상. 아주 급한 상황이에요.", "A sudden serious situation.", "Call this number in an emergency."),
+	("EXTINGUISHER", "🧯", "소화기. 불을 끄는 통이에요.", "A device that puts out fire.", "The extinguisher hangs by the door."),
+])
+
+theme("PARTY", "축제", "PARTY", "STAR", (0.10, 0.06, 0.10), (1.0, 0.6, 0.9), (1.0, 0.8, 0.95),
+[
+	("GIFT", "🎁", "선물. 마음을 담아 줘요.", "Something you give to someone.", "Open your gift now."),
+	("FLAG", "🚩", "깃발. 흔들며 응원해요.", "A piece of cloth on a pole.", "The flag waves in the wind."),
+	("PRIZE", "🏆", "상. 잘한 사람에게 줘요.", "Something won for doing well.", "She won the first prize."),
+	("CANDLE", "🕯️", "초. 불을 붙여 세워요.", "A stick of wax with a flame.", "Blow out every candle."),
+	("RIBBON", "🎀", "리본. 예쁘게 묶어요.", "A narrow strip tied in a bow.", "Tie a red ribbon on it."),
+	("PARADE", "🎏", "행렬. 줄지어 지나가요.", "A line of people moving through streets.", "The parade passes at noon."),
+	("BALLOON", "🎈", "풍선. 공기를 넣어 띄워요.", "A bag of air or gas that floats.", "One balloon flew away."),
+	("FIREWORK", "🎆", "불꽃. 하늘에서 터져요.", "A device that explodes in colors.", "The firework lit the sky."),
+],
+[
+	("CARNIVAL", "🎠", "카니발. 큰 놀이 축제예요.", "A large public festival with rides.", "The carnival comes each spring."),
+	("CONFETTI", "🎊", "색종이 조각. 뿌리며 축하해요.", "Small bits of paper thrown in joy.", "Confetti covers the floor."),
+	("FESTIVAL", "🎪", "축제. 여러 사람이 모여 즐겨요.", "A time when people gather to celebrate.", "The festival lasts three days."),
+	("CELEBRATION", "🎉", "축하. 기쁜 일을 함께 기려요.", "An event held for a happy reason.", "The celebration went late."),
+])
+
+theme("GARDEN", "정원", "GARDEN", "LEAF", (0.05, 0.10, 0.06), (0.55, 1.0, 0.5), (0.75, 1.0, 0.7),
+[
+	("POND", "🪷", "연못. 작고 얕은 물이에요.", "A small area of still water.", "Frogs live in the pond."),
+	("SOIL", "🪴", "흙. 식물이 뿌리를 내려요.", "The earth where plants grow.", "The soil is dark and rich."),
+	("HOSE", "🚿", "호스. 물을 뿌려요.", "A long tube that carries water.", "Roll up the garden hose."),
+	("WEED", "🌿", "잡초. 원하지 않는 풀이에요.", "A plant growing where you do not want it.", "Pull out every weed."),
+	("BENCH", "🪑", "벤치. 여럿이 앉는 의자예요.", "A long seat for two or more people.", "We rest on the bench."),
+	("HEDGE", "🌳", "생울타리. 나무로 만든 담이에요.", "A wall made of bushes.", "The hedge needs cutting."),
+	("GRAVEL", "🪨", "자갈. 작은 돌들이에요.", "Small stones on a path.", "The gravel crunches underfoot."),
+	("SPROUT", "🌱", "새싹. 막 자라난 어린 잎이에요.", "A very young plant just starting.", "A green sprout appeared."),
+],
+[
+	("TRELLIS", "🪴", "격자 지지대. 덩굴이 타고 올라가요.", "A frame that climbing plants grow on.", "Roses cover the trellis."),
+	("WATERING", "💧", "물 주기. 식물에 물을 줘요.", "Giving water to plants.", "Watering takes ten minutes."),
+	("GREENHOUSE", "🏡", "온실. 유리로 덮어 따뜻하게 해요.", "A glass building for growing plants.", "Tomatoes grow in the greenhouse."),
+	("WHEELBARROW", "🛒", "손수레. 흙이나 짐을 옮겨요.", "A small cart you push by hand.", "The wheelbarrow is full of soil."),
+])
+
+theme("DINING", "식당", "DINING", "BLOB", (0.10, 0.08, 0.05), (1.0, 0.8, 0.45), (1.0, 0.9, 0.6),
+[
+	("TIP", "💵", "팁. 고마움으로 더 주는 돈이에요.", "Extra money given for good service.", "He left a small tip."),
+	("MENU", "📋", "메뉴. 무엇을 파는지 적혀 있어요.", "A list of food you can order.", "Look at the menu first."),
+	("ORDER", "📝", "주문. 무엇을 먹을지 말해요.", "To ask for food you want.", "May I order now?"),
+	("STRAW", "🥤", "빨대. 음료를 빨아 마셔요.", "A thin tube for drinking.", "Use a paper straw."),
+	("WAITER", "🧑‍🍳", "종업원. 음식을 가져다줘요.", "A person who serves food.", "The waiter brings the water."),
+	("NAPKIN", "🧻", "냅킨. 입과 손을 닦아요.", "Paper or cloth for wiping your mouth.", "Fold the napkin neatly."),
+	("RECEIPT", "🧾", "영수증. 낸 돈을 적어 줘요.", "A paper showing what you paid.", "Keep the receipt, please."),
+	("SERVING", "🍽️", "1인분. 한 사람이 먹는 양이에요.", "The amount of food for one person.", "One serving is enough."),
+],
+[
+	("TAKEOUT", "🥡", "포장. 싸서 가져가요.", "Food you carry away to eat.", "We ordered takeout tonight."),
+	("LEFTOVER", "🍱", "남은 음식. 다 못 먹고 남겨요.", "Food that was not eaten.", "The leftover rice is cold."),
+	("APPETIZER", "🥗", "전채. 본 음식 전에 먹어요.", "A small dish before the main food.", "The appetizer came fast."),
+	("INGREDIENT", "🧂", "재료. 요리에 들어가는 것들이에요.", "One of the foods used in a dish.", "Salt is the last ingredient."),
+])
