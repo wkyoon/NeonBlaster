@@ -33,19 +33,23 @@ const MAX_BONUS_MINUTES := 20
 ## 강도 곡선의 세 지점. 경과 시간 비율(progress)에 따라 이 사이를 보간한다.
 ## CALM(초반) → INTENSE(목표 시간) → LETHAL(초과 구간, 확실히 죽는다)
 ## ⚠️ CALM/INTENSE 는 예전 EASY/NORMAL 실측값이다(사망률 0% / 20%, 10게임·오차 0.15).
+## ⚠️ **탄속을 내려 시간을 벌었다.** 기체 세로 범위를 묶고 사거리를 0.47 로 줄이자
+##    적이 2~7초를 살아 남아 적 탄이 4.8 → 7.7발/초로 늘었다. 밀도는 목표에 들어왔지만
+##    (5.5/5.7/5.2) 생존이 47/66/39% 로 무너졌다. 밀도는 재미의 최저선이라 건드리지 않고
+##    치사율(탄속)만 내린다 — AGENTS.md "밸런스 튜닝 절차" 참조.
 const CALM := {
-	"spawn_interval": 0.98, "enemy_hp": 0.24, "enemy_speed": 0.68,
-	"wave_duration": 1.25, "bullet_speed": 0.55,
+	"spawn_interval": 1.26, "enemy_hp": 0.17, "enemy_speed": 0.68,
+	"wave_duration": 1.25, "bullet_speed": 0.40,
 }
 const INTENSE := {
-	"spawn_interval": 0.52, "enemy_hp": 0.32, "enemy_speed": 0.75,
-	"wave_duration": 1.0, "bullet_speed": 0.65,
+	"spawn_interval": 0.67, "enemy_hp": 0.23, "enemy_speed": 0.75,
+	"wave_duration": 1.0, "bullet_speed": 0.42,
 }
 ## 목표 시간을 넘겼을 때 도달하는 지점. 여기까지 오면 버티기 어렵다 —
 ## 판에 끝을 보장하는 장치라서 의도적으로 가혹하게 잡는다.
 const LETHAL := {
-	"spawn_interval": 0.28, "enemy_hp": 0.44, "enemy_speed": 1.05,
-	"wave_duration": 0.7, "bullet_speed": 0.95,
+	"spawn_interval": 0.36, "enemy_hp": 0.32, "enemy_speed": 1.05,
+	"wave_duration": 0.7, "bullet_speed": 0.62,
 }
 
 ## 시작 직후 잔잔한 구간. 목표 시간의 `CALM_RATIO` 만큼 두되 `CALM_MAX` 를 넘지 않는다.
@@ -64,6 +68,12 @@ const CALM_MAX := 45.0
 ## 이 게임의 목적이 "잘하는 것처럼 느끼게" 하는 것이므로 화려함과 위험은 붙어 있을 이유가 없다.
 const DENSITY_SHAPE := 0.5   # 작을수록 일찍 북적인다
 const LETHAL_SHAPE := 3.0    # 클수록 위험이 늦게 온다
+## 목표가 길수록 치사율 곡선을 더 뒤로 미는 정도(보너스 1분당).
+## ⚠️ **구조적으로 필요하다.** 치사율은 정규화된 진행도(경과/목표)로 오르는데 피해는
+##    **절대 시간**으로 쌓인다. 그래서 목표 30분 판은 10분 판과 같은 곡선으로도 3배 오래
+##    위험에 노출돼 목숨 5개로는 못 버틴다(실측: EASY 96% 인데 HARD 60% 였다).
+##    목표가 길면 초당 위험도가 낮아져야 같은 비율로 끝난다.
+const LETHAL_STRETCH := 0.03
 ## 밀도 쪽 노브와 치사율 쪽 노브.
 const DENSITY_KEYS: Array[String] = ["spawn_interval", "enemy_hp", "wave_duration"]
 ## 목표 시간을 이 배수만큼 넘기면 LETHAL 에 도달한다.
@@ -141,7 +151,9 @@ func get_multipliers() -> Dictionary:
 	var base := clampf(p, 0.0, 1.0)
 	# 밀도는 초반에 빨리 오르고(스펙터클), 치사율은 뒤에 몰린다(끝맺음).
 	var t_density := pow(base, DENSITY_SHAPE) if p <= 1.0 else p
-	var t_lethal := pow(base, LETHAL_SHAPE) if p <= 1.0 else p
+	# 목표가 길수록 치사율을 뒤로 민다(LETHAL_STRETCH 주석 참조).
+	var lethal_shape: float = LETHAL_SHAPE * (1.0 + float(bonus_minutes) * LETHAL_STRETCH)
+	var t_lethal := pow(base, lethal_shape) if p <= 1.0 else p
 	# 러시가 밀도를 주기적으로 밀어올린다. 골짜기에서 숨을 돌리고 마루에서 쏟아진다.
 	t_density = minf(t_density + _rush_factor() * RUSH_STRENGTH, LETHAL_AT)
 

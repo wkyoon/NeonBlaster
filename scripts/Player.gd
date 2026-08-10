@@ -25,8 +25,21 @@ enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 ## 130~150 이면 기체와 바로 앞 탄이 손가락에 가리지 않고 함께 보인다.
 @export var touch_lift: float = 140.0
 ## 플레이어 탄 사거리(화면 높이 대비). 이 값이 곧 **교전이 벌어지는 띠의 높이**다.
-## 무제한이면 탄이 꼭대기까지 닿아 적이 화면 위에서만 죽고 아래가 빈다.
-const BULLET_RANGE_RATIO := 0.60
+##
+## ⚠️ **`MIN_PLAY_Y_RATIO` 와 한 쌍이다.** 사거리는 기체에서부터 재는 거리라, 기체가
+##    어디까지 올라갈 수 있는지를 정하지 않으면 교전선이 스폰선까지 올라간다.
+##    실측(기체 범위 제한 전): 기체가 61% 에 있을 때 탄이 화면 **1%** 까지 닿아 적이
+##    사망 위치 중앙 2~10%(25~128px)에서 죽었다 — 몸이 화면에 다 들어오기도 전이다.
+##    사용자 표현: "적이 화면에 나오기 전에 다 죽어 있어".
+## ⚠️ 둘의 관계: **교전선 = 기체 위치 − 사거리.**
+##    기체 62% + 사거리 47% → 교전선 15%(가장 위) / 기체 89% → 교전선 42%(가장 아래).
+##    즉 적은 **최소 15% 까지는 반드시 내려온다.** 한쪽만 바꾸면 이 보장이 깨진다.
+## ⚠️ 예전에 탄이 화면 상단 절대선을 넘지 못하게 하는 방식도 써 봤다. 효과는 있었지만
+##    탄이 허공에서 사라지고, 그 띠 안에 멈춰 서는 적(포탑)은 아예 못 죽였다. 장르 표준은
+##    **기체를 아래에 묶는 것**이다(스페이스 인베이더·갤러가는 최하단 고정).
+const BULLET_RANGE_RATIO := 0.47
+## 기체가 올라갈 수 있는 **최상단**(화면 높이 대비). 위 주석과 한 쌍이다.
+const MIN_PLAY_Y_RATIO := 0.62
 ## 손가락에서 기체까지 허용되는 **추가** 세로 간격과 좌우 간격.
 ## 이 상한이 없으면 멀리서 잡은 간격이 그대로 유지돼 기체가 화면 위에 갇힌다.
 const MAX_GRAB_LIFT := 110.0
@@ -62,6 +75,18 @@ var weapon_type: WeaponType = WeaponType.SINGLE
 ## 시작 화력. 1은 단발이라 화면을 못 덮는다. 2(2줄기)로 시작해 첫 순간부터 시원하게 터진다.
 var weapon_level: int = 2  # 1-3  (레벨3 확산은 탄이 벌어져 오히려 처치가 줄었다: 1.39→1.33회/초)
 var rapid_fire_timer: float = 0.0  # countdown for rapid fire buff
+## SPREAD 파워업은 **일시 버프**다.
+## ⚠️ 예전에는 판 내내 영구히 무기 레벨을 올렸다. 레벨 2(2줄기) → 4(5줄기)면 **DPS 2.5배**라
+##    시작 몇 초에 화력이 최대가 되고(실측 3레벨 도달 **중앙값 6.1초**, 한 판 파워업 115개)
+##    그 뒤로는 적이 도착하는 즉시 녹았다 — "적이 화면에 나오기 전에 다 죽어 있다" 의
+##    또 다른 뿌리다. AGENTS.md 가 보상 쪽에 적어 둔 원칙("무기 레벨을 정수로 올리지 마라")을
+##    판 안의 파워업이 그대로 위반하고 있었다.
+## ⚠️ 기본 레벨(2)은 절대 바뀌지 않는다. 난이도 곡선이 이 값을 전제로 맞춰져 있다.
+const BASE_WEAPON_LEVEL := 2
+const SPREAD_DURATION := 8.0
+const SPREAD_MAX_STACKS := 2
+var _spread_stacks: int = 0
+var _spread_timer: float = 0.0
 var shield_timer: float = 0.0  # countdown for shield buff
 var laser_timer: float = 0.0  # countdown for laser buff
 var time_slow_timer: float = 0.0  # countdown for time slow (global)
@@ -130,6 +155,12 @@ func _physics_process(delta: float) -> void:
 
 func _handle_buffs(delta: float) -> void:
 	# Rapid fire countdown
+	if _spread_timer > 0.0:
+		_spread_timer -= delta
+		if _spread_timer <= 0.0:
+			_spread_stacks = 0
+			weapon_level = BASE_WEAPON_LEVEL
+			weapon_changed.emit(weapon_level)
 	if rapid_fire_timer > 0:
 		rapid_fire_timer -= delta
 		if rapid_fire_timer <= 0:
@@ -296,7 +327,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag and _is_touching:
 		_target_pos = event.position + _touch_offset
 		# 손가락이 배너 자리까지 내려가도 기체는 그 위에 머문다.
-		_target_pos.y = minf(_target_pos.y, _screen_size.y - 30.0 - _bottom_reserve)
+		_target_pos.y = clampf(_target_pos.y,
+			_screen_size.y * MIN_PLAY_Y_RATIO,
+			_screen_size.y - 30.0 - _bottom_reserve)
 
 
 func _apply_movement(delta: float) -> void:
@@ -334,8 +367,11 @@ func _apply_movement(delta: float) -> void:
 	# Clamp to screen
 	var margin := 30.0
 	global_position.x = clamp(global_position.x, margin, _screen_size.x - margin)
+	# 위쪽은 교전 거리를 일정하게 하려고 묶고(MIN_PLAY_Y_RATIO),
 	# 아래쪽은 배너와 겹치는 만큼만 비운다(_compute_bottom_reserve 참조).
-	global_position.y = clamp(global_position.y, margin,
+	# ⚠️ 드래그 목표점(_target_pos)만 묶으면 안 된다 — 가속·관성으로 넘어간다.
+	global_position.y = clamp(global_position.y,
+		maxf(margin, _screen_size.y * MIN_PLAY_Y_RATIO),
 		_screen_size.y - margin - _bottom_reserve)
 
 
@@ -458,7 +494,10 @@ func collect_powerup(type: int) -> void:
 
 
 func _upgrade_weapon() -> void:
-	weapon_level = min(weapon_level + 1, 4)
+	# 중복 획득은 레벨을 더 올리는 대신 시간을 갱신한다(최대 +2 = 5줄기).
+	_spread_stacks = mini(_spread_stacks + 1, SPREAD_MAX_STACKS)
+	_spread_timer = SPREAD_DURATION
+	weapon_level = BASE_WEAPON_LEVEL + _spread_stacks
 	weapon_changed.emit(weapon_level)
 	EffectsManager.flash(global_position, Color(0.2, 1.0, 0.5), 0.15)
 	EffectsManager.shake(3.0, 0.1)
@@ -582,7 +621,9 @@ func revive() -> void:
 	# 판 시작·부활 양쪽에서 같은 값이 걸린다(부활 후에도 그 판 내내 유효).
 	# ⚠️ 무기 레벨은 건드리지 않는다 — 레벨을 올리면 탄 개수가 뛰어 판이 통째로 달라진다.
 	#    보상은 연사와 탄 크기를 소수 배수로만 올린다.
-	weapon_level = 2
+	weapon_level = BASE_WEAPON_LEVEL
+	_spread_stacks = 0
+	_spread_timer = 0.0
 	_base_fire_rate = _export_fire_rate * (1.0 + GameManager.reward_power)
 	rapid_fire_timer = 0.0
 	shield_timer = 0.0

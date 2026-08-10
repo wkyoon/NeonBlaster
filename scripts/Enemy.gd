@@ -16,9 +16,12 @@ const BOMB_DEATH_BULLETS := 5
 
 ## 포탑이 멈춰 서는 높이(화면 비율). 적은 보통 최상단에서 죽는데, 포탑은 **스스로 멈춰서**
 ## 오래 버티는 것이 정체성이다 — 다가가지 않으므로 수명이 체력으로만 정해진다.
-## ⚠️ 실측: 0.18 로 뒀더니 87% 가 도달 전에 죽어 발동률이 13% 였다.
-## 적이 실제로 죽는 높이(중앙 2~10%)보다 **위여야** 멈춰 설 수 있다.
-const TURRET_STOP_RATIO := 0.08
+## ⚠️⚠️ **어떤 기체 위치에서도 사격이 닿는 곳이어야 한다.** 교전선은 기체 위치에 따라
+##    화면 15%(기체가 위) ~ 42%(기체가 아래) 사이를 오간다. 이보다 위에 멈춰 서면
+##    기체가 아래에 있을 때 **정상 사격으로 못 죽인다**(실측: 8% 에 세웠더니 수명 중앙 12초,
+##    폭탄 파워업으로만 사라졌다). 그래서 가장 아래 교전선(42%)보다 더 아래에 세운다.
+## ⚠️ 그렇다고 너무 아래면 도달 전에 죽어 정체성이 발현되지 않는다(0.18 시절 발동률 13%).
+const TURRET_STOP_RATIO := 0.46
 ## 환영의 위상 주기. ⚠️ **수명(0.6~2.7초)보다 짧아야** 한 판에서 깜빡이는 게 보인다.
 const PHANTOM_SOLID := 0.5
 const PHANTOM_FADED := 0.35
@@ -41,7 +44,13 @@ var _is_dead: bool = false
 var _player: Node2D = null
 var _fire_timer: float = 0.0
 var _spawn_y: float = -50.0
+## 화면에 몸이 다 들어오기 전에는 맞지 않는다.
+## ⚠️ 예전에는 이 변수가 **선언만 되고 쓰이지 않았다.** 그래서 적이 스폰선(y=-50)에서
+##    바로 죽어 "적이 화면에 나오기 전에 다 죽어 있다" 는 상태가 됐다.
+## ⚠️ 무적으로 두면 탄을 **먹어 버려서** 왜 안 죽는지 알 수 없다 — 충돌을 꺼서 통과시킨다.
 var _is_entering: bool = true
+## 이 높이까지 내려오면 교전을 시작한다. 도형 반지름(최대 22)보다 넉넉히 아래.
+const ENTRY_Y := 46.0
 
 # 신규 적 타입용 상태 변수
 var _zigzag_phase: float = 0.0        # DASHER 지그재그 위상
@@ -69,6 +78,11 @@ func _ready() -> void:
 	collision_layer = 2  # enemy layer
 	collision_mask = 4 | 1  # bullet_player + player
 	_configure_type()
+	# 스폰 직후에는 화면 밖이므로 맞지 않는다(아래 _physics_process 에서 해제).
+	if global_position.y < ENTRY_Y:
+		collision_layer = 0
+	else:
+		_is_entering = false
 	_find_player()
 	if _health_bar:
 		_health_bar.max_value = max_health
@@ -256,6 +270,12 @@ func _physics_process(delta: float) -> void:
 		if not _player:
 			return
 
+	if _is_entering and global_position.y >= ENTRY_Y:
+		_is_entering = false
+		# 환영은 자기 위상에 따라 켜고 끄므로 여기서 건드리지 않는다.
+		if enemy_type != EnemyType.PHANTOM or not _phased:
+			set_deferred("collision_layer", 2)
+
 	_behave(delta)
 	move_and_slide()
 
@@ -420,7 +440,8 @@ func _fire_spread() -> void:
 func _set_phased(on: bool) -> void:
 	_phased = on
 	_phase_timer = PHANTOM_FADED if on else PHANTOM_SOLID
-	set_deferred("collision_layer", 0 if on else 2)
+	# ⚠️ 진입 중이면 충돌을 켜지 않는다 — 위상 전환이 진입 보호를 뚫어 버린다.
+	set_deferred("collision_layer", 0 if (on or _is_entering) else 2)
 	if _sprite:
 		_sprite.color.a = 0.25 if on else 1.0
 	if _glow:

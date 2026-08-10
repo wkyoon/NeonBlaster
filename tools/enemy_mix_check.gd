@@ -34,6 +34,10 @@ var _children_spawned: int = 0
 ## ⚠️ --script 모드에서는 오토로드가 전역 식별자로 안 잡힌다. 노드로 들고 있는다.
 var _gm: Node = null
 var _player_y: Array[float] = []
+## ⚠️ 상수를 도구에 박지 말고 **인스턴스에서 읽는다**. Player.gd 에는 class_name 이 없어
+##    타입으로 참조하면 파스 에러가 난다(실제로 겪었다).
+var _range_ratio: float = 0.0
+var _min_play_ratio: float = 0.0
 ## 적 탄 누적 수. 자폭병 격추 폭발이 실제로 탄을 뿌리는지, 그리고 그 탄이
 ## 판을 얼마나 무겁게 하는지(밸런스 비용)를 직접 센다.
 var _enemy_bullets_seen: Dictionary = {}
@@ -65,6 +69,9 @@ func _process(delta: float) -> bool:
 	var p := _game.get_node_or_null("Player")
 	if p != null:
 		_player_y.append(p.global_position.y / _screen_h * 100.0)
+		if _range_ratio <= 0.0:
+			_range_ratio = float(p.BULLET_RANGE_RATIO)
+			_min_play_ratio = float(p.MIN_PLAY_Y_RATIO)
 
 	if _elapsed >= _limit or _gm.current_state != _gm.GameState.PLAYING:
 		_report()
@@ -221,11 +228,31 @@ func _report() -> void:
 			name, n, float(n) / float(_total_spawned()) * 100.0,
 			_median(lifes), _median(s["death_y"]),
 			_pct(int(s["special"]), deaths), _pct(int(s["special_full"]), deaths)])
+	# ⚠️ 이 값이 사용자가 실제로 겪은 문제다: "적이 화면에 나오기 전에 다 죽어 있다".
+	#    사망 위치 분포를 백분위로 봐야 중앙값만으로 놓치는 꼬리가 보인다.
+	var all_deaths: Array[float] = []
+	for name in TYPE_NAMES:
+		all_deaths.append_array(_stats[name]["death_y"] as Array[float])
+	all_deaths.sort()
+	var early := 0
+	var entry_pct: float = 46.0 / _screen_h * 100.0
+	for d in all_deaths:
+		if d < entry_pct:
+			early += 1
+	if not all_deaths.is_empty():
+		print("사망 위치 분포: 하위10%% %.0f%% / 중앙 %.0f%% / 상위10%% %.0f%%" % [
+			all_deaths[all_deaths.size() / 10],
+			all_deaths[all_deaths.size() / 2],
+			all_deaths[mini(all_deaths.size() * 9 / 10, all_deaths.size() - 1)]])
+		print("화면에 몸이 다 들어오기 전(%.0f%% 위)에 죽은 비율: %.0f%%" % [
+			entry_pct, float(early) / float(all_deaths.size()) * 100.0])
 	print("적 탄 누적 %d발 (%.1f발/초)" % [
 		_enemy_bullet_total, float(_enemy_bullet_total) / maxf(_elapsed, 1.0)])
 	var py := _median(_player_y)
-	print("\n플레이어 세로 위치 중앙 %.0f%% → 탄 사거리 %.0f%% 위까지 닿는다(BULLET_RANGE_RATIO 0.60)" % [
-		py, maxf(py - 60.0, 0.0)])
+	# ⚠️ 상수를 도구에 박지 말 것. 게임만 바꾸면 옛 값으로 보고해 판단이 어긋난다(실제로 겪었다).
+	var rng: float = _range_ratio * 100.0
+	print("\n플레이어 세로 위치 중앙 %.0f%% (상한 %.0f%%) → 교전선 %.0f%% (사거리 %.0f%%)" % [
+		py, _min_play_ratio * 100.0, maxf(py - rng, 0.0), rng])
 	print("· 사망위치 = 화면 세로 기준(0%% 위, 100%% 아래). 낮을수록 위에서 죽는다.")
 	print("· 특수발동 = 그 종류의 특징을 한 번이라도 보여준 비율.")
 	print("  DASHER 지그재그 1주기 / BOMBER 점화 / SHIELDER 체력재생 / SPLITTER 분열(항상)")

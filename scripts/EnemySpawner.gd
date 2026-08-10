@@ -85,6 +85,10 @@ func _spawn_enemy() -> void:
 
 ## 종류별 스탯 + 난이도 배수. ⚠️ 군체는 여러 마리를 만들므로 **한 곳에 모여 있어야** 한다 —
 ## 흩어져 있으면 무리의 뒤쪽만 다른 능력치를 갖게 된다.
+## ⚠️ **적 연사는 이 게임에서 가장 강한 치사율 노브다.** 기체 범위를 묶고 사거리를 줄이자
+## 적이 2~7초를 살아 남아 적 탄이 4.8 → 7.4발/초로 늘었고, 그게 곧 사망 원인이 됐다.
+## ⚠️ 적 **속도**를 낮추는 것으로 대신하려 하지 말 것 — 느려진 적이 화면에 더 오래 남아
+##    밀도와 탄이 함께 늘어 오히려 어려워진다(실측 NORMAL 77%→67%, HARD 60%→49%).
 func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 	enemy.enemy_type = type
 
@@ -96,12 +100,12 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 		Enemy.EnemyType.SHOOTER:
 			enemy.max_health = 2 + wave / 4
 			enemy.move_speed = randf_range(130.0, 180.0)
-			enemy.fire_rate = randf_range(1.2, 2.2)
+			enemy.fire_rate = randf_range(0.84, 1.54)
 			enemy.score_value = 20
 		Enemy.EnemyType.TANK:
 			enemy.max_health = 5 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
-			enemy.fire_rate = randf_range(0.5, 1.0)
+			enemy.fire_rate = randf_range(0.35, 0.70)
 			enemy.score_value = 50
 		Enemy.EnemyType.DASHER:
 			# 빠른 지그재그 돌진형 - 체력 낮음, 속도 매우 빠름
@@ -122,7 +126,7 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 			# 쉴드형 - 체력 매우 높음, 재생, 원형 탄막
 			enemy.max_health = 6 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
-			enemy.fire_rate = randf_range(0.6, 1.0)
+			enemy.fire_rate = randf_range(0.42, 0.70)
 			enemy.score_value = 40
 		Enemy.EnemyType.SWARM:
 			# 군체 - 한 마리는 약하다. 여럿이 한 번에 나오는 것이 위협이다.
@@ -134,7 +138,7 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 			# ⚠️ 정지선까지 살아서 가야 정체성이 발현된다. 체력이 곧 그 조건이다.
 			enemy.max_health = 9 + wave / 2
 			enemy.move_speed = randf_range(140.0, 180.0)
-			enemy.fire_rate = randf_range(0.8, 1.3)
+			enemy.fire_rate = randf_range(0.56, 0.91)
 			enemy.score_value = 45
 		Enemy.EnemyType.PHANTOM:
 			# 환영 - 절반은 무적이라 실효 체력이 두 배다. 표기 체력은 낮게 둔다.
