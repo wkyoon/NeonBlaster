@@ -56,7 +56,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["ONE", "TWO", "SIX", "TEN", "FOUR", "FIVE", "NINE", "THREE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SEVEN", "EIGHT", "HUNDRED", "THOUSAND"],
+		"advanced": ["SEVEN", "EIGHT", "TWELVE", "TWENTY", "HUNDRED", "MILLION", "THOUSAND", "FRACTION"],
 		"bg": Color(0.06, 0.09, 0.09),
 		"accent": Color(0.50, 1.00, 0.90),
 		"particle": Color(0.70, 1.00, 0.95),
@@ -82,7 +82,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BUS", "CAR", "VAN", "BIKE", "BOAT", "SHIP", "TRAIN", "TRUCK"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SUBWAY", "BICYCLE", "AIRPLANE", "HELICOPTER"],
+		"advanced": ["SUBWAY", "BICYCLE", "SCOOTER", "TRAILER", "AIRPLANE", "AMBULANCE", "HELICOPTER", "MOTORCYCLE"],
 		"bg": Color(0.05, 0.08, 0.10),
 		"accent": Color(0.50, 0.90, 1.00),
 		"particle": Color(0.70, 0.95, 1.00),
@@ -95,7 +95,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["EAT", "SIT", "CUT", "READ", "WALK", "WASH", "SPEAK", "WRITE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SLEEP", "LISTEN", "FOLLOW", "REMEMBER"],
+		"advanced": ["SLEEP", "BUILD", "SHARE", "LISTEN", "FOLLOW", "GATHER", "REMEMBER", "PRACTICE"],
 		"bg": Color(0.10, 0.06, 0.09),
 		"accent": Color(1.00, 0.55, 0.80),
 		"particle": Color(1.00, 0.75, 0.90),
@@ -108,7 +108,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["NEW", "OLD", "WET", "DRY", "FULL", "EMPTY", "CLEAN", "DIRTY"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BROKEN", "PERFECT", "FRAGILE", "COMPLETE"],
+		"advanced": ["RUSTY", "SPARE", "BROKEN", "PERFECT", "FRAGILE", "DAMAGED", "USELESS", "COMPLETE"],
 		"bg": Color(0.08, 0.08, 0.09),
 		"accent": Color(0.85, 0.90, 1.00),
 		"particle": Color(0.95, 1.00, 1.00),
@@ -121,7 +121,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 3.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["UP", "TOP", "LEFT", "EAST", "WEST", "DOWN", "NORTH", "RIGHT"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SOUTH", "MIDDLE", "FORWARD", "BACKWARD"],
+		"advanced": ["SOUTH", "MIDDLE", "CORNER", "FORWARD", "BACKWARD", "DIAGONAL", "OPPOSITE", "HORIZONTAL"],
 		"bg": Color(0.08, 0.07, 0.10),
 		"accent": Color(0.75, 0.80, 1.00),
 		"particle": Color(0.90, 0.90, 1.00),
@@ -134,7 +134,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.0글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["COW", "PIG", "HAY", "BARN", "GOAT", "SHEEP", "HORSE", "FENCE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["HARVEST", "PASTURE", "TRACTOR", "SCARECROW"],
+		"advanced": ["PLOUGH", "MANURE", "HARVEST", "PASTURE", "TRACTOR", "SCARECROW", "LIVESTOCK", "IRRIGATION"],
 		"bg": Color(0.09, 0.08, 0.05),
 		"accent": Color(1.00, 0.80, 0.45),
 		"particle": Color(1.00, 0.90, 0.60),
@@ -147,7 +147,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.1글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["CAP", "HAT", "COAT", "SHOE", "SOCK", "DRESS", "SHIRT", "SKIRT"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["JACKET", "SWEATER", "UNIFORM", "TROUSERS"],
+		"advanced": ["JACKET", "POCKET", "SWEATER", "UNIFORM", "SANDALS", "TROUSERS", "RAINCOAT", "TURTLENECK"],
 		"bg": Color(0.10, 0.05, 0.11),
 		"accent": Color(1.00, 0.60, 0.95),
 		"particle": Color(1.00, 0.80, 1.00),
@@ -160,7 +160,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["MOM", "DAD", "SON", "AUNT", "BABY", "UNCLE", "SISTER", "FATHER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["COUSIN", "MOTHER", "BROTHER", "DAUGHTER"],
+		"advanced": ["COUSIN", "MOTHER", "NEPHEW", "BROTHER", "GRANDMA", "GRANDPA", "DAUGHTER", "RELATIVE"],
 		"bg": Color(0.10, 0.05, 0.09),
 		"accent": Color(1.00, 0.55, 0.75),
 		"particle": Color(1.00, 0.75, 0.85),
@@ -173,7 +173,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BED", "CUP", "DOOR", "LAMP", "SOFA", "CHAIR", "TABLE", "WINDOW"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["MIRROR", "PILLOW", "BLANKET", "FURNITURE"],
+		"advanced": ["MIRROR", "PILLOW", "GARAGE", "BLANKET", "CEILING", "BALCONY", "BASEMENT", "FURNITURE"],
 		"bg": Color(0.09, 0.07, 0.05),
 		"accent": Color(1.00, 0.80, 0.45),
 		"particle": Color(0.95, 0.85, 0.60),
@@ -186,7 +186,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["FOG", "HOT", "COLD", "WARM", "WIND", "CLOUD", "FROST", "SHOWER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BREEZE", "DROUGHT", "TYPHOON", "LIGHTNING"],
+		"advanced": ["BREEZE", "DROUGHT", "TYPHOON", "DRIZZLE", "TEMPEST", "HUMIDITY", "LIGHTNING", "HAILSTONE"],
 		"bg": Color(0.04, 0.08, 0.11),
 		"accent": Color(0.50, 0.90, 1.00),
 		"particle": Color(0.75, 0.95, 1.00),
@@ -212,7 +212,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["FIG", "KIWI", "PEAR", "PLUM", "APPLE", "GRAPE", "LEMON", "PEACH"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BANANA", "CHERRY", "AVOCADO", "PINEAPPLE"],
+		"advanced": ["BANANA", "CHERRY", "AVOCADO", "APRICOT", "COCONUT", "MANDARIN", "PINEAPPLE", "WATERMELON"],
 		"bg": Color(0.06, 0.10, 0.05),
 		"accent": Color(1.00, 0.50, 0.50),
 		"particle": Color(1.00, 0.80, 0.40),
@@ -225,7 +225,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["ANT", "BEE", "FLY", "MOTH", "WASP", "BEETLE", "SPIDER", "HORNET"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["CRICKET", "LADYBUG", "DRAGONFLY", "GRASSHOPPER"],
+		"advanced": ["CICADA", "CRICKET", "LADYBUG", "TERMITE", "MOSQUITO", "DRAGONFLY", "GRASSHOPPER", "CATERPILLAR"],
 		"bg": Color(0.06, 0.09, 0.04),
 		"accent": Color(0.75, 1.00, 0.40),
 		"particle": Color(0.85, 1.00, 0.60),
@@ -238,7 +238,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["OAK", "LEAF", "PINE", "ROOT", "SEED", "GRASS", "TULIP", "FLOWER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BAMBOO", "CACTUS", "MUSHROOM", "SUNFLOWER"],
+		"advanced": ["BAMBOO", "CACTUS", "THISTLE", "MUSHROOM", "SEEDLING", "SUNFLOWER", "POLLINATE", "CHLOROPHYLL"],
 		"bg": Color(0.04, 0.10, 0.05),
 		"accent": Color(0.50, 1.00, 0.50),
 		"particle": Color(0.70, 1.00, 0.65),
@@ -251,7 +251,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["POT", "PAN", "BOWL", "FORK", "KNIFE", "SPOON", "PLATE", "KETTLE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["FRIDGE", "BLENDER", "CUPBOARD", "MICROWAVE"],
+		"advanced": ["FRIDGE", "BLENDER", "SPATULA", "TOASTER", "CUPBOARD", "STRAINER", "MICROWAVE", "DISHWASHER"],
 		"bg": Color(0.11, 0.07, 0.05),
 		"accent": Color(1.00, 0.70, 0.40),
 		"particle": Color(1.00, 0.85, 0.55),
@@ -264,7 +264,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["HEN", "DUCK", "CROW", "DOVE", "SWAN", "EAGLE", "ROBIN", "PARROT"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["TURKEY", "PEACOCK", "FLAMINGO", "WOODPECKER"],
+		"advanced": ["TURKEY", "PEACOCK", "FEATHER", "SPARROW", "OSTRICH", "FLAMINGO", "WOODPECKER", "NIGHTINGALE"],
 		"bg": Color(0.07, 0.09, 0.12),
 		"accent": Color(0.70, 0.90, 1.00),
 		"particle": Color(0.85, 0.95, 1.00),
@@ -277,7 +277,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["PIE", "JAM", "CAKE", "TART", "HONEY", "CANDY", "DONUT", "COOKIE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["WAFFLE", "PUDDING", "BROWNIE", "ICECREAM"],
+		"advanced": ["WAFFLE", "SORBET", "PUDDING", "BROWNIE", "CUSTARD", "ICECREAM", "MERINGUE", "CHEESECAKE"],
 		"bg": Color(0.11, 0.06, 0.08),
 		"accent": Color(1.00, 0.60, 0.75),
 		"particle": Color(1.00, 0.80, 0.90),
@@ -290,7 +290,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BIG", "TINY", "WIDE", "TALL", "DEEP", "SMALL", "SHORT", "NARROW"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["LITTLE", "MASSIVE", "GIGANTIC", "ENORMOUS"],
+		"advanced": ["LITTLE", "MEDIUM", "MASSIVE", "SLENDER", "GIGANTIC", "ENORMOUS", "COLOSSAL", "MICROSCOPIC"],
 		"bg": Color(0.07, 0.09, 0.06),
 		"accent": Color(0.60, 1.00, 0.60),
 		"particle": Color(0.80, 1.00, 0.80),
@@ -330,7 +330,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["EGG", "RICE", "MEAT", "SOUP", "BREAD", "PIZZA", "SALAD", "CHEESE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["NOODLE", "BUTTER", "SANDWICH", "CHOCOLATE"],
+		"advanced": ["NOODLE", "BUTTER", "PANCAKE", "SANDWICH", "PORRIDGE", "DUMPLING", "CHOCOLATE", "SPAGHETTI"],
 		"bg": Color(0.11, 0.07, 0.04),
 		"accent": Color(1.00, 0.65, 0.30),
 		"particle": Color(1.00, 0.80, 0.45),
@@ -343,7 +343,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["TEA", "MILK", "SODA", "WINE", "JUICE", "WATER", "COCOA", "COFFEE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["NECTAR", "YOGURT", "LEMONADE", "SMOOTHIE"],
+		"advanced": ["NECTAR", "YOGURT", "LEMONADE", "SMOOTHIE", "BEVERAGE", "ESPRESSO", "MILKSHAKE", "REFRESHMENT"],
 		"bg": Color(0.04, 0.08, 0.11),
 		"accent": Color(0.40, 0.85, 1.00),
 		"particle": Color(0.60, 0.95, 1.00),
@@ -356,7 +356,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["PEN", "BOOK", "DESK", "NOTE", "CHALK", "PAPER", "RULER", "PENCIL"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["ERASER", "TEACHER", "STUDENT", "CLASSROOM"],
+		"advanced": ["ERASER", "LESSON", "TEACHER", "STUDENT", "HOMEWORK", "CLASSROOM", "PRINCIPAL", "GYMNASIUM"],
 		"bg": Color(0.05, 0.06, 0.12),
 		"accent": Color(0.55, 0.75, 1.00),
 		"particle": Color(0.70, 0.85, 1.00),
@@ -369,7 +369,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["DAY", "HOUR", "WEEK", "YEAR", "MONTH", "NIGHT", "TODAY", "MINUTE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SECOND", "MORNING", "EVENING", "YESTERDAY"],
+		"advanced": ["SECOND", "DECADE", "MORNING", "EVENING", "CENTURY", "MIDNIGHT", "YESTERDAY", "AFTERNOON"],
 		"bg": Color(0.06, 0.05, 0.10),
 		"accent": Color(0.75, 0.75, 1.00),
 		"particle": Color(0.85, 0.85, 1.00),
@@ -382,7 +382,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["JOY", "FEAR", "LOVE", "CALM", "ANGRY", "HAPPY", "PROUD", "SCARED"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["LONELY", "NERVOUS", "EXCITED", "SURPRISED"],
+		"advanced": ["LONELY", "BORING", "NERVOUS", "EXCITED", "JEALOUS", "GRATEFUL", "SURPRISED", "CONFIDENT"],
 		"bg": Color(0.10, 0.04, 0.08),
 		"accent": Color(1.00, 0.50, 0.70),
 		"particle": Color(1.00, 0.70, 0.85),
@@ -395,7 +395,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["FIN", "CRAB", "SEAL", "WAVE", "CORAL", "SHARK", "WHALE", "SHRIMP"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["LOBSTER", "OCTOPUS", "SEAWEED", "JELLYFISH"],
+		"advanced": ["ANCHOR", "LAGOON", "LOBSTER", "OCTOPUS", "SEAWEED", "SEASHELL", "JELLYFISH", "SUBMARINE"],
 		"bg": Color(0.03, 0.07, 0.11),
 		"accent": Color(0.35, 0.85, 1.00),
 		"particle": Color(0.60, 0.95, 1.00),
@@ -408,7 +408,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["RUN", "SWIM", "GOLF", "JUMP", "CLIMB", "SKATE", "TENNIS", "SOCCER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BOXING", "HOCKEY", "BASEBALL", "BASKETBALL"],
+		"advanced": ["BOXING", "HOCKEY", "ARCHERY", "CYCLING", "BASEBALL", "MARATHON", "BADMINTON", "BASKETBALL"],
 		"bg": Color(0.05, 0.10, 0.07),
 		"accent": Color(0.40, 1.00, 0.60),
 		"particle": Color(0.60, 1.00, 0.70),
@@ -421,7 +421,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["MAP", "BANK", "PARK", "SHOP", "HOTEL", "TOWER", "BRIDGE", "MARKET"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["STATION", "LIBRARY", "HOSPITAL", "RESTAURANT"],
+		"advanced": ["STREET", "STATION", "LIBRARY", "TRAFFIC", "HOSPITAL", "SIDEWALK", "RESTAURANT", "SKYSCRAPER"],
 		"bg": Color(0.07, 0.06, 0.09),
 		"accent": Color(0.60, 0.80, 1.00),
 		"particle": Color(0.75, 0.85, 1.00),
@@ -434,7 +434,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["DOT", "CUBE", "CONE", "LINE", "OVAL", "CIRCLE", "SPIRAL", "SQUARE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["SPHERE", "CYLINDER", "TRIANGLE", "RECTANGLE"],
+		"advanced": ["SPHERE", "DIAMOND", "HEXAGON", "PYRAMID", "CYLINDER", "TRIANGLE", "PENTAGON", "RECTANGLE"],
 		"bg": Color(0.05, 0.09, 0.09),
 		"accent": Color(0.40, 1.00, 0.90),
 		"particle": Color(0.60, 1.00, 0.95),
@@ -447,7 +447,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["ELM", "BARK", "TWIG", "PALM", "MAPLE", "BIRCH", "BRANCH", "WILLOW"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["FOREST", "ORCHARD", "CHESTNUT", "EUCALYPTUS"],
+		"advanced": ["FOREST", "CANOPY", "TIMBER", "ORCHARD", "SAPLING", "CHESTNUT", "EVERGREEN", "EUCALYPTUS"],
 		"bg": Color(0.05, 0.09, 0.05),
 		"accent": Color(0.45, 0.95, 0.50),
 		"particle": Color(0.65, 1.00, 0.65),
@@ -460,7 +460,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BUD", "ROSE", "LILY", "IRIS", "PETAL", "DAISY", "POLLEN", "ORCHID"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BLOSSOM", "LAVENDER", "CARNATION", "CHRYSANTHEMUM"],
+		"advanced": ["BLOSSOM", "BOUQUET", "GARLAND", "FLORIST", "LAVENDER", "CARNATION", "WILDFLOWER", "CHRYSANTHEMUM"],
 		"bg": Color(0.10, 0.05, 0.10),
 		"accent": Color(1.00, 0.60, 0.90),
 		"particle": Color(1.00, 0.80, 0.95),
@@ -473,11 +473,24 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["SAW", "NAIL", "BOLT", "TAPE", "DRILL", "SCREW", "HAMMER", "WRENCH"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["LADDER", "SHOVEL", "TOOLBOX", "SCREWDRIVER"],
+		"advanced": ["LADDER", "SHOVEL", "CHISEL", "PLIERS", "TOOLBOX", "SANDPAPER", "WORKBENCH", "SCREWDRIVER"],
 		"bg": Color(0.08, 0.08, 0.10),
 		"accent": Color(0.85, 0.85, 0.95),
 		"particle": Color(1.00, 1.00, 1.00),
 		"motif": Motif.GEAR,
+	},
+	{
+		"id": "FISHING",
+		"name_ko": "낚시",
+		"name_en": "FISHING",
+		# 평균 4.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["NET", "BAIT", "HOOK", "REEL", "POLE", "TACKLE", "HARBOR", "SINKER"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["TROLLING", "FISHERMAN", "FRESHWATER", "AQUACULTURE"],
+		"bg": Color(0.05, 0.08, 0.11),
+		"accent": Color(0.50, 0.85, 1.00),
+		"particle": Color(0.70, 0.95, 1.00),
+		"motif": Motif.PAW,
 	},
 	{
 		"id": "MUSIC",
@@ -486,7 +499,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BAND", "BEAT", "DRUM", "HARP", "FLUTE", "PIANO", "VIOLIN", "GUITAR"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["MELODY", "TRUMPET", "ORCHESTRA", "SAXOPHONE"],
+		"advanced": ["MELODY", "RHYTHM", "TRUMPET", "CONCERT", "SYMPHONY", "ORCHESTRA", "SAXOPHONE", "INSTRUMENT"],
 		"bg": Color(0.08, 0.04, 0.12),
 		"accent": Color(0.80, 0.50, 1.00),
 		"particle": Color(0.90, 0.70, 1.00),
@@ -499,7 +512,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["PEA", "CORN", "BEAN", "LEEK", "ONION", "GARLIC", "CARROT", "PEPPER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["POTATO", "SPINACH", "CABBAGE", "CUCUMBER"],
+		"advanced": ["POTATO", "RADISH", "SPINACH", "CABBAGE", "CUCUMBER", "BROCCOLI", "ZUCCHINI", "ASPARAGUS"],
 		"bg": Color(0.05, 0.11, 0.06),
 		"accent": Color(0.50, 1.00, 0.45),
 		"particle": Color(0.70, 1.00, 0.60),
@@ -512,7 +525,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["SPIN", "ROLL", "DIVE", "SLIDE", "CRAWL", "DANCE", "FLOAT", "BOUNCE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["GALLOP", "TUMBLE", "SPRINT", "SOMERSAULT"],
+		"advanced": ["GALLOP", "TUMBLE", "SPRINT", "WANDER", "SWERVE", "PLUNGE", "WHIRLWIND", "SOMERSAULT"],
 		"bg": Color(0.06, 0.09, 0.11),
 		"accent": Color(0.50, 0.90, 1.00),
 		"particle": Color(0.70, 1.00, 1.00),
@@ -525,7 +538,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["SEE", "HEAR", "FEEL", "TASTE", "SMELL", "TOUCH", "WATCH", "SILENCE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["WHISPER", "TEXTURE", "LOUDNESS", "FRAGRANCE"],
+		"advanced": ["WHISPER", "TEXTURE", "HEARING", "PERFUME", "LOUDNESS", "EYESIGHT", "FRAGRANCE", "SENSATION"],
 		"bg": Color(0.08, 0.06, 0.12),
 		"accent": Color(0.80, 0.70, 1.00),
 		"particle": Color(0.90, 0.85, 1.00),
@@ -538,11 +551,24 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["POND", "SOIL", "HOSE", "WEED", "BENCH", "HEDGE", "GRAVEL", "SPROUT"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["TRELLIS", "WATERING", "GREENHOUSE", "WHEELBARROW"],
+		"advanced": ["SHEARS", "TRELLIS", "COMPOST", "WATERING", "FLOWERBED", "LANDSCAPE", "GREENHOUSE", "WHEELBARROW"],
 		"bg": Color(0.05, 0.10, 0.06),
 		"accent": Color(0.55, 1.00, 0.50),
 		"particle": Color(0.75, 1.00, 0.70),
 		"motif": Motif.LEAF,
+	},
+	{
+		"id": "BATHROOM",
+		"name_ko": "욕실",
+		"name_en": "BATHROOM",
+		# 평균 4.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["TUB", "SOAP", "SINK", "COMB", "TOWEL", "DRAIN", "FAUCET", "SHAMPOO"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["BATHROBE", "TOOTHPASTE", "TOOTHBRUSH", "VENTILATION"],
+		"bg": Color(0.05, 0.09, 0.11),
+		"accent": Color(0.50, 0.90, 1.00),
+		"particle": Color(0.70, 1.00, 1.00),
+		"motif": Motif.BLOB,
 	},
 	{
 		"id": "HEALTH",
@@ -551,7 +577,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BONE", "PILL", "MASK", "COUGH", "FEVER", "TOOTH", "HEART", "SYRINGE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BANDAGE", "VITAMIN", "MEDICINE", "THERMOMETER"],
+		"advanced": ["BANDAGE", "VITAMIN", "SURGERY", "ALLERGY", "MEDICINE", "EXERCISE", "NUTRITION", "THERMOMETER"],
 		"bg": Color(0.05, 0.10, 0.10),
 		"accent": Color(0.40, 1.00, 0.85),
 		"particle": Color(0.60, 1.00, 0.90),
@@ -564,7 +590,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["COIN", "CASH", "BILL", "SAVE", "PRICE", "WALLET", "CREDIT", "BUDGET"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["INCOME", "PAYMENT", "DISCOUNT", "INVESTMENT"],
+		"advanced": ["INCOME", "PROFIT", "SALARY", "PAYMENT", "DISCOUNT", "EXCHANGE", "CURRENCY", "INVESTMENT"],
 		"bg": Color(0.09, 0.09, 0.05),
 		"accent": Color(1.00, 0.85, 0.35),
 		"particle": Color(1.00, 0.95, 0.60),
@@ -577,7 +603,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 4.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["PAGE", "POEM", "TALE", "NOVEL", "TITLE", "COMIC", "LETTER", "AUTHOR"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["CHAPTER", "MAGAZINE", "DICTIONARY", "ENCYCLOPEDIA"],
+		"advanced": ["CHAPTER", "PREFACE", "SUMMARY", "MAGAZINE", "BOOKMARK", "BIOGRAPHY", "DICTIONARY", "ENCYCLOPEDIA"],
 		"bg": Color(0.07, 0.08, 0.06),
 		"accent": Color(0.70, 1.00, 0.70),
 		"particle": Color(0.85, 1.00, 0.85),
@@ -590,7 +616,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.0글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["SOUR", "MILD", "SALTY", "SWEET", "SPICY", "FRESH", "BITTER", "SAVORY"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["CREAMY", "CRUNCHY", "DELICIOUS", "FLAVORFUL"],
+		"advanced": ["CREAMY", "SMOKED", "CRUNCHY", "BUTTERY", "AROMATIC", "DELICIOUS", "FLAVORFUL", "REFRESHING"],
 		"bg": Color(0.11, 0.08, 0.05),
 		"accent": Color(1.00, 0.75, 0.40),
 		"particle": Color(1.00, 0.90, 0.60),
@@ -603,7 +629,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.1글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["FAST", "SLOW", "RUSH", "QUICK", "RAPID", "STEADY", "SUDDEN", "GRADUAL"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["INSTANT", "SLUGGISH", "IMMEDIATE", "ACCELERATE"],
+		"advanced": ["INSTANT", "SWIFTLY", "SLUGGISH", "MOMENTUM", "VELOCITY", "IMMEDIATE", "LEISURELY", "ACCELERATE"],
 		"bg": Color(0.09, 0.06, 0.11),
 		"accent": Color(0.90, 0.60, 1.00),
 		"particle": Color(1.00, 0.80, 1.00),
@@ -616,7 +642,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.1글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["MAY", "JUNE", "JULY", "APRIL", "MARCH", "AUGUST", "JANUARY", "OCTOBER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["FEBRUARY", "NOVEMBER", "DECEMBER", "SEPTEMBER"],
+		"advanced": ["EQUINOX", "QUARTER", "FEBRUARY", "NOVEMBER", "DECEMBER", "SEMESTER", "SEPTEMBER", "MILLENNIUM"],
 		"bg": Color(0.07, 0.07, 0.11),
 		"accent": Color(0.70, 0.80, 1.00),
 		"particle": Color(0.85, 0.90, 1.00),
@@ -629,7 +655,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.1글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["INK", "CLAY", "PAINT", "BRUSH", "EASEL", "CANVAS", "SKETCH", "GALLERY"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["PALETTE", "PORTRAIT", "SCULPTURE", "MASTERPIECE"],
+		"advanced": ["PALETTE", "DRAWING", "PATTERN", "PORTRAIT", "SCULPTURE", "EXHIBITION", "WATERCOLOR", "MASTERPIECE"],
 		"bg": Color(0.10, 0.06, 0.11),
 		"accent": Color(1.00, 0.65, 1.00),
 		"particle": Color(1.00, 0.85, 1.00),
@@ -642,7 +668,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["CHEF", "NURSE", "PILOT", "BAKER", "ACTOR", "DOCTOR", "FARMER", "POLICE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["ARTIST", "DENTIST", "ENGINEER", "SCIENTIST"],
+		"advanced": ["ARTIST", "WRITER", "LAWYER", "DENTIST", "ENGINEER", "MECHANIC", "SCIENTIST", "ARCHITECT"],
 		"bg": Color(0.06, 0.07, 0.10),
 		"accent": Color(0.70, 0.85, 1.00),
 		"particle": Color(0.80, 0.90, 1.00),
@@ -655,7 +681,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["BAG", "TENT", "VISA", "BEACH", "TICKET", "CAMERA", "JOURNEY", "LUGGAGE"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["PASSPORT", "SOUVENIR", "SUITCASE", "ADVENTURE"],
+		"advanced": ["PASSPORT", "SOUVENIR", "SUITCASE", "BACKPACK", "ADVENTURE", "ITINERARY", "SIGHTSEEING", "DESTINATION"],
 		"bg": Color(0.06, 0.07, 0.13),
 		"accent": Color(0.50, 0.85, 1.00),
 		"particle": Color(0.70, 0.95, 1.00),
@@ -668,7 +694,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["ICY", "COOL", "DAMP", "HUMID", "CHILLY", "FROZEN", "BURNING", "BOILING"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["FREEZING", "LUKEWARM", "SCORCHING", "TEMPERATE"],
+		"advanced": ["THAWING", "FREEZING", "LUKEWARM", "TROPICAL", "SCORCHING", "TEMPERATE", "SWELTERING", "THERMOSTAT"],
 		"bg": Color(0.06, 0.08, 0.12),
 		"accent": Color(0.60, 0.85, 1.00),
 		"particle": Color(0.80, 0.95, 1.00),
@@ -681,7 +707,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["KEY", "FILE", "DATA", "MOUSE", "SCREEN", "LAPTOP", "FOLDER", "KEYBOARD"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["INTERNET", "PASSWORD", "DOWNLOAD", "PROGRAMMER"],
+		"advanced": ["INTERNET", "PASSWORD", "DOWNLOAD", "SOFTWARE", "HARDWARE", "ALGORITHM", "PROGRAMMER", "APPLICATION"],
 		"bg": Color(0.05, 0.08, 0.11),
 		"accent": Color(0.50, 0.90, 1.00),
 		"particle": Color(0.70, 1.00, 1.00),
@@ -694,11 +720,24 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["CALL", "TEXT", "CHAT", "PHONE", "EMAIL", "SIGNAL", "MESSAGE", "CHARGER"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["ANTENNA", "WIRELESS", "BROADCAST", "NOTIFICATION"],
+		"advanced": ["ANTENNA", "ROAMING", "WIRELESS", "CONTACTS", "BROADCAST", "VOICEMAIL", "SMARTPHONE", "NOTIFICATION"],
 		"bg": Color(0.07, 0.06, 0.11),
 		"accent": Color(0.80, 0.70, 1.00),
 		"particle": Color(0.90, 0.85, 1.00),
 		"motif": Motif.PULSE,
+	},
+	{
+		"id": "MOUNTAIN",
+		"name_ko": "산",
+		"name_en": "MOUNTAIN",
+		# 평균 5.2글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["PEAK", "CAVE", "CLIFF", "RIDGE", "SLOPE", "VALLEY", "SUMMIT", "BOULDER"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["PLATEAU", "ALTITUDE", "AVALANCHE", "MOUNTAINEER"],
+		"bg": Color(0.06, 0.08, 0.07),
+		"accent": Color(0.60, 0.95, 0.80),
+		"particle": Color(0.80, 1.00, 0.90),
+		"motif": Motif.LEAF,
 	},
 	{
 		"id": "MACHINE",
@@ -720,7 +759,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["EXIT", "HELP", "ALARM", "GUARD", "HELMET", "ESCAPE", "DANGER", "WARNING"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["CAUTION", "ACCIDENT", "EMERGENCY", "EXTINGUISHER"],
+		"advanced": ["CAUTION", "ACCIDENT", "LIFEBOAT", "SEATBELT", "EMERGENCY", "PRECAUTION", "PROTECTION", "EXTINGUISHER"],
 		"bg": Color(0.11, 0.07, 0.05),
 		"accent": Color(1.00, 0.70, 0.35),
 		"particle": Color(1.00, 0.85, 0.50),
@@ -733,10 +772,23 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["TIP", "MENU", "ORDER", "STRAW", "WAITER", "NAPKIN", "RECEIPT", "SERVING"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["TAKEOUT", "LEFTOVER", "APPETIZER", "INGREDIENT"],
+		"advanced": ["TAKEOUT", "CUISINE", "PORTION", "LEFTOVER", "GRATUITY", "APPETIZER", "SPECIALTY", "INGREDIENT"],
 		"bg": Color(0.10, 0.08, 0.05),
 		"accent": Color(1.00, 0.80, 0.45),
 		"particle": Color(1.00, 0.90, 0.60),
+		"motif": Motif.BLOB,
+	},
+	{
+		"id": "BAKERY",
+		"name_ko": "제빵",
+		"name_en": "BAKERY",
+		# 평균 5.4글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["OVEN", "DOUGH", "YEAST", "FLOUR", "CRUST", "BAGEL", "MUFFIN", "BAGUETTE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["CROISSANT", "SOURDOUGH", "CONFECTION", "GINGERBREAD"],
+		"bg": Color(0.10, 0.08, 0.05),
+		"accent": Color(1.00, 0.80, 0.45),
+		"particle": Color(1.00, 0.90, 0.65),
 		"motif": Motif.BLOB,
 	},
 	{
@@ -746,11 +798,50 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.5글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["GATE", "BELT", "SEAT", "CABIN", "FLIGHT", "RUNWAY", "LANDING", "BOARDING"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["TERMINAL", "DEPARTURE", "PASSENGER", "RESERVATION"],
+		"advanced": ["TERMINAL", "SECURITY", "AIRCRAFT", "DEPARTURE", "PASSENGER", "TURBULENCE", "RESERVATION", "INTERNATIONAL"],
 		"bg": Color(0.05, 0.08, 0.12),
 		"accent": Color(0.60, 0.90, 1.00),
 		"particle": Color(0.80, 0.95, 1.00),
 		"motif": Motif.GEAR,
+	},
+	{
+		"id": "MINERAL",
+		"name_ko": "광물",
+		"name_en": "MINERAL",
+		# 평균 5.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["IRON", "COAL", "SALT", "COPPER", "MARBLE", "QUARTZ", "GRANITE", "OBSIDIAN"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["AMETHYST", "SAPPHIRE", "LIMESTONE", "TURQUOISE"],
+		"bg": Color(0.07, 0.07, 0.09),
+		"accent": Color(0.80, 0.85, 1.00),
+		"particle": Color(0.95, 0.95, 1.00),
+		"motif": Motif.GEAR,
+	},
+	{
+		"id": "LAUNDRY",
+		"name_ko": "세탁",
+		"name_en": "LAUNDRY",
+		# 평균 5.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["SOAK", "STAIN", "DRYER", "STEAM", "FABRIC", "BASKET", "IRONING", "WASHING"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["LAUNDRY", "SOFTENER", "DETERGENT", "CLOTHESLINE"],
+		"bg": Color(0.06, 0.08, 0.10),
+		"accent": Color(0.60, 0.90, 1.00),
+		"particle": Color(0.80, 1.00, 1.00),
+		"motif": Motif.PULSE,
+	},
+	{
+		"id": "SHOPPING",
+		"name_ko": "쇼핑",
+		"name_en": "SHOPPING",
+		# 평균 5.6글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["CART", "SALE", "AISLE", "QUEUE", "COUPON", "CASHIER", "TROLLEY", "BARGAIN"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["CHECKOUT", "BOUTIQUE", "WAREHOUSE", "SUPERMARKET"],
+		"bg": Color(0.09, 0.06, 0.09),
+		"accent": Color(1.00, 0.70, 0.95),
+		"particle": Color(1.00, 0.85, 1.00),
+		"motif": Motif.STAR,
 	},
 	{
 		"id": "PARTY",
@@ -759,11 +850,50 @@ const STAGES: Array[Dictionary] = [
 		# 평균 5.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["GIFT", "FLAG", "PRIZE", "CANDLE", "RIBBON", "PARADE", "BALLOON", "FIREWORK"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["CARNIVAL", "CONFETTI", "FESTIVAL", "CELEBRATION"],
+		"advanced": ["CARNIVAL", "CONFETTI", "FESTIVAL", "STREAMER", "INVITATION", "DECORATION", "CELEBRATION", "ENTERTAINMENT"],
 		"bg": Color(0.10, 0.06, 0.10),
 		"accent": Color(1.00, 0.60, 0.90),
 		"particle": Color(1.00, 0.80, 0.95),
 		"motif": Motif.STAR,
+	},
+	{
+		"id": "BEDROOM",
+		"name_ko": "침실",
+		"name_en": "BEDROOM",
+		# 평균 6.1글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["RUG", "SHEET", "DRAWER", "CLOSET", "HANGER", "CURTAIN", "MATTRESS", "WARDROBE"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["BEDSPREAD", "HEADBOARD", "NIGHTSTAND", "CHANDELIER"],
+		"bg": Color(0.08, 0.06, 0.11),
+		"accent": Color(0.75, 0.70, 1.00),
+		"particle": Color(0.90, 0.85, 1.00),
+		"motif": Motif.BLOB,
+	},
+	{
+		"id": "POSTAL",
+		"name_ko": "우편",
+		"name_en": "POSTAL",
+		# 평균 6.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["STAMP", "PARCEL", "SENDER", "ADDRESS", "MAILBOX", "COURIER", "ENVELOPE", "POSTCARD"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["DELIVERY", "SHIPMENT", "RECIPIENT", "REGISTERED"],
+		"bg": Color(0.09, 0.07, 0.06),
+		"accent": Color(1.00, 0.75, 0.50),
+		"particle": Color(1.00, 0.90, 0.70),
+		"motif": Motif.GEAR,
+	},
+	{
+		"id": "SEASON",
+		"name_ko": "계절",
+		"name_en": "SEASON",
+		# 평균 6.8글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
+		"words": ["SPRING", "SUMMER", "AUTUMN", "WINTER", "SNOWMAN", "MONSOON", "SUNSHINE", "BLIZZARD"],
+		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
+		"advanced": ["HEATWAVE", "SNOWFLAKE", "HIBERNATE", "MIGRATION"],
+		"bg": Color(0.07, 0.09, 0.08),
+		"accent": Color(0.65, 1.00, 0.75),
+		"particle": Color(0.85, 1.00, 0.90),
+		"motif": Motif.LEAF,
 	},
 	{
 		"id": "WEEKDAY",
@@ -772,7 +902,7 @@ const STAGES: Array[Dictionary] = [
 		# 평균 6.9글자 — 스테이지는 이 값 오름차순으로 배치한다(난이도 램프).
 		"words": ["MONDAY", "FRIDAY", "SUNDAY", "TUESDAY", "WEEKEND", "HOLIDAY", "THURSDAY", "SATURDAY"],
 		# 심화 단어 — 위 8개를 모두 모은 뒤 **한 번에 하나씩** 풀린다(글자수 오름차순).
-		"advanced": ["BIRTHDAY", "SCHEDULE", "WEDNESDAY", "ANNIVERSARY"],
+		"advanced": ["BIRTHDAY", "SCHEDULE", "WORKWEEK", "OVERTIME", "DEADLINE", "WEDNESDAY", "ANNIVERSARY", "APPOINTMENT"],
 		"bg": Color(0.06, 0.08, 0.10),
 		"accent": Color(0.60, 0.90, 0.95),
 		"particle": Color(0.80, 1.00, 1.00),

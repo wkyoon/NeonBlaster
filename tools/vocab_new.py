@@ -960,3 +960,516 @@ theme("DINING", "식당", "DINING", "BLOB", (0.10, 0.08, 0.05), (1.0, 0.8, 0.45)
 	("APPETIZER", "🥗", "전채. 본 음식 전에 먹어요.", "A small dish before the main food.", "The appetizer came fast."),
 	("INGREDIENT", "🧂", "재료. 요리에 들어가는 것들이에요.", "One of the foods used in a dish.", "Salt is the last ingredient."),
 ])
+
+
+# ============================================================
+# 확장 4차분 — 기존 테마 심화 (심화 4 → 8)
+#
+# ⚠️ 심화 배열은 **글자 수 오름차순**이어야 하고, 첫 단어가 기본의 마지막보다 짧으면
+#    층 경계가 거꾸로 간다. 뒤에 그냥 붙이면 둘 다 깨지므로 `deepen()` 이 넣고 **다시 정렬**한다.
+# ⚠️ 그래서 추가 단어는 그 테마의 **기본 마지막 단어보다 길거나 같아야** 한다
+#    (b5~b8 이므로 대체로 6글자 이상으로 골랐다).
+# ============================================================
+
+
+def deepen(tid, extra):
+	for t in THEMES:
+		if t["id"] == tid:
+			t["advanced"].extend(extra)
+			t["advanced"].sort(key=lambda tup: len(tup[0]))
+			return
+	raise SystemExit("deepen: 없는 테마 %s" % tid)
+
+
+deepen("FOOD", [
+	("PANCAKE", "🥞", "팬케이크. 납작하게 부친 빵이에요.", "A flat round cake fried in a pan.", "He flips the pancake high."),
+	("PORRIDGE", "🥣", "죽. 곡물을 오래 끓여 만들어요.", "Soft food made by boiling grain.", "Warm porridge on a cold day."),
+	("DUMPLING", "🥟", "만두. 반죽에 속을 넣어 쪄요.", "Dough wrapped around a filling.", "One dumpling is left."),
+	("SPAGHETTI", "🍝", "스파게티. 길고 가는 면이에요.", "Long thin pasta served with sauce.", "The spaghetti smells wonderful."),
+])
+deepen("FRUIT", [
+	("APRICOT", "🍑", "살구. 작고 주황색이에요.", "A small soft orange fruit.", "This apricot is very sweet."),
+	("COCONUT", "🥥", "코코넛. 껍질이 딱딱해요.", "A large hard brown fruit with milk inside.", "We opened the coconut."),
+	("MANDARIN", "🍊", "귤. 껍질이 잘 벗겨져요.", "A small orange that peels easily.", "Peel the mandarin for me."),
+	("WATERMELON", "🍉", "수박. 크고 속이 붉어요.", "A big green fruit with red inside.", "The watermelon is cold and sweet."),
+])
+deepen("DRINK", [
+	("BEVERAGE", "🥤", "음료. 마시는 것 전부예요.", "Any kind of drink.", "Choose one cold beverage."),
+	("ESPRESSO", "☕", "에스프레소. 진한 커피예요.", "A small strong cup of coffee.", "One espresso wakes me up."),
+	("MILKSHAKE", "🥛", "밀크셰이크. 우유를 갈아 만든 음료예요.", "A thick cold drink made with milk.", "The milkshake is too thick."),
+	("REFRESHMENT", "🧊", "간식과 음료. 잠시 쉬며 먹어요.", "Food and drink taken during a break.", "Refreshment is served outside."),
+])
+deepen("FAMILY", [
+	("NEPHEW", "👦", "조카. 형제자매의 아들이에요.", "The son of your brother or sister.", "My nephew turns five today."),
+	("GRANDMA", "👵", "할머니. 부모의 어머니예요.", "The mother of your parent.", "Grandma tells the best stories."),
+	("GRANDPA", "👴", "할아버지. 부모의 아버지예요.", "The father of your parent.", "Grandpa walks in the park."),
+	("RELATIVE", "👨‍👩‍👧", "친척. 피가 이어진 사람이에요.", "A person in your family.", "Every relative came to dinner."),
+])
+deepen("HOUSE", [
+	("GARAGE", "🚗", "차고. 차를 넣어 두는 곳이에요.", "A room where a car is kept.", "The bikes are in the garage."),
+	("CEILING", "🏠", "천장. 방의 위쪽 면이에요.", "The top surface of a room.", "A lamp hangs from the ceiling."),
+	("BALCONY", "🪟", "발코니. 밖으로 나온 좁은 마루예요.", "A small platform outside a window.", "We eat on the balcony."),
+	("BASEMENT", "🪜", "지하실. 집의 아래층이에요.", "A room below the ground floor.", "The basement is cool and dark."),
+])
+deepen("SCHOOL", [
+	("LESSON", "📚", "수업. 배우는 시간이에요.", "A period of learning.", "The lesson starts at nine."),
+	("HOMEWORK", "📝", "숙제. 집에서 하는 공부예요.", "School work you do at home.", "Finish your homework first."),
+	("PRINCIPAL", "🧑‍🏫", "교장. 학교를 이끄는 사람이에요.", "The person in charge of a school.", "The principal greets everyone."),
+	("GYMNASIUM", "🏟️", "체육관. 운동하는 큰 방이에요.", "A large room for sports.", "We play inside the gymnasium."),
+])
+deepen("CLOTHES", [
+	("POCKET", "👖", "주머니. 물건을 넣는 곳이에요.", "A small bag sewn into clothes.", "My pocket is empty."),
+	("SANDALS", "👡", "샌들. 발등이 트인 신발이에요.", "Open shoes for warm weather.", "She wears blue sandals."),
+	("RAINCOAT", "🧥", "비옷. 비를 막아 줘요.", "A coat that keeps rain off.", "Take your raincoat today."),
+	("TURTLENECK", "🧣", "목폴라. 목까지 올라와요.", "A sweater with a high collar.", "This turtleneck is warm."),
+])
+deepen("SPORT", [
+	("ARCHERY", "🏹", "궁도. 활로 과녁을 맞혀요.", "The sport of shooting arrows.", "Archery needs a steady hand."),
+	("CYCLING", "🚴", "자전거 경기. 자전거로 달려요.", "The sport of riding a bicycle.", "Cycling uphill is hard."),
+	("MARATHON", "🏅", "마라톤. 아주 먼 거리를 달려요.", "A very long running race.", "She finished the marathon."),
+	("BADMINTON", "🏸", "배드민턴. 셔틀콕을 주고받아요.", "A game played with rackets and a shuttle.", "We play badminton after school."),
+])
+deepen("MUSIC", [
+	("RHYTHM", "🎵", "리듬. 소리의 규칙적인 흐름이에요.", "A regular pattern of sound.", "Clap to the rhythm."),
+	("CONCERT", "🎤", "연주회. 여러 사람 앞에서 연주해요.", "A public musical performance.", "The concert starts at seven."),
+	("SYMPHONY", "🎼", "교향곡. 관현악단이 연주하는 큰 곡이에요.", "A long piece for a full orchestra.", "The symphony filled the hall."),
+	("INSTRUMENT", "🎻", "악기. 소리를 내는 도구예요.", "An object used to make music.", "Pick one instrument to learn."),
+])
+deepen("JOB", [
+	("WRITER", "✍️", "작가. 글을 쓰는 사람이에요.", "A person whose work is writing.", "The writer works at night."),
+	("LAWYER", "⚖️", "변호사. 법을 다루는 사람이에요.", "A person trained in law.", "The lawyer read the contract."),
+	("MECHANIC", "🔧", "정비사. 기계를 고치는 사람이에요.", "A person who repairs machines.", "The mechanic fixed my bike."),
+	("ARCHITECT", "📐", "건축가. 건물을 설계해요.", "A person who designs buildings.", "The architect drew the plan."),
+])
+deepen("CITY", [
+	("STREET", "🛣️", "거리. 건물 사이의 길이에요.", "A road in a town with buildings.", "The street is quiet at dawn."),
+	("TRAFFIC", "🚦", "교통. 길을 다니는 차들이에요.", "Vehicles moving along a road.", "Morning traffic is heavy."),
+	("SIDEWALK", "🚶", "인도. 사람이 걷는 길이에요.", "The path beside a road for walking.", "Stay on the sidewalk."),
+	("SKYSCRAPER", "🏙️", "고층 건물. 하늘까지 솟아요.", "A very tall city building.", "The skyscraper touches the clouds."),
+])
+deepen("VEHICLE", [
+	("SCOOTER", "🛵", "스쿠터. 작은 오토바이예요.", "A small motorbike with a step.", "He rides a red scooter."),
+	("TRAILER", "🚚", "트레일러. 뒤에 달려 끌려가요.", "A container pulled behind a vehicle.", "The trailer carries wood."),
+	("AMBULANCE", "🚑", "구급차. 환자를 급히 옮겨요.", "A vehicle that carries sick people.", "The ambulance moved fast."),
+	("MOTORCYCLE", "🏍️", "오토바이. 두 바퀴로 빠르게 달려요.", "A fast vehicle with two wheels.", "The motorcycle roared past."),
+])
+deepen("WEATHER", [
+	("DRIZZLE", "🌧️", "가랑비. 아주 가늘게 내려요.", "Very light rain.", "A soft drizzle began."),
+	("TEMPEST", "🌪️", "폭풍. 바람이 몹시 거세요.", "A violent storm with strong wind.", "The tempest broke the fence."),
+	("HUMIDITY", "💦", "습도. 공기 속 물기의 양이에요.", "The amount of water in the air.", "The humidity is very high."),
+	("HAILSTONE", "🧊", "우박. 얼음덩이가 떨어져요.", "A ball of ice that falls from clouds.", "One hailstone hit the roof."),
+])
+deepen("TIME", [
+	("DECADE", "📅", "십 년. 열 해예요.", "A period of ten years.", "A decade passed quickly."),
+	("CENTURY", "🕰️", "백 년. 백 해예요.", "A period of one hundred years.", "This wall is a century old."),
+	("MIDNIGHT", "🌃", "자정. 밤 열두 시예요.", "Twelve o'clock at night.", "The train leaves at midnight."),
+	("AFTERNOON", "🌤️", "오후. 낮이 지난 뒤예요.", "The time between noon and evening.", "We meet this afternoon."),
+])
+deepen("SHAPE", [
+	("DIAMOND", "💎", "다이아몬드 모양. 네 변이 기울어요.", "A shape like a tilted square.", "Draw a small diamond."),
+	("HEXAGON", "⬢", "육각형. 변이 여섯이에요.", "A shape with six straight sides.", "A honeycomb is a hexagon."),
+	("PYRAMID", "🔺", "피라미드. 밑이 네모고 위가 뾰족해요.", "A solid with a square base and a point.", "The pyramid casts a shadow."),
+	("PENTAGON", "🔷", "오각형. 변이 다섯이에요.", "A shape with five straight sides.", "Count the pentagon's sides."),
+])
+deepen("EMOTION", [
+	("BORING", "😐", "지루한. 재미가 없어요.", "Not interesting at all.", "The long wait was boring."),
+	("JEALOUS", "😒", "질투하는. 남이 가진 걸 부러워해요.", "Unhappy because someone has something.", "He felt a little jealous."),
+	("GRATEFUL", "🙏", "고마운. 마음이 따뜻해져요.", "Feeling thankful for something.", "I am grateful for your help."),
+	("CONFIDENT", "😎", "자신 있는. 잘할 수 있다고 믿어요.", "Sure that you can do something.", "She looks very confident."),
+])
+deepen("SEA", [
+	("ANCHOR", "⚓", "닻. 배를 붙잡아 둬요.", "A heavy hook that holds a ship.", "Drop the anchor here."),
+	("LAGOON", "🏝️", "호수 같은 바다. 얕고 잔잔해요.", "A shallow area of sea near land.", "The lagoon is warm and calm."),
+	("SEASHELL", "🐚", "조개껍데기. 모래밭에서 주워요.", "The hard cover of a sea animal.", "I found a pink seashell."),
+	("SUBMARINE", "🛥️", "잠수함. 물속을 다녀요.", "A ship that travels under water.", "The submarine went deeper."),
+])
+deepen("INSECT", [
+	("CICADA", "🦗", "매미. 여름에 크게 울어요.", "An insect that sings loudly in summer.", "One cicada sang all day."),
+	("TERMITE", "🐜", "흰개미. 나무를 파먹어요.", "An insect that eats wood.", "Termites damaged the beam."),
+	("MOSQUITO", "🦟", "모기. 피를 빨고 가려워요.", "A small insect that bites and itches.", "A mosquito bit my arm."),
+	("CATERPILLAR", "🐛", "애벌레. 나중에 나비가 돼요.", "A young insect that becomes a butterfly.", "The caterpillar eats a leaf."),
+])
+deepen("PLANT", [
+	("THISTLE", "🌾", "엉겅퀴. 가시가 있는 풀이에요.", "A wild plant with sharp leaves.", "A thistle grew by the wall."),
+	("SEEDLING", "🌱", "모종. 어린 식물이에요.", "A very young plant grown from seed.", "Water the seedling gently."),
+	("POLLINATE", "🐝", "수분하다. 꽃가루를 옮겨 줘요.", "To carry pollen from flower to flower.", "Bees pollinate the field."),
+	("CHLOROPHYLL", "🍃", "엽록소. 잎을 초록으로 만들어요.", "The green matter inside leaves.", "Chlorophyll makes leaves green."),
+])
+deepen("HEALTH", [
+	("SURGERY", "🏥", "수술. 몸을 열어 고쳐요.", "Medical treatment that opens the body.", "The surgery went well."),
+	("ALLERGY", "🤧", "알레르기. 어떤 것에 몸이 반응해요.", "A bad reaction to something harmless.", "He has a dust allergy."),
+	("EXERCISE", "🏃", "운동. 몸을 움직여 튼튼해져요.", "Physical activity that keeps you fit.", "Daily exercise helps a lot."),
+	("NUTRITION", "🥗", "영양. 몸에 필요한 것들이에요.", "The food your body needs to grow.", "Good nutrition starts young."),
+])
+deepen("TRAVEL", [
+	("BACKPACK", "🎒", "배낭. 등에 메는 가방이에요.", "A bag you carry on your back.", "My backpack holds everything."),
+	("ITINERARY", "🗒️", "여행 일정. 어디를 언제 갈지 적어요.", "A plan of a journey.", "Print the itinerary out."),
+	("SIGHTSEEING", "🏛️", "관광. 볼거리를 찾아 다녀요.", "Visiting places of interest.", "We spent the day sightseeing."),
+	("DESTINATION", "📍", "목적지. 가려는 곳이에요.", "The place you are going to.", "Our destination is still far."),
+])
+deepen("AIRPORT", [
+	("SECURITY", "🛂", "보안. 위험한 것을 막아요.", "Measures that keep people safe.", "Security takes ten minutes."),
+	("AIRCRAFT", "✈️", "항공기. 하늘을 나는 기계예요.", "Any machine that flies.", "The aircraft is ready now."),
+	("TURBULENCE", "🌪️", "난기류. 비행기가 흔들려요.", "Rough air that shakes a plane.", "Turbulence lasted a minute."),
+	("INTERNATIONAL", "🌐", "국제의. 여러 나라 사이의 것이에요.", "Between two or more countries.", "This is an international flight."),
+])
+deepen("KITCHEN", [
+	("SPATULA", "🍳", "뒤집개. 음식을 뒤집어요.", "A flat tool for turning food.", "Use the spatula for eggs."),
+	("TOASTER", "🍞", "토스터. 빵을 구워요.", "A machine that browns bread.", "The toaster popped up."),
+	("STRAINER", "🍜", "체. 물을 걸러 내요.", "A tool that separates water from food.", "Pour it through the strainer."),
+	("DISHWASHER", "🧽", "식기세척기. 그릇을 씻어 줘요.", "A machine that washes dishes.", "The dishwasher is full."),
+])
+deepen("VEGETABLE", [
+	("RADISH", "🥗", "무. 뿌리를 먹어요.", "A crisp root with a sharp taste.", "Slice the radish thin."),
+	("BROCCOLI", "🥦", "브로콜리. 초록 꽃송이 모양이에요.", "A green vegetable shaped like a tree.", "Steam the broccoli lightly."),
+	("ZUCCHINI", "🥒", "애호박. 길고 초록색이에요.", "A long green summer squash.", "Grill the zucchini slices."),
+	("ASPARAGUS", "🌿", "아스파라거스. 가늘고 긴 줄기예요.", "A thin green stalk you eat.", "Asparagus grows in spring."),
+])
+deepen("BIRD", [
+	("FEATHER", "🪶", "깃털. 새의 몸을 덮어요.", "One of the light parts covering a bird.", "A white feather drifted down."),
+	("SPARROW", "🐦", "참새. 작고 흔한 새예요.", "A small common brown bird.", "A sparrow hops on the path."),
+	("OSTRICH", "🦤", "타조. 가장 큰 새인데 못 날아요.", "The largest bird, which cannot fly.", "The ostrich runs very fast."),
+	("NIGHTINGALE", "🎶", "나이팅게일. 밤에 아름답게 울어요.", "A small bird that sings at night.", "A nightingale sang outside."),
+])
+
+deepen("TREE", [
+	("CANOPY", "🌳", "나무 위 덮개. 잎이 하늘을 가려요.", "The leafy top layer of a forest.", "Light filters through the canopy."),
+	("TIMBER", "🪵", "목재. 집을 짓는 나무예요.", "Wood prepared for building.", "The timber is stacked outside."),
+	("SAPLING", "🌱", "어린 나무. 아직 얇아요.", "A young thin tree.", "We planted one sapling."),
+	("EVERGREEN", "🌲", "상록수. 겨울에도 잎이 있어요.", "A tree that keeps its leaves all year.", "The evergreen stays green in snow."),
+])
+deepen("FLOWER", [
+	("BOUQUET", "💐", "꽃다발. 여러 꽃을 묶었어요.", "A bunch of flowers tied together.", "He carries a small bouquet."),
+	("GARLAND", "🌺", "꽃목걸이. 꽃을 이어 만들어요.", "A ring of flowers worn or hung.", "A garland hangs on the door."),
+	("FLORIST", "💐", "꽃집 주인. 꽃을 팔아요.", "A person who sells flowers.", "The florist opens early."),
+	("WILDFLOWER", "🌾", "들꽃. 저절로 피는 꽃이에요.", "A flower that grows without planting.", "Wildflowers cover the hill."),
+])
+deepen("TOOL", [
+	("CHISEL", "🪚", "끌. 나무나 돌을 깎아요.", "A sharp tool for cutting wood or stone.", "He taps the chisel gently."),
+	("PLIERS", "🔧", "펜치. 잡고 구부려요.", "A tool for holding and bending.", "Grip it with the pliers."),
+	("SANDPAPER", "🧱", "사포. 거친 면을 문질러 매끈하게 해요.", "Rough paper used to smooth surfaces.", "Rub it with sandpaper."),
+	("WORKBENCH", "🪑", "작업대. 위에서 일하는 튼튼한 상이에요.", "A strong table for working on.", "Tools cover the workbench."),
+])
+deepen("MONEY", [
+	("PROFIT", "📈", "이익. 벌어서 남은 돈이에요.", "Money left after costs.", "The shop made a small profit."),
+	("SALARY", "💵", "월급. 일해서 매달 받는 돈이에요.", "Money paid regularly for work.", "His salary arrives on Friday."),
+	("EXCHANGE", "💱", "환전. 돈을 다른 돈으로 바꿔요.", "Trading one money for another.", "Check the exchange rate."),
+	("CURRENCY", "💰", "통화. 나라마다 쓰는 돈이에요.", "The money used in a country.", "Each country has its currency."),
+])
+deepen("FARM", [
+	("PLOUGH", "🚜", "쟁기. 흙을 갈아 뒤집어요.", "A tool that turns over soil.", "The plough cuts deep lines."),
+	("MANURE", "🌱", "거름. 흙을 기름지게 해요.", "Animal waste used to feed soil.", "Manure helps the crops grow."),
+	("LIVESTOCK", "🐄", "가축. 기르는 동물들이에요.", "Farm animals kept for use.", "The livestock stay inside."),
+	("IRRIGATION", "💧", "관개. 밭에 물을 끌어와요.", "Bringing water to dry fields.", "Irrigation saved the harvest."),
+])
+deepen("DESSERT", [
+	("SORBET", "🍧", "셔벗. 얼린 과일 디저트예요.", "A frozen sweet made from fruit.", "Lemon sorbet is refreshing."),
+	("CUSTARD", "🍮", "커스터드. 달걀과 우유로 만들어요.", "A soft sweet made of eggs and milk.", "The custard is silky smooth."),
+	("MERINGUE", "🍥", "머랭. 달걀 흰자를 부풀려 구워요.", "A light sweet made from egg whites.", "The meringue crumbles easily."),
+	("CHEESECAKE", "🍰", "치즈케이크. 치즈로 만든 케이크예요.", "A rich cake made with soft cheese.", "One slice of cheesecake, please."),
+])
+deepen("ACTION", [
+	("BUILD", "🧱", "짓다. 쌓아서 만들어요.", "To make something by putting parts together.", "They build a small wall."),
+	("SHARE", "🤝", "나누다. 같이 써요.", "To give part of something to others.", "Share the cookies with him."),
+	("GATHER", "🧺", "모으다. 한곳에 담아요.", "To bring things into one place.", "We gather apples in baskets."),
+	("PRACTICE", "🔁", "연습하다. 반복해서 익혀요.", "To do something again to get better.", "Practice makes it easy."),
+])
+deepen("MOTION", [
+	("WANDER", "🚶", "거닐다. 목적 없이 돌아다녀요.", "To walk slowly with no clear aim.", "We wander through the market."),
+	("SWERVE", "↩️", "급히 틀다. 방향을 확 바꿔요.", "To turn suddenly to one side.", "The car swerved to the left."),
+	("PLUNGE", "🌊", "곤두박질치다. 아래로 세게 떨어져요.", "To fall or dive quickly downward.", "The bird plunged into the sea."),
+	("WHIRLWIND", "🌪️", "회오리. 빙빙 도는 바람이에요.", "A column of fast spinning wind.", "A whirlwind lifted the leaves."),
+])
+deepen("SENSE", [
+	("HEARING", "👂", "청력. 소리를 듣는 능력이에요.", "The ability to hear sounds.", "His hearing is very sharp."),
+	("PERFUME", "🌸", "향수. 좋은 냄새가 나는 물이에요.", "A liquid with a pleasant smell.", "Her perfume smells of roses."),
+	("EYESIGHT", "👁️", "시력. 보는 능력이에요.", "The ability to see.", "Reading in the dark hurts eyesight."),
+	("SENSATION", "✨", "감각. 몸으로 느끼는 것이에요.", "A feeling in your body.", "A cold sensation ran up my arm."),
+])
+deepen("SIZE", [
+	("MEDIUM", "📏", "중간 크기. 크지도 작지도 않아요.", "Neither large nor small.", "I take a medium shirt."),
+	("SLENDER", "🌱", "가느다란. 얇고 길어요.", "Thin in an attractive way.", "The slender stem bent over."),
+	("COLOSSAL", "🗿", "거대한. 어마어마하게 커요.", "Extremely large in size.", "A colossal statue stood there."),
+	("MICROSCOPIC", "🔬", "아주 미세한. 현미경으로 봐야 보여요.", "So small you need a microscope.", "Microscopic dust floats in air."),
+])
+deepen("FLAVOR", [
+	("SMOKED", "🔥", "훈제한. 연기로 향을 냈어요.", "Given flavor by smoke.", "The smoked fish tastes strong."),
+	("BUTTERY", "🧈", "버터 맛의. 부드럽고 진해요.", "Tasting rich like butter.", "The crust is light and buttery."),
+	("AROMATIC", "🌿", "향이 좋은. 냄새가 은은해요.", "Having a pleasant strong smell.", "Aromatic herbs fill the pot."),
+	("REFRESHING", "🥤", "상쾌한. 시원하게 기운이 나요.", "Making you feel cool and awake.", "Cold water is refreshing."),
+])
+deepen("TEMPERATURE", [
+	("THAWING", "💧", "녹는. 얼었던 것이 풀려요.", "Becoming soft after being frozen.", "The thawing ice drips slowly."),
+	("TROPICAL", "🌴", "열대의. 늘 덥고 습해요.", "Belonging to the hot wet places.", "Tropical nights are warm."),
+	("SWELTERING", "🥵", "찌는 듯한. 숨이 막힐 만큼 더워요.", "Uncomfortably hot and damp.", "It was a sweltering day."),
+	("THERMOSTAT", "🌡️", "온도 조절기. 온도를 맞춰 줘요.", "A device that controls temperature.", "Turn the thermostat down."),
+])
+deepen("SPEED", [
+	("SWIFTLY", "💨", "재빠르게. 아주 빨리요.", "In a very quick way.", "She moved swiftly aside."),
+	("MOMENTUM", "🎯", "기세. 움직임이 이어지는 힘이에요.", "The force of something already moving.", "The ball gains momentum."),
+	("VELOCITY", "📈", "속도. 얼마나 빠른지예요.", "The speed of something in one direction.", "Measure the wind velocity."),
+	("LEISURELY", "🐌", "느긋한. 서두르지 않아요.", "Slow and relaxed.", "We took a leisurely walk."),
+])
+deepen("STATE", [
+	("RUSTY", "🔩", "녹슨. 오래되어 붉게 변했어요.", "Covered with rust from age.", "The rusty gate squeaks."),
+	("SPARE", "🧰", "여분의. 남겨 둔 것이에요.", "Kept in case it is needed.", "Keep a spare key outside."),
+	("DAMAGED", "🔧", "손상된. 일부가 망가졌어요.", "Harmed but not fully broken.", "The damaged box still closes."),
+	("USELESS", "🚮", "쓸모없는. 아무 도움이 안 돼요.", "Of no use at all.", "This useless pen is dry."),
+])
+deepen("CALENDAR", [
+	("EQUINOX", "🌗", "춘분·추분. 낮과 밤이 같아요.", "A day when day and night are equal.", "The equinox comes in March."),
+	("QUARTER", "📆", "분기. 한 해를 넷으로 나눠요.", "One of the four parts of a year.", "Sales rose this quarter."),
+	("SEMESTER", "🏫", "학기. 학교의 한 기간이에요.", "Half of a school year.", "The semester ends in June."),
+	("MILLENNIUM", "🕰️", "천 년. 아주 긴 시간이에요.", "A period of one thousand years.", "A millennium is very long."),
+])
+deepen("WEEKDAY", [
+	("WORKWEEK", "💼", "근무 주. 일하는 날들이에요.", "The days of the week people work.", "The workweek feels long."),
+	("OVERTIME", "⏰", "초과 근무. 정해진 시간을 넘겨 일해요.", "Extra time worked beyond normal hours.", "He worked overtime again."),
+	("DEADLINE", "⏳", "기한. 그때까지 끝내야 해요.", "The time by which work must be done.", "The deadline is Friday noon."),
+	("APPOINTMENT", "📌", "약속. 만날 시간을 정해요.", "An arranged time to meet.", "I have a dental appointment."),
+])
+deepen("DIRECTION", [
+	("CORNER", "📐", "모퉁이. 두 면이 만나는 곳이에요.", "The place where two sides meet.", "Wait at the next corner."),
+	("DIAGONAL", "↗️", "대각선의. 모서리에서 모서리로 가요.", "Going from one corner to another.", "Draw a diagonal line."),
+	("OPPOSITE", "↔️", "반대의. 정확히 마주 봐요.", "Directly across from something.", "They sat on opposite sides."),
+	("HORIZONTAL", "➖", "수평의. 바닥과 나란해요.", "Flat and level, side to side.", "Keep the shelf horizontal."),
+])
+deepen("NUMBER", [
+	("TWELVE", "🕛", "열둘. 한 해의 달 수예요.", "The number 12.", "A year has twelve months."),
+	("TWENTY", "🔢", "스물. 열의 두 배예요.", "The number 20.", "Twenty chairs are ready."),
+	("MILLION", "💫", "백만. 아주 큰 수예요.", "The number 1,000,000.", "A million stars shone above."),
+	("FRACTION", "➗", "분수. 전체의 일부를 나타내요.", "A part of a whole number.", "Half is a simple fraction."),
+])
+deepen("ART", [
+	("DRAWING", "🖍️", "그림. 선으로 그린 것이에요.", "A picture made with lines.", "Her drawing is very neat."),
+	("PATTERN", "🔷", "무늬. 규칙적으로 반복돼요.", "A repeated arrangement of shapes.", "The pattern repeats every inch."),
+	("EXHIBITION", "🏛️", "전시회. 작품을 늘어놓고 보여줘요.", "A public show of art.", "The exhibition ends Sunday."),
+	("WATERCOLOR", "🎨", "수채화. 물에 개어 그려요.", "Paint mixed with water.", "Watercolor dries very fast."),
+])
+deepen("READING", [
+	("PREFACE", "📖", "서문. 책의 첫머리 글이에요.", "A short note at the start of a book.", "Read the preface first."),
+	("SUMMARY", "📝", "요약. 짧게 줄인 내용이에요.", "A short account of the main points.", "Write a one-page summary."),
+	("BOOKMARK", "🔖", "책갈피. 읽던 쪽을 표시해요.", "Something that marks your page.", "My bookmark fell out."),
+	("BIOGRAPHY", "📗", "전기. 어떤 사람의 삶을 쓴 책이에요.", "The story of a person's life.", "This biography is fascinating."),
+])
+deepen("COMPUTER", [
+	("SOFTWARE", "💿", "소프트웨어. 컴퓨터를 움직이는 프로그램이에요.", "Programs that run on a computer.", "Update the software tonight."),
+	("HARDWARE", "🖥️", "하드웨어. 만질 수 있는 부품이에요.", "The physical parts of a computer.", "The hardware is brand new."),
+	("ALGORITHM", "🧮", "알고리듬. 문제를 푸는 순서예요.", "A set of steps that solves a problem.", "This algorithm sorts numbers."),
+	("APPLICATION", "📲", "응용 프로그램. 특정 일을 해 줘요.", "A program made for one purpose.", "Install the new application."),
+])
+deepen("PHONE", [
+	("ROAMING", "🌍", "로밍. 다른 나라에서 쓰는 거예요.", "Using your phone in another country.", "Roaming costs extra money."),
+	("CONTACTS", "📇", "연락처. 이름과 번호를 모아 둬요.", "The list of people you can call.", "Add me to your contacts."),
+	("VOICEMAIL", "📼", "음성 메시지. 못 받으면 남겨 둬요.", "A recorded spoken message.", "She left a long voicemail."),
+	("SMARTPHONE", "📱", "스마트폰. 인터넷이 되는 전화예요.", "A phone that runs programs.", "My smartphone needs charging."),
+])
+deepen("SAFETY", [
+	("LIFEBOAT", "🛶", "구명보트. 위험할 때 타고 나가요.", "A small boat used to save people.", "The lifeboat hangs on the side."),
+	("SEATBELT", "💺", "안전띠. 몸을 좌석에 붙잡아 줘요.", "A strap that holds you in a seat.", "Buckle your seatbelt now."),
+	("PRECAUTION", "🚧", "예방 조치. 미리 막아 둬요.", "An action taken to prevent harm.", "Wearing gloves is a precaution."),
+	("PROTECTION", "🛡️", "보호. 해를 막아 줘요.", "The act of keeping something safe.", "Sunscreen gives protection."),
+])
+deepen("PARTY", [
+	("STREAMER", "🎊", "장식 띠. 길게 늘어뜨려요.", "A long strip of paper for decoration.", "Streamers hang from the ceiling."),
+	("INVITATION", "💌", "초대장. 오라고 보내는 편지예요.", "A written request to come.", "The invitation arrived today."),
+	("DECORATION", "🎀", "장식. 예쁘게 꾸미는 것이에요.", "Something added to make a place pretty.", "The decorations look lovely."),
+	("ENTERTAINMENT", "🎭", "여흥. 즐겁게 해 주는 것이에요.", "Things that amuse people.", "Live music is the entertainment."),
+])
+deepen("GARDEN", [
+	("SHEARS", "✂️", "큰 가위. 가지를 자를 때 써요.", "Large scissors for cutting plants.", "Sharpen the garden shears."),
+	("COMPOST", "🍂", "퇴비. 썩힌 것으로 흙을 살려요.", "Rotted plants used to feed soil.", "Add compost to the bed."),
+	("FLOWERBED", "🌷", "화단. 꽃을 심어 둔 자리예요.", "A patch of ground planted with flowers.", "The flowerbed is full of color."),
+	("LANDSCAPE", "🏞️", "경관. 눈에 보이는 넓은 풍경이에요.", "A wide view of an area of land.", "The landscape changes in autumn."),
+])
+deepen("DINING", [
+	("CUISINE", "🍲", "요리. 어떤 지역의 음식 방식이에요.", "A style of cooking from a place.", "Thai cuisine is very fragrant."),
+	("PORTION", "🍽️", "몫. 한 사람 앞의 양이에요.", "An amount of food for one person.", "The portion is quite large."),
+	("GRATUITY", "💵", "봉사료. 고마움으로 더 내는 돈이에요.", "Money added for good service.", "A gratuity is already included."),
+	("SPECIALTY", "🌟", "특선. 그 집이 가장 잘하는 요리예요.", "The dish a place is famous for.", "Try the chef's specialty."),
+])
+
+
+# ============================================================
+# 확장 5차분 — 새 테마 10개 (120단어). 목표 1000개 달성분.
+# ============================================================
+
+theme("BATHROOM", "욕실", "BATHROOM", "BLOB", (0.05, 0.09, 0.11), (0.5, 0.9, 1.0), (0.7, 1.0, 1.0),
+[
+	("TUB", "🛁", "욕조. 물을 받아 몸을 담가요.", "A large container you sit in to wash.", "Fill the tub with warm water."),
+	("SOAP", "🧼", "비누. 문지르면 거품이 나요.", "Something you rub on to get clean.", "The soap smells like lemon."),
+	("SINK", "🚰", "세면대. 손을 씻는 곳이에요.", "A bowl with taps for washing.", "The sink is full of bubbles."),
+	("COMB", "🪮", "빗. 머리를 정리해요.", "A tool with teeth for your hair.", "Run the comb through slowly."),
+	("TOWEL", "🧺", "수건. 물기를 닦아요.", "Cloth used to dry yourself.", "Hang the towel to dry."),
+	("DRAIN", "🕳️", "배수구. 물이 빠져나가요.", "The hole where water flows out.", "The drain is blocked again."),
+	("FAUCET", "🚿", "수도꼭지. 돌리면 물이 나와요.", "The tap that water comes from.", "Turn the faucet off tightly."),
+	("SHAMPOO", "🧴", "샴푸. 머리를 감을 때 써요.", "Liquid soap for washing hair.", "The shampoo bottle is empty."),
+],
+[
+	("BATHROBE", "🧖", "목욕 가운. 씻고 나서 걸쳐요.", "A loose robe worn after a bath.", "He wraps up in a bathrobe."),
+	("TOOTHPASTE", "🦷", "치약. 이를 닦을 때 짜요.", "Paste used for cleaning teeth.", "Squeeze a little toothpaste."),
+	("TOOTHBRUSH", "🪥", "치솔. 이를 문질러 닦아요.", "A small brush for your teeth.", "My toothbrush is worn out."),
+	("VENTILATION", "💨", "환기. 공기를 바꿔 줘요.", "Letting fresh air move through.", "Good ventilation stops mold."),
+])
+
+theme("BEDROOM", "침실", "BEDROOM", "BLOB", (0.08, 0.06, 0.11), (0.75, 0.7, 1.0), (0.9, 0.85, 1.0),
+[
+	("RUG", "🧶", "깔개. 바닥에 펴 두어요.", "A small thick cloth for the floor.", "A soft rug lies by the bed."),
+	("SHEET", "🛏️", "침대보. 매트리스를 덮어요.", "A flat cloth you sleep on.", "Change the sheet today."),
+	("DRAWER", "🗄️", "서랍. 밀고 당겨 여는 칸이에요.", "A box that slides in and out.", "My socks are in the drawer."),
+	("CLOSET", "🚪", "붙박이장. 옷을 걸어 두어요.", "A small room for storing clothes.", "The closet door squeaks."),
+	("HANGER", "🧷", "옷걸이. 옷을 걸어 둬요.", "A frame for hanging clothes.", "Use a wooden hanger."),
+	("CURTAIN", "🪟", "커튼. 창을 가려요.", "Cloth that covers a window.", "Draw the curtain at night."),
+	("MATTRESS", "🛏️", "매트리스. 침대 위 두꺼운 깔개예요.", "The thick pad you sleep on.", "This mattress is very firm."),
+	("WARDROBE", "🚪", "옷장. 옷을 넣어 두는 큰 가구예요.", "A tall cupboard for clothes.", "The wardrobe smells of cedar."),
+],
+[
+	("BEDSPREAD", "🛏️", "침대 덮개. 침대 전체를 덮어요.", "A decorative cover for a bed.", "The bedspread is pale blue."),
+	("HEADBOARD", "🪵", "머리판. 침대 머리 쪽 판이에요.", "The board at the head of a bed.", "She leans on the headboard."),
+	("NIGHTSTAND", "🕯️", "침대 옆 탁자. 손닿는 곳에 둬요.", "A small table beside a bed.", "A lamp sits on the nightstand."),
+	("CHANDELIER", "💡", "샹들리에. 여러 등이 달린 조명이에요.", "A hanging light with many bulbs.", "The chandelier sparkles above."),
+])
+
+theme("POSTAL", "우편", "POSTAL", "GEAR", (0.09, 0.07, 0.06), (1.0, 0.75, 0.5), (1.0, 0.9, 0.7),
+[
+	("STAMP", "📮", "우표. 편지에 붙여요.", "A small paper you stick on mail.", "Stick the stamp on straight."),
+	("PARCEL", "📦", "소포. 싸서 보내는 짐이에요.", "A wrapped package sent by mail.", "A heavy parcel arrived."),
+	("SENDER", "📤", "보내는 사람. 우편을 부친 사람이에요.", "The person who sends something.", "The sender left no name."),
+	("ADDRESS", "🏠", "주소. 어디로 갈지 적어요.", "Where a person or place is.", "Write the address clearly."),
+	("MAILBOX", "📬", "우편함. 편지가 들어오는 곳이에요.", "A box where mail is left.", "The mailbox is already full."),
+	("COURIER", "🚚", "택배 기사. 물건을 배달해요.", "A person who delivers packages.", "The courier rang the bell."),
+	("ENVELOPE", "✉️", "봉투. 편지를 넣어요.", "A paper cover for a letter.", "Seal the envelope tightly."),
+	("POSTCARD", "🖼️", "그림엽서. 짧은 안부를 적어요.", "A card with a picture sent by mail.", "A postcard came from Rome."),
+],
+[
+	("DELIVERY", "🚚", "배달. 물건을 가져다줘요.", "Bringing goods to a place.", "Delivery takes two days."),
+	("SHIPMENT", "📦", "발송 화물. 함께 보내는 짐이에요.", "Goods sent together.", "The shipment left this morning."),
+	("RECIPIENT", "🧍", "받는 사람. 우편을 받을 사람이에요.", "The person who receives something.", "The recipient signed for it."),
+	("REGISTERED", "📋", "등기의. 받은 기록을 남겨요.", "Recorded so it cannot be lost.", "Send it as registered mail."),
+])
+
+theme("MINERAL", "광물", "MINERAL", "GEAR", (0.07, 0.07, 0.09), (0.8, 0.85, 1.0), (0.95, 0.95, 1.0),
+[
+	("IRON", "⛓️", "철. 단단하고 무거운 금속이에요.", "A hard heavy grey metal.", "The gate is made of iron."),
+	("COAL", "🪨", "석탄. 태우면 열이 나요.", "A black rock that burns for heat.", "Coal burns with a red glow."),
+	("SALT", "🧂", "소금. 짠맛을 내는 결정이에요.", "White crystals that taste salty.", "Salt comes from the sea."),
+	("COPPER", "🟠", "구리. 붉은빛 금속이에요.", "A reddish metal that carries heat.", "Copper wires bend easily."),
+	("MARBLE", "🪨", "대리석. 매끈하고 무늬가 있어요.", "A smooth stone with swirling lines.", "The floor is white marble."),
+	("QUARTZ", "💎", "석영. 맑고 단단한 광물이에요.", "A hard clear mineral.", "A quartz crystal caught the light."),
+	("GRANITE", "🗿", "화강암. 아주 단단한 돌이에요.", "A very hard speckled rock.", "The steps are cut from granite."),
+	("OBSIDIAN", "🌑", "흑요석. 유리처럼 검고 날카로워요.", "Black volcanic glass.", "Obsidian breaks into sharp edges."),
+],
+[
+	("AMETHYST", "💜", "자수정. 보라색 보석이에요.", "A purple precious stone.", "The amethyst glows softly."),
+	("SAPPHIRE", "💙", "사파이어. 깊은 파란 보석이에요.", "A deep blue precious stone.", "Her ring holds one sapphire."),
+	("LIMESTONE", "🧱", "석회암. 물에 잘 녹는 돌이에요.", "A soft rock that water can dissolve.", "Caves form in limestone."),
+	("TURQUOISE", "🩵", "터키석. 하늘빛 푸른 돌이에요.", "A blue green stone.", "The turquoise beads are old."),
+])
+
+theme("MOUNTAIN", "산", "MOUNTAIN", "LEAF", (0.06, 0.08, 0.07), (0.6, 0.95, 0.8), (0.8, 1.0, 0.9),
+[
+	("PEAK", "⛰️", "봉우리. 산의 가장 높은 곳이에요.", "The pointed top of a mountain.", "Snow covers the peak."),
+	("CAVE", "🕳️", "굴. 산속 빈 공간이에요.", "A hollow space inside rock.", "The cave is dark and cold."),
+	("CLIFF", "🧗", "절벽. 깎아지른 벽이에요.", "A steep face of rock.", "Do not stand near the cliff."),
+	("RIDGE", "🏔️", "능선. 산꼭대기를 잇는 선이에요.", "A long narrow top of high land.", "We walked along the ridge."),
+	("SLOPE", "🎿", "경사. 기울어진 면이에요.", "Ground that goes up or down.", "The slope is steep here."),
+	("VALLEY", "🏞️", "골짜기. 산 사이 낮은 땅이에요.", "Low land between two hills.", "Fog fills the valley."),
+	("SUMMIT", "🗻", "정상. 끝까지 오른 지점이에요.", "The very top of a mountain.", "They reached the summit at dawn."),
+	("BOULDER", "🪨", "큰 바위. 굴러온 돌덩이예요.", "A very large loose rock.", "A boulder blocks the trail."),
+],
+[
+	("PLATEAU", "🏜️", "고원. 높고 평평한 땅이에요.", "High flat land.", "The plateau stretches for miles."),
+	("ALTITUDE", "📈", "고도. 얼마나 높은지예요.", "Height above sea level.", "The air thins at altitude."),
+	("AVALANCHE", "🏔️", "눈사태. 눈이 쏟아져 내려요.", "A mass of snow sliding down.", "An avalanche closed the road."),
+	("MOUNTAINEER", "🧗", "등산가. 산을 오르는 사람이에요.", "A person who climbs mountains.", "The mountaineer packs light."),
+])
+
+theme("LAUNDRY", "세탁", "LAUNDRY", "PULSE", (0.06, 0.08, 0.10), (0.6, 0.9, 1.0), (0.8, 1.0, 1.0),
+[
+	("SOAK", "💧", "담그다. 물에 오래 두어요.", "To leave something in water.", "Soak the shirt overnight."),
+	("STAIN", "🟤", "얼룩. 지워지지 않는 흔적이에요.", "A mark that is hard to remove.", "The coffee stain spread."),
+	("DRYER", "🌀", "건조기. 젖은 옷을 말려요.", "A machine that dries clothes.", "The dryer is still running."),
+	("STEAM", "♨️", "증기. 뜨거운 물에서 올라와요.", "Hot vapor from boiling water.", "Steam rises from the iron."),
+	("FABRIC", "🧵", "천. 옷을 만드는 재료예요.", "Cloth used to make clothes.", "This fabric feels soft."),
+	("BASKET", "🧺", "바구니. 빨래를 담아요.", "A container with an open top.", "The basket is full of socks."),
+	("IRONING", "🔥", "다림질. 주름을 펴요.", "Pressing clothes to remove wrinkles.", "Ironing takes a long time."),
+	("WASHING", "🫧", "세탁. 물로 빨아요.", "Cleaning clothes with water.", "The washing is nearly done."),
+],
+[
+	("LAUNDRY", "🧺", "세탁물. 빨아야 할 옷들이에요.", "Clothes that need washing.", "The laundry piled up again."),
+	("SOFTENER", "🧴", "섬유유연제. 천을 부드럽게 해요.", "Liquid that makes fabric soft.", "Add softener at the end."),
+	("DETERGENT", "🧼", "세제. 더러움을 씻어 내요.", "A soap used for cleaning clothes.", "Measure the detergent carefully."),
+	("CLOTHESLINE", "🪢", "빨랫줄. 옷을 걸어 말려요.", "A rope for hanging wet clothes.", "Shirts flap on the clothesline."),
+])
+
+theme("BAKERY", "제빵", "BAKERY", "BLOB", (0.10, 0.08, 0.05), (1.0, 0.8, 0.45), (1.0, 0.9, 0.65),
+[
+	("OVEN", "🔥", "오븐. 안에서 구워요.", "A closed box that bakes food.", "The oven is already hot."),
+	("DOUGH", "🥟", "반죽. 밀가루에 물을 섞어요.", "A soft mix of flour and water.", "Knead the dough for ten minutes."),
+	("YEAST", "🫙", "이스트. 반죽을 부풀려요.", "Something that makes dough rise.", "Yeast makes the bread rise."),
+	("FLOUR", "🌾", "밀가루. 곡물을 갈아 만들어요.", "Powder made from ground grain.", "Flour dusts the whole table."),
+	("CRUST", "🥖", "겉껍질. 빵의 바깥이에요.", "The hard outside of bread.", "The crust cracks when cut."),
+	("BAGEL", "🥯", "베이글. 가운데 구멍이 있어요.", "A ring of chewy bread.", "Toast the bagel lightly."),
+	("MUFFIN", "🧁", "머핀. 작고 폭신한 빵이에요.", "A small round soft cake.", "A warm muffin for breakfast."),
+	("BAGUETTE", "🥖", "바게트. 길고 딱딱한 빵이에요.", "A long thin loaf of bread.", "Break the baguette in half."),
+],
+[
+	("CROISSANT", "🥐", "크루아상. 결이 겹겹인 빵이에요.", "A crescent roll with flaky layers.", "The croissant flakes everywhere."),
+	("SOURDOUGH", "🍞", "사워도우. 살짝 신맛이 나요.", "Bread with a slightly sour taste.", "Sourdough keeps for days."),
+	("CONFECTION", "🍬", "과자류. 달게 만든 것들이에요.", "A sweet food made with sugar.", "Each confection is wrapped."),
+	("GINGERBREAD", "🍪", "진저브레드. 생강을 넣어 구워요.", "A spiced cake made with ginger.", "We build a gingerbread house."),
+])
+
+theme("SHOPPING", "쇼핑", "SHOPPING", "STAR", (0.09, 0.06, 0.09), (1.0, 0.7, 0.95), (1.0, 0.85, 1.0),
+[
+	("CART", "🛒", "카트. 물건을 담아 밀어요.", "A wheeled basket you push.", "The cart is already full."),
+	("SALE", "🏷️", "할인 판매. 값을 내려 팔아요.", "A time when prices are lower.", "The winter sale starts today."),
+	("AISLE", "🏬", "통로. 진열대 사이 길이에요.", "A passage between shelves.", "Milk is in aisle three."),
+	("QUEUE", "🚶", "줄. 차례를 기다려요.", "A line of people waiting.", "The queue moves slowly."),
+	("COUPON", "🎟️", "쿠폰. 값을 깎아 주는 표예요.", "A ticket that lowers a price.", "Use the coupon before Friday."),
+	("CASHIER", "🧑‍💼", "계산원. 돈을 받는 사람이에요.", "A person who takes payment.", "The cashier smiled at me."),
+	("TROLLEY", "🛒", "손수레. 짐을 실어 옮겨요.", "A small cart for carrying goods.", "Push the trolley this way."),
+	("BARGAIN", "💰", "싼 물건. 값에 비해 좋아요.", "Something bought cheaply.", "This coat was a real bargain."),
+],
+[
+	("CHECKOUT", "🧾", "계산대. 돈을 내는 곳이에요.", "The place where you pay.", "Meet me at the checkout."),
+	("BOUTIQUE", "👗", "부티크. 작고 멋진 옷집이에요.", "A small shop selling stylish clothes.", "The boutique closes at eight."),
+	("WAREHOUSE", "🏭", "창고. 물건을 쌓아 두는 큰 건물이에요.", "A large building for storing goods.", "The warehouse is nearly empty."),
+	("SUPERMARKET", "🏪", "슈퍼마켓. 온갖 것을 파는 큰 가게예요.", "A large shop selling food and goods.", "The supermarket opens early."),
+])
+
+theme("FISHING", "낚시", "FISHING", "PAW", (0.05, 0.08, 0.11), (0.5, 0.85, 1.0), (0.7, 0.95, 1.0),
+[
+	("NET", "🕸️", "그물. 물고기를 걸러 잡아요.", "A mesh used to catch fish.", "Pull the net in slowly."),
+	("BAIT", "🪱", "미끼. 물고기를 꾀어요.", "Food used to attract fish.", "Put fresh bait on the hook."),
+	("HOOK", "🪝", "낚싯바늘. 구부러져 걸려요.", "A curved piece that catches fish.", "The hook caught my sleeve."),
+	("REEL", "🎣", "릴. 줄을 감는 장치예요.", "A wheel that winds the line.", "Turn the reel steadily."),
+	("POLE", "🎣", "낚싯대. 길고 가늘어요.", "A long thin rod for fishing.", "He leans the pole on a rock."),
+	("TACKLE", "🧰", "낚시 도구. 한 벌로 갖춰요.", "The equipment used for fishing.", "His tackle box is heavy."),
+	("HARBOR", "⚓", "항구. 배가 머무는 곳이에요.", "A safe place where boats stay.", "Boats rest in the harbor."),
+	("SINKER", "🪨", "추. 줄을 물속으로 끌어내려요.", "A weight that pulls the line down.", "Add one more sinker."),
+],
+[
+	("TROLLING", "🚤", "끌낚시. 배로 끌면서 잡아요.", "Fishing by dragging a line from a boat.", "Trolling works well at dawn."),
+	("FISHERMAN", "🧑‍🌾", "어부. 고기를 잡는 사람이에요.", "A person who catches fish.", "The fisherman mends his net."),
+	("FRESHWATER", "💧", "담수. 소금기 없는 물이에요.", "Water that is not salty.", "Carp live in freshwater."),
+	("AQUACULTURE", "🐟", "양식. 물에서 길러 키워요.", "Raising fish in ponds or tanks.", "Aquaculture feeds many people."),
+])
+
+theme("SEASON", "계절", "SEASON", "LEAF", (0.07, 0.09, 0.08), (0.65, 1.0, 0.75), (0.85, 1.0, 0.9),
+[
+	("SPRING", "🌸", "봄. 꽃이 피는 계절이에요.", "The season when plants start to grow.", "Spring arrives with warm rain."),
+	("SUMMER", "☀️", "여름. 가장 더운 계절이에요.", "The hottest season of the year.", "Summer days feel endless."),
+	("AUTUMN", "🍂", "가을. 잎이 물드는 계절이에요.", "The season when leaves fall.", "Autumn turns the hills gold."),
+	("WINTER", "❄️", "겨울. 가장 추운 계절이에요.", "The coldest season of the year.", "Winter closes the mountain road."),
+	("SNOWMAN", "⛄", "눈사람. 눈을 뭉쳐 만들어요.", "A figure built out of snow.", "Our snowman has a carrot nose."),
+	("MONSOON", "🌧️", "장마. 오래 비가 내려요.", "A season of very heavy rain.", "The monsoon floods the fields."),
+	("SUNSHINE", "🌞", "햇살. 따뜻한 햇빛이에요.", "Light and warmth from the sun.", "Sunshine fills the kitchen."),
+	("BLIZZARD", "🌨️", "눈보라. 눈과 바람이 몰아쳐요.", "A storm with snow and strong wind.", "The blizzard lasted all night."),
+],
+[
+	("HEATWAVE", "🥵", "열파. 며칠 내내 몹시 더워요.", "A long spell of very hot weather.", "The heatwave broke at last."),
+	("SNOWFLAKE", "❄️", "눈송이. 하나하나 무늬가 달라요.", "One small crystal of falling snow.", "A snowflake landed on my glove."),
+	("HIBERNATE", "🐻", "동면하다. 겨울잠을 자요.", "To sleep through the winter.", "Bears hibernate in deep caves."),
+	("MIGRATION", "🦆", "이동. 계절에 따라 옮겨 가요.", "Moving to another place each season.", "Autumn begins the migration."),
+])
