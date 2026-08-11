@@ -100,12 +100,12 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 		Enemy.EnemyType.SHOOTER:
 			enemy.max_health = 2 + wave / 4
 			enemy.move_speed = randf_range(130.0, 180.0)
-			enemy.fire_rate = randf_range(0.60, 1.11)
+			enemy.fire_rate = randf_range(0.53, 0.98)
 			enemy.score_value = 20
 		Enemy.EnemyType.TANK:
 			enemy.max_health = 5 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
-			enemy.fire_rate = randf_range(0.25, 0.50)
+			enemy.fire_rate = randf_range(0.22, 0.44)
 			enemy.score_value = 50
 		Enemy.EnemyType.DASHER:
 			# 빠른 지그재그 돌진형 - 체력 낮음, 속도 매우 빠름
@@ -126,7 +126,7 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 			# 쉴드형 - 체력 매우 높음, 재생, 원형 탄막
 			enemy.max_health = 6 + wave / 2
 			enemy.move_speed = randf_range(90.0, 130.0)
-			enemy.fire_rate = randf_range(0.30, 0.50)
+			enemy.fire_rate = randf_range(0.26, 0.44)
 			enemy.score_value = 40
 		Enemy.EnemyType.SWARM:
 			# 군체 - 한 마리는 약하다. 여럿이 한 번에 나오는 것이 위협이다.
@@ -138,7 +138,7 @@ func _apply_stats(enemy: Enemy, type: Enemy.EnemyType, wave: int) -> void:
 			# ⚠️ 정지선까지 살아서 가야 정체성이 발현된다. 체력이 곧 그 조건이다.
 			enemy.max_health = 9 + wave / 2
 			enemy.move_speed = randf_range(140.0, 180.0)
-			enemy.fire_rate = randf_range(0.40, 0.66)
+			enemy.fire_rate = randf_range(0.35, 0.58)
 			enemy.score_value = 45
 		Enemy.EnemyType.PHANTOM:
 			# 환영 - 절반은 무적이라 실효 체력이 두 배다. 표기 체력은 낮게 둔다.

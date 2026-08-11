@@ -24,6 +24,12 @@ enum WeaponType { SINGLE, DOUBLE, TRIPLE, SPREAD }
 ## 손가락과 기체 사이의 최소 세로 간격(px). 이보다 가까이 잡아도 기체는 이만큼 위에 뜬다.
 ## 130~150 이면 기체와 바로 앞 탄이 손가락에 가리지 않고 함께 보인다.
 @export var touch_lift: float = 140.0
+## 플레이어 탄 속도(유닛/초).
+## ⚠️ 예전에는 `Bullet.gd` 의 기본값(800)에 기대고 있었다. 적 탄은 자기 값을 명시하므로
+##    그 기본값은 사실상 플레이어 전용인데, 그게 코드에 드러나지 않아 위험했다.
+## ⚠️ 느릴수록 적이 죽기까지 시간이 늘어 **화면에 더 오래 보인다** — 이 게임에서는
+##    그게 곧 학습 시간이라 좋은 방향이다. 대신 처치가 느려져 밀도와 난이도가 함께 오른다.
+const BULLET_SPEED := 720.0
 ## 탄 사거리(화면 높이 대비). 기체에서부터 재는 거리다.
 ## ⚠️ 이 값이 곧 교전 띠의 두께이고, 밸런스는 여기에 맞춰져 있다.
 const BULLET_RANGE_RATIO := 0.47
@@ -463,7 +469,7 @@ func _spawn_bullet(pos: Vector2, dir: Vector2) -> void:
 	bullet.max_travel = _screen_size.y * BULLET_RANGE_RATIO
 	# 적과 같은 화면 높이 보정. 세로가 긴 기기에서 총알이 화면을 가로지르는 시간이
 	# 늘어나면 사거리 체감과 교전 리듬이 달라진다.
-	bullet.speed *= GameManager.screen_speed_scale()
+	bullet.speed = BULLET_SPEED * GameManager.screen_speed_scale()
 	get_tree().current_scene.add_child(bullet)
 
 

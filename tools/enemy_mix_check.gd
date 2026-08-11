@@ -38,6 +38,11 @@ var _player_y: Array[float] = []
 ##    타입으로 참조하면 파스 에러가 난다(실제로 겪었다).
 var _range_ratio: float = 0.0
 var _min_play_ratio: float = 0.0
+## ⚠️ `Enemy.ENTRY_Y` 처럼 **클래스로 참조하면 안 된다.** `--script` 모드에서는 오토로드가
+##    전역 식별자로 안 잡혀 Enemy.gd → Bullet.gd 까지 컴파일이 무너진다(실측: 탄이 스크립트
+##    없는 Area2D 가 되어 적이 한 마리도 안 죽고 스폰 0 으로 잡혔다). 인스턴스에서 읽는다.
+var _entry_y: float = 46.0
+var _entry_y_unset: bool = true
 ## 적 탄 누적 수. 자폭병 격추 폭발이 실제로 탄을 뿌리는지, 그리고 그 탄이
 ## 판을 얼마나 무겁게 하는지(밸런스 비용)를 직접 센다.
 var _enemy_bullets_seen: Dictionary = {}
@@ -115,6 +120,9 @@ func _scan(delta: float) -> void:
 	for e in _game.get_tree().get_nodes_in_group("enemy"):
 		var id := e.get_instance_id()
 		alive[id] = true
+		if _entry_y_unset:
+			_entry_y_unset = false
+			_entry_y = float(e.get("ENTRY_Y"))
 		if not _seen.has(id):
 			var is_child: bool = bool(e.get("_is_child"))
 			if is_child:
@@ -236,7 +244,7 @@ func _report() -> void:
 	all_deaths.sort()
 	var early := 0
 	# ⚠️ 상수를 박지 말 것. Enemy 쪽만 바꾸면 옛 기준으로 재게 된다.
-	var entry_pct: float = Enemy.ENTRY_Y / _screen_h * 100.0
+	var entry_pct: float = _entry_y / _screen_h * 100.0
 	for d in all_deaths:
 		if d < entry_pct:
 			early += 1
