@@ -250,9 +250,8 @@ func _report() -> void:
 		_enemy_bullet_total, float(_enemy_bullet_total) / maxf(_elapsed, 1.0)])
 	var py := _median(_player_y)
 	# ⚠️ 상수를 도구에 박지 말 것. 게임만 바꾸면 옛 값으로 보고해 판단이 어긋난다(실제로 겪었다).
-	var rng: float = _range_ratio * 100.0
-	print("\n플레이어 세로 위치 중앙 %.0f%% (상한 %.0f%%) → 교전선 %.0f%% (사거리 %.0f%%)" % [
-		py, _min_play_ratio * 100.0, maxf(py - rng, 0.0), rng])
+	print("\n플레이어 세로 위치 중앙 %.0f%% (상한 %.0f%%) → 교전선 %.0f%% (사거리 %.0f%%, 절대선 15%%)" % [
+		py, _min_play_ratio * 100.0, maxf(py - _range_ratio * 100.0, 15.0), _range_ratio * 100.0])
 	print("· 사망위치 = 화면 세로 기준(0%% 위, 100%% 아래). 낮을수록 위에서 죽는다.")
 	print("· 특수발동 = 그 종류의 특징을 한 번이라도 보여준 비율.")
 	print("  DASHER 지그재그 1주기 / BOMBER 점화 / SHIELDER 체력재생 / SPLITTER 분열(항상)")
