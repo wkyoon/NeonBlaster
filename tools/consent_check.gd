@@ -53,15 +53,34 @@ func _process(delta: float) -> bool:
 			print("FAIL %s 가 패널 아래로 넘친다" % c.name)
 			fails += 1
 
+	# ⚠️ 자식끼리 겹치는지도 봐야 한다. 폭·높이만 보다가 **두 번** 놓쳤다
+	#    (본문↔링크, 링크↔상태 라벨). 글자가 겹치면 고지가 무효다.
+	var ctrls: Array[Control] = []
+	for child in panel.get_children():
+		var c := child as Control
+		if c != null and c.size.y > 0.0:
+			ctrls.append(c)
+	for i in ctrls.size():
+		for j in range(i + 1, ctrls.size()):
+			var a := Rect2(ctrls[i].position, ctrls[i].size)
+			var b := Rect2(ctrls[j].position, ctrls[j].size)
+			if a.intersects(b):
+				print("FAIL %s 와 %s 가 겹친다 (%s / %s)" % [
+					ctrls[i].name, ctrls[j].name, str(a), str(b)])
+				fails += 1
+
 	print("결과: %s" % ("통과" if fails == 0 else "실패 %d건" % fails))
 	quit(0 if fails == 0 else 1)
 	return true
 
 
+## ⚠️ `get_multiline_string_size` 로 재면 실제 자동 줄바꿈 결과와 다르다 —
+## 이 방식으로 통과했는데 실기기에서 본문 마지막 줄이 링크와 겹쳤다.
+## Label 이 실제로 만든 줄 수 x 줄 높이로 봐야 맞다(한 프레임 지난 뒤여야 값이 채워진다).
+## ⚠️ 그래도 **데스크톱 통과 = 실기기 통과가 아니다.** 안드로이드는 한글을 시스템 폴백
+## 폰트로 그려 줄 높이가 더 크다. 실측 겹침이 그렇게 났다 — 여유를 넉넉히(약 100px) 둘 것.
 func _check_wrapped(label: Label) -> int:
-	var need: float = label.get_theme_font("font").get_multiline_string_size(
-		label.text, HORIZONTAL_ALIGNMENT_LEFT, label.size.x,
-		label.get_theme_font_size("font_size")).y
+	var need: float = float(label.get_line_count()) * float(label.get_line_height())
 	print("  %s 필요 높이 %.0f / 확보 %.0f" % [label.name, need, label.size.y])
 	if need > label.size.y:
 		print("FAIL %s 가 잘린다 (%.0f 초과)" % [label.name, need - label.size.y])

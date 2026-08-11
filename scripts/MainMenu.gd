@@ -184,6 +184,21 @@ func _create_bottom_buttons() -> void:
 	else:
 		store_btn.queue_free()
 
+	# 테스트 자료 전송 동의를 **언제든 바꿀 수 있게** 한다.
+	# ⚠️ 개인정보처리방침에 "동의 철회"를 약속했으므로 앱 안에 수단이 있어야 한다.
+	#    (실기기에서 한 번 기록되면 앱 데이터를 지우는 것 말고는 되돌릴 방법이 없었다 —
+	#     그러면 최고점수·수집·연속기록까지 함께 날아간다.)
+	# ⚠️ 하단 버튼은 4개가 폭 한계다: 164 x 4 + 간격 12 x 3 = 692 < 720.
+	var data_btn := Button.new()
+	data_btn.name = "DataButton"
+	data_btn.text = "🧪 TEST"
+	data_btn.custom_minimum_size = Vector2(164, 50)
+	data_btn.add_theme_font_size_override("font_size", 18)
+	data_btn.add_theme_color_override("font_color", Color(0.5, 1.0, 0.85))
+	data_btn.focus_mode = Control.FOCUS_NONE
+	data_btn.pressed.connect(_show_consent_panel)
+	container.add_child(data_btn)
+
 	_create_sfx_lab_button()
 	_create_score_panel()
 
@@ -955,7 +970,22 @@ func _animate_title() -> void:
 func _maybe_ask_consent() -> void:
 	if Telemetry.consent != Telemetry.CONSENT_UNSET:
 		return
-	_create_consent_panel()
+	_show_consent_panel()
+
+
+## 하단 `🧪 TEST` 버튼으로도 다시 열 수 있다. 지금 상태를 버튼 글씨로 알려 준다.
+func _show_consent_panel() -> void:
+	if _consent_panel == null:
+		_create_consent_panel()
+	var state: Label = _consent_panel.get_node_or_null("Panel/StateLabel")
+	if state != null:
+		match Telemetry.consent:
+			Telemetry.CONSENT_YES:
+				state.text = "지금 설정: 보내는 중"
+			Telemetry.CONSENT_NO:
+				state.text = "지금 설정: 보내지 않음"
+			_:
+				state.text = ""
 	_consent_panel.visible = true
 	_consent_panel.move_to_front()
 
@@ -976,8 +1006,8 @@ func _create_consent_panel() -> void:
 	var panel := Panel.new()
 	panel.name = "Panel"
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.position = Vector2(-300, -330)
-	panel.size = Vector2(600, 660)
+	panel.position = Vector2(-300, -370)
+	panel.size = Vector2(600, 740)
 	_consent_panel.add_child(panel)
 
 	var title := Label.new()
@@ -993,7 +1023,10 @@ func _create_consent_panel() -> void:
 	var body := Label.new()
 	body.name = "Body"
 	body.position = Vector2(40, 96)
-	body.size = Vector2(520, 400)
+	# ⚠️ 실기기에서 본문 마지막 줄이 방침 링크와 겹쳤다. 데스크톱 검사는
+	#    get_multiline_string_size 로 재서 통과했는데 실제 자동 줄바꿈 결과와 달랐다 —
+	#    검사는 이제 Label 의 get_line_count() x get_line_height() 로 본다.
+	body.size = Vector2(520, 460)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_theme_font_size_override("font_size", 22)
 	body.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
@@ -1013,16 +1046,25 @@ func _create_consent_panel() -> void:
 	link.name = "PolicyLink"
 	link.text = "개인정보처리방침 · nb.won-solution.com/privacy.html"
 	link.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	link.position = Vector2(30, 506)
+	link.position = Vector2(30, 566)
 	link.size = Vector2(540, 30)
 	link.add_theme_font_size_override("font_size", 18)
 	link.add_theme_color_override("font_color", Color(0.55, 0.6, 0.72))
 	panel.add_child(link)
 
+	var state := Label.new()
+	state.name = "StateLabel"
+	state.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	state.position = Vector2(30, 606)
+	state.size = Vector2(540, 26)
+	state.add_theme_font_size_override("font_size", 17)
+	state.add_theme_color_override("font_color", Color(0.45, 1.0, 0.8))
+	panel.add_child(state)
+
 	var agree := Button.new()
 	agree.name = "AgreeButton"
 	agree.text = "보내기 동의"
-	agree.position = Vector2(310, 556)
+	agree.position = Vector2(310, 644)
 	agree.size = Vector2(250, 72)
 	agree.add_theme_font_size_override("font_size", 24)
 	agree.focus_mode = Control.FOCUS_NONE
@@ -1032,7 +1074,7 @@ func _create_consent_panel() -> void:
 	var deny := Button.new()
 	deny.name = "DenyButton"
 	deny.text = "보내지 않음"
-	deny.position = Vector2(40, 556)
+	deny.position = Vector2(40, 644)
 	deny.size = Vector2(250, 72)
 	deny.add_theme_font_size_override("font_size", 24)
 	deny.focus_mode = Control.FOCUS_NONE
