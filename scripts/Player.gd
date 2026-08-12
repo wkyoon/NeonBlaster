@@ -607,7 +607,7 @@ func _start_invincibility() -> void:
 
 func die() -> void:
 	# Reset global time scale in case time slow was active
-	Engine.time_scale = 1.0
+	EffectsManager.set_base_time_scale(1.0)
 	time_slow_timer = 0.0
 	laser_timer = 0.0
 	_remove_laser_effect()
@@ -634,7 +634,7 @@ func revive() -> void:
 	shield_timer = 0.0
 	laser_timer = 0.0
 	time_slow_timer = 0.0
-	Engine.time_scale = 1.0
+	EffectsManager.set_base_time_scale(1.0)
 	fire_rate = _base_fire_rate
 	_fire_timer.wait_time = 1.0 / fire_rate
 	_remove_rapid_effect()
@@ -728,7 +728,9 @@ func _remove_laser_effect() -> void:
 
 func _activate_time_slow(duration: float) -> void:
 	time_slow_timer = duration
-	Engine.time_scale = 0.3
+	# ⚠️ Engine.time_scale 을 직접 만지지 않는다 — 히트스톱과 싸운다.
+	#    EffectsManager 가 한 곳에서 (지속 배율 x 히트스톱)을 계산한다.
+	EffectsManager.set_base_time_scale(0.3)
 	EffectsManager.screen_flash(Color(0.5, 0.8, 1.0, 0.3), 0.3)
 	AudioManager.play_sfx("hit")
 
@@ -737,7 +739,7 @@ func _handle_time_slow(delta: float) -> void:
 	if time_slow_timer > 0:
 		time_slow_timer -= delta
 		if time_slow_timer <= 0:
-			Engine.time_scale = 1.0
+			EffectsManager.set_base_time_scale(1.0)
 
 
 # ---------------- LIGHTNING ----------------

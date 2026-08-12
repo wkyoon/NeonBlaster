@@ -362,6 +362,9 @@ func _on_score_changed(score: int) -> void:
 
 
 func _on_lives_changed(lives: int) -> void:
+	# 위기 연출: 목숨이 하나 남으면 화면 **가장자리만** 붉게 맥동한다.
+	# ⚠️ 전체 화면을 덮지 않는 이유가 이 게임의 핵심이다 — 중앙에 단어가 있다.
+	EffectsManager.set_danger(lives <= 1 and GameManager.current_state == GameManager.GameState.PLAYING)
 	if not _lives_container:
 		return
 	for child in _lives_container.get_children():

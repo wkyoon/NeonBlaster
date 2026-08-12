@@ -80,6 +80,7 @@ func _on_player_died() -> void:
 	if _is_game_over:
 		return
 	_is_game_over = true
+	EffectsManager.set_danger(false)
 	_spawner.stop()
 	AdsManager.hide_banner()
 	RewardManager.check_badges(_run_words, _run_seconds >= DifficultyDirector.get_target_seconds())

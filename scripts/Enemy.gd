@@ -27,6 +27,10 @@ const PHANTOM_SOLID := 0.5
 const PHANTOM_FADED := 0.35
 ## 군체 한 무리의 마릿수. 스포너가 이 수만큼 한 번에 낸다.
 const SWARM_COUNT := 5
+## 피격 시 **그림이** 튕기는 거리(유닛). 몸은 움직이지 않는다(위 take_damage 주석 참조).
+const KNOCKBACK := 6.0
+## 플린치가 제자리로 돌아오는 속도.
+const FLINCH_RECOVER := 26.0
 
 @export var enemy_type: EnemyType = EnemyType.CHASER
 @export var max_health: int = 1
@@ -273,6 +277,10 @@ func _physics_process(delta: float) -> void:
 		if not _player:
 			return
 
+	# 플린치 복원 — 그림을 제자리로 되돌린다.
+	if _sprite != null and _sprite.position != Vector2.ZERO:
+		_sprite.position = _sprite.position.move_toward(Vector2.ZERO, FLINCH_RECOVER * delta * 60.0 * delta)
+
 	if _is_entering and global_position.y >= ENTRY_Y:
 		_is_entering = false
 		# 환영은 자기 위상에 따라 켜고 끄므로 여기서 건드리지 않는다.
@@ -499,7 +507,15 @@ func take_damage(amount: int) -> void:
 	if _health_bar:
 		_health_bar.value = health
 	EffectsManager.flash(global_position, _sprite.color, 0.05)
+	# 피격 플린치 — **몸이 아니라 그림만** 튕긴다.
+	# ⚠️ 예전엔 `global_position` 을 밀었다. 발당 7유닛이 초당 8발이면 적 이동을 30% 이상
+	#    상쇄해서 판이 통째로 쉬워졌다(실측 생존 87/110/70% → 125/135/134%).
+	#    타격감은 그림만 흔들어도 그대로 나고, 밸런스에는 영향이 없다.
+	if _sprite != null:
+		_sprite.position = Vector2(randf_range(-1.0, 1.0), 1.0).normalized() * KNOCKBACK
 	if health <= 0:
+		# 처치 순간 아주 짧은 히트스톱. 타격감의 대부분이 여기서 나온다.
+		EffectsManager.hitstop()
 		die()
 	else:
 		AudioManager.play_sfx("hit")

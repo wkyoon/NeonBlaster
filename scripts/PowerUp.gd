@@ -4,6 +4,14 @@ extends Area2D
 
 signal collected(type: int)
 
+## 자석이 작동하는 거리와 끌어당기는 속도.
+## ⚠️ 범위를 크게 잡으면 아이템이 전부 저절로 들어와 **판이 통째로 쉬워진다.**
+##    실측: 220 유닛에서 생존이 87/110/70% → 129/131/122% 로 무너졌다(파워업 획득량이 급증).
+##    목적은 "아이템을 쫓다 시선이 단어에서 떠나는 것" 을 막는 것뿐이니,
+##    마지막 순간에 착 붙는 정도면 충분하다.
+const MAGNET_RANGE := 105.0
+const MAGNET_SPEED := 330.0
+
 @export var type: int = GameManager.PowerUpType.RAPID
 @export var move_speed: float = 80.0
 @export var lifetime: float = 8.0
@@ -60,6 +68,20 @@ func _physics_process(delta: float) -> void:
 	if _age >= lifetime:
 		queue_free()
 		return
+	# 자석: 기체가 가까우면 끌려간다.
+	# ⚠️ 장르 표준 기법이다(뱀파이어 서바이버즈·슈팅 전반). 아이템을 "쫓아가서 먹는" 대신
+	#    "빨려 들어오게" 하면 만족감이 크게 오르고, 이 게임에서는 특히 중요하다 —
+	#    아이템을 쫓다 보면 시선이 단어에서 떠난다.
+	var player := get_tree().get_first_node_in_group("player")
+	if player != null and is_instance_valid(player):
+		var to_player: Vector2 = player.global_position - global_position
+		var dist := to_player.length()
+		if dist < MAGNET_RANGE and dist > 1.0:
+			# 가까울수록 빠르게 — 마지막 순간에 착 붙는 느낌이 난다.
+			var pull: float = MAGNET_SPEED * (1.0 - dist / MAGNET_RANGE) + MAGNET_SPEED * 0.35
+			global_position += to_player / dist * pull * delta
+			_sprite.rotation += delta * 6.0
+			return
 	# Drift downward slowly
 	global_position.y += move_speed * delta
 	# Gentle rotation
